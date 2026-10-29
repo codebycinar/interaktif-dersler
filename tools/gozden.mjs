@@ -40,6 +40,8 @@ const tarayici = await puppeteer.launch({
 /** Sayfayı açar, giriş kartını kapatır, sesli okumayı kapatır */
 async function ac(boyut) {
   const page = await tarayici.newPage();
+  // yük altında (birkaç Chrome aynı anda) sayfa açılışı 30 sn'yi aşabiliyor
+  page.setDefaultTimeout(120000);
   await page.setViewport(boyut);
   await page.evaluateOnNewDocument(() => {
     try { localStorage.setItem("edu:sesli", "false"); } catch {}
