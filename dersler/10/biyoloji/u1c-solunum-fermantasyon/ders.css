@@ -1,0 +1,20 @@
+/* Biyoloji 10 · u1c: yapılan basamak düğmeleri, yiyecek düğmeleri, deney tasarım tablosu */
+.d-btn.bio-yapildi { border-color: var(--yesil); color: var(--yesil); }
+.d-btn.bio-yapildi::before { content: "✓ "; }
+.bio-yiyecekler { gap: 6px; }
+.bio-yiyecekler .d-btn { font-size: 12.5px; padding: 5px 9px; }
+.bio-deney select { min-width: 72px; }
+.bio-deney th { white-space: nowrap; }
+/* Sahne üstünde yüzen küçük şema paneli (grafik, formül) */
+.bio-yuzen { position: absolute; left: 50%; transform: translateX(-50%); background: rgba(14, 22, 34, .84); border: 1px solid rgba(255, 255, 255, .1); border-radius: 14px; padding: 6px; backdrop-filter: blur(10px); pointer-events: none; }
+.bio-yuzen-ust { top: 10px; }
+.bio-yuzen-alt { bottom: 10px; }
+.bio-yuzen-tuval { width: 100%; display: block; }
+@media (max-width: 760px) { .bio-yuzen { width: calc(100% - 16px) !important; top: 6px; padding: 3px; } }
+/* Anlatım kareleri: anlatılan iğne parlar, diğerleri solar */
+.d-igne { transition: opacity .35s; }
+.d-igne.bio-soluk { opacity: .3; }
+.d-igne.bio-vurgu { z-index: 2; }
+.d-igne.bio-vurgu > span { box-shadow: 0 0 0 3px var(--renk), 0 0 24px var(--renk); }
+.d-igne.bio-vurgu > i { animation: bio-nabiz 1.2s ease-in-out infinite; }
+@keyframes bio-nabiz { 50% { box-shadow: 0 0 0 7px rgba(255, 255, 255, .55), 0 0 18px var(--renk); } }

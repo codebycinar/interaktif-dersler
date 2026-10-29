@@ -1,0 +1,13 @@
+{
+  "slug": "bio10-u1b-kemosentez-sindirim",
+  "sinif": 10,
+  "ders": "Biyoloji",
+  "unite": "1. Tema: Enerji",
+  "baslik": "Güneşsiz Besin ve Sindirim: Kemosentez, Sindirim, Emilim",
+  "soru": "Işığın hiç ulaşmadığı okyanus tabanında canlılar nasıl besleniyor? Yediğin bir lokma ekmek, hücrelerindeki ATP'ye nasıl dönüşüyor?",
+  "tur": "3B keşif + sınıflandırma + model simülasyonu",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 8,
+  "yerlesim": "tam",
+  "ciktiKodlari": ["BİY.10.1.4", "BİY.10.1.5", "BİY.10.1.6"]
+}

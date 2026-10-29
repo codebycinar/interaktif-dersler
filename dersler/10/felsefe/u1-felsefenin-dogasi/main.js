@@ -1,7 +1,7 @@
 // 10. Sınıf Felsefe · 1. Ünite: Felsefenin Doğası
 // FEL.10.1.1 Felsefenin anlamını, gelişim sürecini ve işlevini sorgulayabilme (a–d süreç bileşenleri)
 import { dersBaslat, el } from "../../../../engine/ders.js";
-import { sahneKap, sekmeler, siniflandirma, zamanCizelgesi, geriBildirim, karistir } from "../_ortak/etkilesim.js";
+import { sahneKap, sekmeler, siniflandirma, zamanCizelgesi, geriBildirim, karistir, sahneKartiAc } from "../_ortak/etkilesim.js";
 import { harita } from "../_ortak/harita.js";
 import { GELENEKLER, DUSUNURLER, KENTLER } from "./veri.js";
 import egeVeri from "./harita-veri.json";
@@ -438,7 +438,7 @@ const adimlar = [
       { s: "İslam dünyasında <b>Kindî</b> ve <b>İbn Sînâ</b>, Yunan felsefesini işleyip yeni sorular sordu." },
       { s: "Sonra Avrupa'da ve Amerika'da yeni gelenekler doğdu: Fransız, Alman, Anglosakson, Amerikan." },
       { s: "Bu birikimlere <b>felsefe gelenekleri</b> diyoruz. Çizelgede her gelenek bir şerittir." },
-      { baslik: "Birlikte yapalım: Çizelgeyi oku", cozum: ["Her şerit bir gelenek, her çubuk bir düşünürün yaşamı.", "<b>~</b> işareti tarihin yaklaşık olduğunu gösterir.", "Örnek: İbn Sînâ'nın çubuğu Türk-İslam şeridinde, 980–1037 arası.", "Bir çubuğa dokunursan düşünürün sorusunu okursun."] },
+      { baslik: "Birlikte yapalım: Çizelgeyi oku", yap: (_, ctx) => sahneKartiAc(ctx), cozum: ["Her şerit bir gelenek, her çubuk bir düşünürün yaşamı.", "<b>~</b> işareti tarihin yaklaşık olduğunu gösterir.", "Örnek: İbn Sînâ'nın çubuğu Türk-İslam şeridinde, 980–1037 arası.", "Bir çubuğa dokunursan düşünürün sorusunu okursun."] },
       { soru: "Farklı şeritlerdeki iki çubuk aynı hizadaysa ne anlarız?", secenekler: ["Aynı kişiler", "Aynı dönemde yaşamışlar", "Aynı geleneğe aitler"], dogru: 1,
         aciklama: "Yatay eksen zamandır; aynı hiza aynı dönem demektir.", ipucu: "Çizelgenin yatay ekseni neyi gösteriyor?" },
       { s: "Şimdi sen dene: Kartta yazan düşünürün geleneğine ait şeride dokun. Sekiz düşünürü yerleştir." },

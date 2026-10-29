@@ -9,6 +9,7 @@ const CSS = `
 .ok-sahne{position:absolute;left:0;right:0;bottom:0;max-height:var(--ok-yuk,56%);overflow-y:auto;overscroll-behavior:contain;padding:12px 16px 18px;display:flex;flex-direction:column;gap:12px;
   background:rgba(12,19,31,.80);border:1px solid rgba(255,255,255,.10);border-radius:16px;box-shadow:0 10px 34px rgba(0,0,0,.3);backdrop-filter:blur(12px) saturate(1.15);-webkit-backdrop-filter:blur(12px) saturate(1.15)}
 .ok-sahne.genis{--ok-yuk:100%;top:0}
+.ok-sahne.anlatimda{display:none}
 .ok-sahne.kucuk{overflow:hidden}
 .ok-sahne.kucuk>:not(.ok-ust){display:none}
 .ok-ust{display:flex;align-items:center;gap:10px;margin:-2px 0 -2px}
@@ -104,8 +105,17 @@ export function sahneKap(ctx, { baslik, aciklama, sinif = "", genis = false } = 
   };
   const ro = new ResizeObserver(duyur);
   ro.observe(kap);
-  ctx.temizlik?.(() => { ro.disconnect(); window.dispatchEvent(new CustomEvent("ok-kart", { detail: 0 })); });
+  // Adım adım anlatım oynarken alıştırma kartı gizlenir (kareler 3B sahneyi anlatır); bir kare sahneKartiAc ile açabilir
+  const anlatimda = () => kap.classList.toggle("anlatimda", !!ctx.gosteriyor?.() && !kap.classList.contains("acik"));
+  anlatimda();
+  document.addEventListener("d-gosterim", anlatimda);
+  ctx.temizlik?.(() => { document.removeEventListener("d-gosterim", anlatimda); ro.disconnect(); window.dispatchEvent(new CustomEvent("ok-kart", { detail: 0 })); });
   return govde;
+}
+
+/** Anlatım sırasında gizli alıştırma kartını bilerek göster (ör. "Çizelgeyi oku" karesi) */
+export function sahneKartiAc(ctx) {
+  ctx.katman.querySelectorAll(".ok-sahne").forEach((k) => { k.classList.add("acik"); k.classList.remove("anlatimda"); });
 }
 
 /** Sahne içinde sekmeli bölümler: [{ad, kur(kap)}] — her sekme bir kez kurulur, geçişte gizlenir */

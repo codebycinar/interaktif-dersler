@@ -48,3 +48,19 @@ export async function telefon(page, adimaGit, bekle, ekranGoruntusu, adimlar) {
   }
   await page.setViewport({ width: 1408, height: 840 });
 }
+/** Adımın anlatımını ↺ Baştan ile yeniden başlatır ve k. kareye (1'den) kadar ilerler; mini soruları deneyerek geçer */
+export async function anlatKaresi(page, bekle, k, kareBekle = 1600) {
+  await page.evaluate(() => [...document.querySelectorAll(".d-anlat button")].find((b) => b.textContent.includes("Baştan"))?.click());
+  await bekle(kareBekle);
+  for (let n = 1; n < k;) {
+    const durum = await page.evaluate(() => {
+      const sik = document.querySelector(".d-kare.simdi .d-kare-siklar button:not([disabled])");
+      const devam = document.querySelector(".d-anlat .d-devam");
+      if (devam && !devam.disabled && !devam.hidden) { devam.click(); return "ileri"; }
+      if (sik) { sik.click(); return "sik"; }
+      return "yok";
+    });
+    if (durum === "yok") break;
+    if (durum === "ileri") { n++; await bekle(kareBekle); } else await bekle(120);
+  }
+}

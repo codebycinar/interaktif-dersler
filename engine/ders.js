@@ -279,7 +279,12 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
       gorevTamamMi: () => depo.tamam.includes(i),
       /** Adım adım anlatım şu an oynuyor mu (gösterim görev saymaz) */
       gosteriyor: () => gosterim,
-      _gosterim(v) { gosterim = v; },
+      _gosterim(v) {
+        if (gosterim === v) return;
+        gosterim = v;
+        // Dersler alıştırma panellerini anlatım boyunca gizlemek için dinleyebilir
+        document.dispatchEvent(new CustomEvent("d-gosterim", { detail: { gosteriyor: v, adim: i } }));
+      },
       kaydirici(o) { const k = kaydirici(o); kontroller.append(k.el); return k; },
       dugmeler(liste) {
         const satir = el("div", { class: "d-satir" });

@@ -99,7 +99,7 @@ Kurallar:
 - **Bir kare = bir fikir.** En fazla iki kısa cümle (≈ 20 kelime). Terimi önce gündelik dille, sonra adıyla verin: “Bir saniyede alınan yola **hız** diyoruz.”
 - **Önce sezgi ve somut sayı, sonra formül.** Formül hiçbir zaman ilk karede gelmez. `formul` ile sembol sembol kurun; her sembolün altında Türkçe anlamı yazsın. Hemen ardından sayılarla bir `cozum` gelsin.
 - **Her 3–4 karede bir mini soru.** Kavram yanılgısını hedefleyen çeldirici, yanlışta yol gösteren `ipucu`, doğruda “neden” açıklaması.
-- **Gösterim görevi tamamlatmaz.** Kareler oynarken ve `anlatBitti` çalışırken motor `ctx.gorevTamam()` çağrılarını yok sayar (`ctx.gosteriyor()` true döner); ↺ Baştan ile yeniden izlemede de alıştırma bölümü gizlenir. Görev maddelerini kendiniz işaretliyorsanız `ctx.gosteriyor()` iken işaretlemeyin. Cevabı gösterimde vermeyin (öğrencinin bulacağı değeri değil, başka bir örneği kullanın); `anlatBitti` ile sahneyi alıştırmaya hazırlayın.
+- **Gösterim görevi tamamlatmaz.** Kareler oynarken ve `anlatBitti` çalışırken motor `ctx.gorevTamam()` çağrılarını yok sayar (`ctx.gosteriyor()` true döner); ↺ Baştan ile yeniden izlemede de alıştırma bölümü gizlenir. Görev maddelerini kendiniz işaretliyorsanız `ctx.gosteriyor()` iken işaretlemeyin. Durum değişince `document` üzerinde `d-gosterim` olayı yayınlanır (`e.detail.gosteriyor`); alıştırma panellerini anlatım boyunca gizlemek için bunu dinleyin. Cevabı gösterimde vermeyin (öğrencinin bulacağı değeri değil, başka bir örneği kullanın); `anlatBitti` ile sahneyi alıştırmaya hazırlayın.
 - Bir adımda 6–12 kare. Sağ ok tuşu ve sunum kumandası önce kareleri ilerletir.
 - Sesli anlatım her kareyi okur (kare `oku` alanıyla özel okunuş verebilir: “delta x eşittir…”).
 

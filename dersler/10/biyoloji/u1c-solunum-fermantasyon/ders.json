@@ -1,0 +1,18 @@
+{
+  "slug": "bio10-u1c-solunum-fermantasyon",
+  "sinif": 10,
+  "ders": "Biyoloji",
+  "unite": "1. Tema: Enerji",
+  "baslik": "Hücresel Solunum, Fermantasyon ve Metabolizma",
+  "soru": "Bir glikozun altı karbonu hücrende nereye gider? Hızlı koşarken kaslarında, mayalanan hamurda ve turşu kavanozunda ne oluyor?",
+  "tur": "model animasyonu + deney tasarımı + veri analizi",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 8,
+  "ciktiKodlari": [
+    "BİY.10.1.7",
+    "BİY.10.1.8",
+    "BİY.10.1.9",
+    "BİY.10.1.10"
+  ],
+  "yerlesim": "tam"
+}

@@ -1,7 +1,7 @@
 // 10. Sınıf Peygamberimizin Hayatı · 1. Ünite: Peygamberimizin Hayatında Önemli Bir Şehir: Taif
 // PH.10.1.1 Taif yolculuğuna dair tarihsel empati · PH.10.1.2 Taif'in İslamlaşması olayını sentezleme
 import { dersBaslat, el } from "../../../../engine/ders.js";
-import { sahneKap, sekmeler, siniflandirma, siralama, iliskiAgi, zamanCizelgesi, karistir } from "../../felsefe/_ortak/etkilesim.js";
+import { sahneKap, sekmeler, siniflandirma, siralama, iliskiAgi, zamanCizelgesi, karistir, sahneKartiAc } from "../../felsefe/_ortak/etkilesim.js";
 import { harita } from "../../felsefe/_ortak/harita.js";
 import { OLAYLAR, SERITLER, SAYILAR, olay, yer, olayYili, miladiOndalik, tarihYaz, uzaklik, sayiYaz } from "./veri.js";
 import hicazVeri from "./harita-veri.json";
@@ -192,7 +192,7 @@ const adimlar = [
         aciklama: "Hâşimoğulları ile alışveriş ve evlenme yasaklandı; yalnız bırakıldılar.", ipucu: "Göç Habeşistan'a yapılmıştı; boykot başka bir şey." },
       { s: "Nübüvvetin 10. yılında amcası <b>Ebû Tâlib</b> ve eşi <b>Hz. Hatice</b> vefat etti. Bu yıla <b>Hüzün yılı</b> denir." },
       { s: "Ebû Tâlib onu kabilesi adına koruyordu. Artık Mekke'de <b>himayesiz</b>, yani koruyucusuz kalmıştı." },
-      { s: "Grafikte yeni bir şey var: <b>logaritmik ölçek</b>. Her dikey çizgi bir öncekinin <b>100 katıdır</b>.", yap: (api, ctx) => ctx.sahne.bak("bolge") },
+      { s: "Grafikte yeni bir şey var: <b>logaritmik ölçek</b>. Her dikey çizgi bir öncekinin <b>100 katıdır</b>.", yap: (api, ctx) => { ctx.sahne.bak("bolge"); api.grafik(); } },
       { baslik: "Birlikte yapalım: grafiği okuyalım", cozum: [
         "Taif yolculuğu (619): 2 kişi, Hz. Peygamber ve Zeyd.",
         "Bedir (624): yaklaşık 313 kişi.",
@@ -203,7 +203,7 @@ const adimlar = [
         aciklama: "Yanında yalnızca Zeyd vardı. Müslümanlar azdı ve korumasızdı.", ipucu: "Grafikteki Taif çubuğunun sayısına bak." },
       { s: "<b>Şimdi sen dene:</b> Önce altı olayı sıraya koy. Sonra ikinci sekmede grafiği yorumla.", yap: (api, ctx) => ctx.sahne.bak("mekke") },
     ],
-    anlatBitti: (api, ctx) => ctx.sahne.bak("mekke"),
+    anlatBitti: (api, ctx) => { ctx.sahne.bak("mekke"); api.ilkSekme(); },
     gorev: "Taif yolculuğuna giden olayları <b>sırala</b> ve sayı grafiğini <b>yorumla</b>.",
     ogretmen: "Program, Hz. Peygamber'i Taif yolculuğuna sevk eden sürecin; Mekke'de Müslümanlara yapılan baskıların, müşriklerin daveti engelleme çabalarının ve Hüzün Yılı'nın ayrıntılarıyla işlenmesini (soru turu tekniği), öğrencilerin süreçle ilgili çıkarımlarını grafik bilgi üzerinden değerlendirmelerini ve Müslümanların o dönemdeki nicel durumunun günümüzle karşılaştırılmasını öneriyor. Grafikteki sayılar olaylarda bir arada bulunan kişi sayısıdır; tarihî sayılar yaklaşıktır.",
     kur(ctx) {
@@ -233,6 +233,8 @@ const adimlar = [
           k.append(soru);
         } },
       ]);
+      // Anlatım grafiği gösterirken kartı açar; alıştırma ilk sekmeden başlar
+      return { grafik() { sahneKartiAc(ctx); sek.ac(1); }, ilkSekme: () => sek.ac(0) };
     },
   },
 
