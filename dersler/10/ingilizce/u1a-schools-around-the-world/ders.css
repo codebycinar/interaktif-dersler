@@ -1,0 +1,85 @@
+/* 10th grade English · Theme 1 (A): schools around the world */
+.d-sahne.eng-zemin { background:
+  radial-gradient(ellipse at 12% 0%, rgba(79,195,247,.12), transparent 55%),
+  radial-gradient(ellipse at 90% 100%, rgba(255,181,71,.08), transparent 50%),
+  linear-gradient(180deg, #172338 0%, #0c111c 100%); }
+.d-ust .d-ciktilar { gap: 4px; }
+
+.eng-resim { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; border: 1px solid var(--cizgi); background: #1a2436; }
+.eng-resim svg { width: 100%; height: 100%; display: block; }
+.eng-resimler { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.eng-resimler figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.eng-resimler figcaption { font-size: 13.5px; color: var(--metin-2); text-align: center; }
+.eng-kisi-sec { justify-content: center; gap: 4px; }
+.d-btn[aria-pressed="true"] { border-color: var(--vurgu); color: var(--vurgu); background: rgba(255,181,71,.1); }
+
+.eng-onay { display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+.eng-onay input { accent-color: var(--vurgu); width: 17px; height: 17px; vertical-align: -3px; }
+.eng-tahmin { font-size: 14.5px; color: var(--metin-2); }
+.eng-tahmin.secti { color: var(--metin); }
+.eng-tahmin em { font-style: normal; color: var(--vurgu); }
+
+/* Podcast player */
+.eng-oynatici { display: grid; grid-template-columns: 220px 1fr; gap: 14px; align-items: center; margin-bottom: 10px; }
+.eng-oynatici .kapak { aspect-ratio: 16 / 9; }
+.eng-oynatici-sag { display: flex; flex-direction: column; gap: 10px; }
+.eng-kisiler { display: flex; gap: 14px; }
+.eng-kisi { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--metin-2); transition: color .2s; }
+.eng-kisi i { font-style: normal; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 800;
+  border: 2px solid var(--renk); color: var(--renk); transition: transform .2s, background .2s; }
+.eng-kisi.konusuyor { color: var(--metin); }
+.eng-kisi.konusuyor i { background: var(--renk); color: #111; transform: scale(1.15); }
+.eng-dokum { display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 1.5; padding: 10px 12px; border-radius: 10px; background: rgba(15,23,36,.6);
+  max-height: 260px; overflow: auto; transition: filter .25s; }
+.eng-dokum p { margin: 0; padding: 2px 6px; border-radius: 6px; }
+.eng-dokum p.okunuyor { background: rgba(255,181,71,.18); }
+.eng-dokum.gizli { filter: blur(6px); user-select: none; max-height: 90px; overflow: hidden; }
+.eng-mini { border: 1px solid var(--cizgi); background: var(--zemin); color: var(--metin-2); border-radius: 6px; font-size: 11px; padding: 1px 6px; margin-right: 6px; cursor: pointer; }
+
+/* Opinions */
+.eng-gorusler, .eng-dy { display: flex; flex-direction: column; gap: 6px; }
+.eng-gorus { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; background: rgba(15,23,36,.6); font-size: 15px; }
+.eng-gorus .d-satir { flex: none; flex-wrap: nowrap; }
+.eng-ozet { margin: 0; font-family: Georgia, serif; font-size: 18px; line-height: 1.5; }
+
+/* Intonation */
+.eng-tonlar { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.eng-ton { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; background: rgba(15,23,36,.65); border: 1px solid var(--cizgi); }
+.eng-ton-metin b { font-size: 16px; }
+.eng-kontur { height: 40px; color: var(--metin-2); }
+.eng-kontur svg { height: 100%; width: auto; display: block; }
+.eng-kontur.dogru { color: var(--yesil); } .eng-kontur.yanlis { color: var(--kirmizi); }
+.eng-ipucu { font-size: 14px; color: var(--metin-2); padding: 8px 10px; border-radius: 10px; border: 1px dashed var(--cizgi); line-height: 1.5; }
+
+/* Article */
+.eng-makale { font-family: Georgia, "Times New Roman", serif; font-size: 16.5px; line-height: 1.65; }
+.eng-makale h2 { font-size: 24px; margin: 0 0 6px; color: #ffe2b0; }
+.eng-makale h3 { font-size: 16px; margin: 0 0 2px; font-family: "Segoe UI", system-ui, sans-serif; color: var(--vurgu-2); }
+.eng-makale h3 span { color: var(--metin-2); font-weight: 400; }
+.eng-makale p { margin: 0 0 10px; }
+.eng-giris { font-style: italic; color: var(--metin-2); }
+.eng-profil { padding: 8px 12px; margin-bottom: 8px; border-left: 3px solid var(--cizgi); }
+.eng-profil.yeni { border-left-color: var(--vurgu); }
+.eng-profil.yeni p { white-space: pre-wrap; }
+.eng-okuma { transition: filter .25s; }
+.eng-okuma.gizli { filter: blur(7px); user-select: none; pointer-events: none; }
+.eng-okuma.bulanik { filter: blur(4px); user-select: none; pointer-events: none; }
+.eng-sozcuk { border-radius: 4px; cursor: pointer; }
+.eng-sozcuk:hover { background: rgba(79,195,247,.15); }
+.eng-sozcuk.bulundu { background: rgba(90,211,139,.28); }
+.eng-sozcuk.yanlis { background: rgba(255,107,107,.3); }
+.eng-hedef { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline dotted var(--vurgu-2) 2px; text-underline-offset: 3px; }
+.eng-hedef.acildi { text-decoration-style: solid; color: #bfe9ff; }
+.eng-ornek { text-decoration: underline dotted var(--vurgu-2) 2px; text-underline-offset: 3px; }
+.eng-baglam p { margin: 6px 0 0; font-family: Georgia, serif; font-size: 15.5px; line-height: 1.5; }
+.eng-baglam mark { background: rgba(255,181,71,.35); color: inherit; border-radius: 3px; padding: 0 2px; }
+.eng-tarama-soru { font-size: 15.5px; padding: 8px 10px; border-radius: 10px; background: rgba(79,195,247,.1); border: 1px solid rgba(79,195,247,.35); }
+.eng-sayac { font-family: var(--mono); font-size: 18px; color: var(--vurgu); min-width: 3ch; }
+
+@media (max-width: 760px) {
+  .eng-resimler { grid-template-columns: 1fr 1fr; }
+  .eng-oynatici { grid-template-columns: 1fr; }
+  .eng-oynatici .kapak { max-width: 260px; }
+  .eng-gorus { flex-direction: column; align-items: flex-start; }
+  .eng-makale { font-size: 15.5px; }
+}

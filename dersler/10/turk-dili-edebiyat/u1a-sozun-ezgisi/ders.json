@@ -1,0 +1,12 @@
+{
+  "slug": "tde10-u1a-sozun-ezgisi",
+  "sinif": 10,
+  "ders": "Türk Dili ve Edebiyatı",
+  "unite": "1. Tema: Sözün Ezgisi",
+  "baslik": "Koşuktan Türküye: Sözün Ezgisi",
+  "soru": "Dokuz yüz yıl önce Kaşgar'da söylenen bir dörtlük bugün hâlâ nasıl kulağımızda çınlayabiliyor? Bir türküyü ezberletip yüzyıllarca yaşatan ne?",
+  "tur": "Etkileşimli okuma: hece, durak, kafiye; sesli okuma provası + şiir dinletisi planlayıcısı",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 242,
+  "ciktiKodlari": ["TDE2.1", "TDE2.2", "TDE2.3", "TDE2.4", "TDE3.1", "TDE3.2", "TDE3.3", "TDE3.4"]
+}
