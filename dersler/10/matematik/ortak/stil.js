@@ -19,12 +19,16 @@ const STIL = `
   .d-etiket-hud.mt-hud .d-gosterge b { font-size: 14px; }
 }
 
-.mt-dunya { position: absolute; inset: 0; }
+.mt-dunya { position: absolute; inset: 0; z-index: 0; }
 .mt-yuzen { position: absolute; left: 12px; bottom: 12px; width: min(360px, 48%); background: rgba(16, 24, 38, .86); border: 1px solid rgba(255, 255, 255, .12); border-radius: 14px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 8px 26px rgba(0, 0, 0, .3); overflow: hidden; }
+.mt-yuzen.sag-ust { left: auto; bottom: auto; right: 12px; top: 44px; }
+.mt-yuzen.sag-alt { left: auto; right: 12px; }
 .mt-yuzen-baslik { font-size: 12.5px; font-weight: 700; color: var(--metin-2); padding: 6px 12px 0; }
 .mt-yuzen-govde { position: relative; height: 200px; }
 @media (max-width: 760px) {
   .mt-yuzen { left: 6px; bottom: 6px; width: 52%; }
+  .mt-yuzen.sag-ust { left: auto; right: 6px; bottom: auto; top: 70px; }
+  .mt-yuzen.sag-alt { left: auto; right: 6px; }
   .mt-yuzen-govde { height: 118px; }
   .mt-yuzen-baslik { font-size: 11px; padding: 4px 8px 0; }
 }

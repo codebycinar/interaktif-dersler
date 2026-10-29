@@ -1,9 +1,10 @@
 // Derse özel duman senaryosu: görevleri gerçek sürükleme ve tıklamalarla yapıp tamamlandığını doğrular
-import { surukle, dunyaSurukle, dugme, cevapla, gorevTamamMi, sinaviCoz, mobilGoruntuler } from "../ortak/duman-yardim.mjs";
+import { surukle, dunyaSurukle, dugme, cevapla, gorevTamamMi, sinaviCoz, mobilGoruntuler, anlatimDenetle } from "../ortak/duman-yardim.mjs";
 
 export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
   // 1. adım: varsayım + üç farklı boyutta ölçüm
   await adimaGit(0);
+  await anlatimDenetle(page, { bekle, kontrol, ekranGoruntusu }, "a1", 4);
   await dugme(page, "Değişmez");
   await dugme(page, "Ölç ve tabloya yaz");
   await surukle(page, "B", 8, 6);
@@ -65,6 +66,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
 
   // 6. adım: birim çember (sürükleme + düğmeler)
   await adimaGit(5);
+  await anlatimDenetle(page, { bekle, kontrol, ekranGoruntusu }, "a6", 6);
   await surukle(page, "P", -0.5, Math.sqrt(3) / 2, 20);
   await surukle(page, "P", -Math.sqrt(3) / 2, 0.5, 10);
   const teta = await page.evaluate(() => document.querySelector(".d-etiket-hud .d-gosterge b").textContent);
@@ -77,6 +79,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
 
   // 7. adım: minare — iki ölçüm + doğru yükseklik (önce göz yüksekliğini unutan cevap)
   await adimaGit(6);
+  await anlatimDenetle(page, { bekle, kontrol, ekranGoruntusu }, "a7", 2);
   await dugme(page, "Ölçümü kaydet");
   await dunyaSurukle(page, "sen", 50, 0);
   const d = await page.evaluate(() => document.querySelector(".d-etiket-hud .d-gosterge b").textContent);

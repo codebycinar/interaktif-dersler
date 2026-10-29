@@ -4,6 +4,7 @@
 import { el, sayi } from "../../../../engine/ders.js";
 import { stilEkle } from "./stil.js";
 import { trigOranlar } from "./geometri.js";
+import { gosterimde } from "./anlat.js";
 
 stilEkle();
 
@@ -31,7 +32,8 @@ export function gorevListesi(ctx, maddeler, hedef = ctx.kontroller) {
   hedef.append(ul);
   return {
     el: ul,
-    isaretle(i, tamam = true) { li[i].classList.toggle("tamam", !!tamam); },
+    // anlatımdaki gösterim görev maddelerini işaretlemez
+    isaretle(i, tamam = true) { if (!gosterimde()) li[i].classList.toggle("tamam", !!tamam); },
     tamamMi: (i) => li[i].classList.contains("tamam"),
     hepsi: () => li.every((l) => l.classList.contains("tamam")),
   };

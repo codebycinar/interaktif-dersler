@@ -43,7 +43,7 @@ function duzlestir(kareler) {
  * @returns {{ el: HTMLElement, ileri: () => boolean, bitti: () => boolean, baslat: () => void }}
  * ileri(): bir sonraki kareye geçebildiyse true; anlatım bitmişse ya da kare cevap bekliyorsa false
  */
-export function anlatimAkisi({ kareler, api, ctx, ses, bitince, ozetHtml }) {
+export function anlatimAkisi({ kareler, api, ctx, ses, basladi, bitince, ozetHtml }) {
   const liste = duzlestir(kareler);
   let n = -1, bitti = false, bekliyor = false;
 
@@ -152,6 +152,7 @@ export function anlatimAkisi({ kareler, api, ctx, ses, bitince, ozetHtml }) {
     kok.classList.remove("bitti");
     devamBtn.hidden = false;
     if (ozetKutu) ozetKutu.hidden = true;
+    basladi?.();
     ileri();
   }
 

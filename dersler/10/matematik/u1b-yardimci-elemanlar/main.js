@@ -8,7 +8,9 @@ import {
   icAciortayAyagi, disAciortayAyagi, icAciortayYonu, disAciortayYonu, icTegetCember, disTegetCember,
   agirlikMerkezi, cevrelCember, diklikMerkezi, ucgenTuru, ucgenGore, acilar,
 } from "../ortak/geometri.js";
-import { IZGARA, yapistir, gecerliUcgen, MERKEZLER, SENARYOLAR, senaryoHedefi, HEDEF_TOLERANS } from "./model.js";
+import { IZGARA, yapistir, gecerliUcgen } from "./model.js";
+import { merkezAdimi } from "./merkez3b.js";
+import { anlatimliAdimlar, hepsiniTasi, hepsiniKoy, gecis, durdurHepsi } from "../ortak/anlat.js";
 
 const ALAN = { alan: { xmin: -6.2, xmax: 6.2, ymin: -3.4, ymax: 5.2 }, izgara: 1 };
 const sinirla = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -63,6 +65,22 @@ const adimlar = [
       <p>Sonra köşeleri sürükleyerek <b>farklı üçgenler</b> oluştur ve iki oranı karşılaştır.</p>`,
     gorev: "Varsayımını seç ve <b>en az 3 farklı üçgende</b> oranları incele; sonra problemi çöz.",
     ogretmen: "Programda açıortayın pergel, ölçüsüz cetvel ya da kâğıt katlama ile hatırlatılması, ardından kenarlar oranı ile açıortayın ayırdığı parçalar oranı arasındaki ilişkinin sınıfta tartışılarak varsayıma dönüştürülmesi öneriliyor (SDB2.2). Varsayımları tahtaya yazdırıp grupların farklı üçgenlerle sınamasını isteyin.",
+    anlat: [
+      { s: "A köşesindeki açıyı iki eş parçaya (θ ve θ) bölen <b>AD</b> doğru parçası, A'nın <b>iç açıortayıdır</b>.", yap: (api) => api.ucgen([[0, 4], [-3, -2], [3, -2]]) },
+      { s: "Bu üçgende AB = AC. Açıortay BC'yi tam ortadan böldü: BD = DC = 3." },
+      { s: "Peki AB ile AC farklı olursa? Üçgeni değiştirelim. İzle…", yap: (api) => api.ucgen([[-4, 2.5], [-4, -2], [2, -2]]) },
+      { s: "Şimdi AB = 4,5 ve AC = 7,5. D artık ortada değil: BD = 2,25 ve DC = 3,75." },
+      { soru: "D hangi köşeye daha yakın?", secenekler: ["Kısa kenarın ucu B'ye", "Uzun kenarın ucu C'ye", "İkisine eşit uzaklıkta"], dogru: 0,
+        aciklama: "D, kısa kenar AB'nin tarafına kaydı: BD < DC.", ipucu: "Mavi ve yeşil parçaların uzunluklarına bak." },
+      { s: "Kenarların oranına bakalım: AB ÷ AC = 4,5 ÷ 7,5 = <b>0,6</b>." },
+      { soru: "Parçaların oranı BD ÷ DC = 2,25 ÷ 3,75 kaç?", secenekler: ["0,6", "1", "1,67"], dogru: 0,
+        aciklama: "Yine 0,6! Parçaların oranı kenarların oranına eşit.", ipucu: "2,25'i 3,75'e böl." },
+      { formul: [["BD", "mavi parça"], ["/"], ["DC", "yeşil parça"], ["="], ["AB", "kenar"], ["/"], ["AC", "kenar"]],
+        s: "Bu, <b>iç açıortay teoremidir</b>. Her üçgende geçerlidir.", oku: "B D bölü D C eşittir A B bölü A C." },
+      { cozum: ["Örnek: AB = 4, AC = 6, BC = 5 ve AD iç açıortay.", "BD / DC = 4 / 6 = 2 / 3", "BC'yi 2 + 3 = 5 eş parçaya böl: BD = 2, DC = 3"] },
+      { s: "Şimdi sen: varsayımını seç ve köşeleri sürükleyerek üç farklı üçgende sına." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -129,6 +147,10 @@ const adimlar = [
           dogruMesaj: "Doğru! BD = 10 · 6/15 = 4, DC = 6.",
         }).el);
       }
+      return {
+        ucgen: (h) => hepsiniTasi([A, B, C], h),
+        sifirla() { durdurHepsi(); hepsiniKoy([A, B, C], [[-1, 4], [-4, -2], [4.5, -2]]); },
+      };
     },
   },
 
@@ -142,6 +164,23 @@ const adimlar = [
       <p>Üç kenara eşit uzaklıktaki bir nokta, neyin merkezi olabilir?</p>`,
     gorev: "Listedeki dört adımı tamamla.",
     ogretmen: "Programda eş üçgenler yardımıyla “açıortay üzerindeki bir noktanın kollara uzaklıkları eşittir” çıkarımının yapılması, bundan hareketle iç açıortayların tek noktada kesiştiği ve bu noktanın iç teğet çemberin merkezi olduğu sonucuna ulaşılması öneriliyor. Matematik yazılımıyla farklı açıların sunulması (MAB5) bu adımın amacıdır.",
+    anlat: [
+      { s: "Yeşil <b>P</b> noktası A'nın açıortayı üzerinde. P'den açının kollarına (AB ve AC) dikmeler indirdik.", yap: (api) => api.p(0.55) },
+      { s: "Dikmelerdeki çentiklere bak: iki uzaklık <b>eşit</b>." },
+      { s: "P'yi açıortay boyunca kaydıralım. İzle…", yap: (api) => api.p(0.9) },
+      { soru: "P köşeden uzaklaştı. İki dikme ne oldu?", secenekler: ["İkisi de uzadı ama hâlâ eşit", "Biri uzadı, biri kısaldı", "Eşitlik bozuldu"], dogru: 0,
+        aciklama: "İkisi birlikte uzadı ve eşit kaldı.", ipucu: "Çentikler hâlâ aynı mı?" },
+      { s: "Kural: açıortay üzerindeki her nokta, açının iki koluna <b>eşit uzaklıktadır</b>." },
+      { s: "Şimdi B'nin açıortayını da çizelim…", yap: (api) => { api.p(0.55); api.ac("B", true); } },
+      { s: "…ve C'nin açıortayını.", yap: (api) => api.ac("C", true) },
+      { soru: "Üç açıortay nerede buluştu?", secenekler: ["Tek bir noktada", "Üç farklı noktada", "Hiç buluşmadı"], dogru: 0,
+        aciklama: "Hepsi <b>I</b> noktasından geçiyor.", ipucu: "Sarı I noktasına bak." },
+      { soru: "I üç açıortayın da üzerinde. O hâlde I'nın neye uzaklıkları eşit?", secenekler: ["Üç köşeye", "Üç kenara", "Yalnızca iki kenara"], dogru: 1,
+        aciklama: "Her açıortay iki kenara eşit uzaklık verir; üçü birlikte üç kenara eşit uzaklık.", ipucu: "Açıortay, açının <b>kollarına</b> eşit uzaklık verir." },
+      { s: "I merkezli ve üç kenara da değen çembere <b>iç teğet çember</b> denir.", yap: (api) => api.ac("cember", true) },
+      { s: "Şimdi sen: varsayımını seç, açıortayları çiz ve üçgeni değiştirerek sına." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -222,6 +261,17 @@ const adimlar = [
         kontrol();
       });
       guncelle();
+      const acikYap = (ad, v) => { if (acik[ad] !== v) ac(ad); };
+      return {
+        ac: acikYap,
+        p(t, sure = 0.9) { const t0 = tP; return gecis(P, sure, (k) => { tP = t0 + (t - t0) * k; const q = pKonum(); P.ayarla(q.x, q.y); }); },
+        sifirla() {
+          durdurHepsi();
+          acikYap("cember", false); acikYap("B", false); acikYap("C", false);
+          sayac = null; tP = 0.55;
+          const q = pKonum(); P.ayarla(q.x, q.y);
+        },
+      };
     },
   },
 
@@ -235,6 +285,23 @@ const adimlar = [
       <p>AB = AC olursa ne olur? Sonra B ve C'nin dış açıortaylarını çizip neyin merkezini bulduğunu gör.</p>`,
     gorev: "Listedeki üç adımı tamamla.",
     ogretmen: "Programda iç açıortaydaki sürecin benzeri işletilerek dış açıortay teoremine ulaşılması; iki dış açıortay ile üçüncü açının iç açıortayının aynı noktada kesiştiği ve bu noktanın bir dış teğet çemberin merkezi olduğu fikrine varılması öneriliyor.",
+    anlat: [
+      { s: "BA kenarını A'nın ötesine uzattık (kesikli çizgi). A'da bir <b>dış açı</b> oluştu.", yap: (api) => api.ucgen([[-2, 1.5], [-2, -1.5], [2, -1.5]]) },
+      { s: "Bu dış açıyı iki eş parçaya (φ ve φ) bölen turuncu doğru, A'nın <b>dış açıortayıdır</b>." },
+      { soru: "İç açıortay (noktalı) ile dış açıortay arasındaki açı kaç derece?", secenekler: ["45°", "90°", "180°"], dogru: 1,
+        aciklama: "İç açı ile dış açının toplamı 180°; yarılarının toplamı 90°. İkisi birbirine diktir.", ipucu: "İç ve dış açı toplamı 180°." },
+      { s: "Dış açıortay BC doğrusunu üçgenin <b>dışında</b>, bir <b>E</b> noktasında kesiyor." },
+      { s: "Bu üçgende AB = 3, AC = 5, BC = 4. Ölçünce EB = 6 ve EC = 10 çıkıyor." },
+      { soru: "EB ÷ EC = 6 ÷ 10 = 0,6. Peki AB ÷ AC kaç?", secenekler: ["0,6", "0,75", "1,25"], dogru: 0,
+        aciklama: "3 ÷ 5 = 0,6. İki oran yine eşit!", ipucu: "3'ü 5'e böl." },
+      { formul: [["EB", "uzantıda"], ["/"], ["EC", "uzantıda"], ["="], ["AB", "kenar"], ["/"], ["AC", "kenar"]],
+        s: "<b>Dış açıortay teoremi</b>: oran aynı, ama E kenarın <b>uzantısında</b>.", oku: "E B bölü E C eşittir A B bölü A C." },
+      { s: "B ve C'nin dış açıortaylarını da çizelim. İzle…", yap: (api) => api.cember(true) },
+      { s: "Bu iki dış açıortay, A'nın iç açıortayıyla tek bir noktada buluştu: <b>Iₐ</b>." },
+      { s: "Iₐ merkezli sarı çember, üç kenar doğrusuna da teğet. Buna <b>dış teğet çember</b> denir." },
+      { s: "Şimdi sen: AB = AC olan bir üçgen kurunca dış açıortaya ne olduğunu keşfet, sonra problemi çöz." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -295,6 +362,12 @@ const adimlar = [
       function bitir() { if (liste.hepsi() && !ctx.gorevTamamMi()) ctx.gorevTamam(); }
       T.degisti(guncelle);
       guncelle();
+      const cemberGoster = (v) => { cember = v; acKapa(cBtn, v); T.yenile(); };
+      return {
+        ucgen: (h) => hepsiniTasi([A, B, C], h),
+        cember: cemberGoster,
+        sifirla() { durdurHepsi(); cemberGoster(false); hepsiniKoy([A, B, C], [[-2.5, 2.5], [-2, -1.5], [4, -1.5]]); },
+      };
     },
   },
 
@@ -308,6 +381,22 @@ const adimlar = [
       <p>Son olarak bir <b>dik üçgen</b> kur ve dik köşeden hipotenüse çizilen kenarortaya bak.</p>`,
     gorev: "Listedeki üç adımı tamamla.",
     ogretmen: "Programda iki kenarortayın inşa edilerek kesim noktasının kenarortayları belli oranda böldüğüne dair varsayımda bulunulması, üçüncü kenarortayın da aynı noktadan geçtiğinin görülmesi ve ağırlık merkezinin kenarortayı 2 : 1 oranında böldüğüne dikkat çekilmesi öneriliyor. Dik üçgende hipotenüse ait kenarortayın hipotenüsün yarısına eşit olduğuna dair çıkarım için fırsat verin. Kartondan kesilmiş üçgenleri G'den kalem ucunda dengeletmek güzel bir somut etkinliktir.",
+    anlat: [
+      { s: "Bir köşeyi karşı kenarın <b>orta noktasına</b> birleştiren doğru parçasına <b>kenarortay</b> denir.", yap: (api) => api.ucgen([[-1.5, 4], [-4.5, -2.5], [4.5, -1.5]]) },
+      { s: "Çentikler orta noktaları gösteriyor: D, E ve F kenarları ikiye böler." },
+      { s: "Üç kenarortay tek bir noktada kesişti: <b>G</b>. Buna <b>ağırlık merkezi</b> denir." },
+      { s: "Kartondan kesilmiş bir üçgen, G noktasından kalem ucunda dengede durur." },
+      { s: "Daha kolay ölçmek için üçgeni değiştirelim. İzle…", yap: (api) => api.ucgen([[0, 4], [-3, -2], [3, -2]]) },
+      { s: "Bu üçgende AD = 6 birim. G, AD'yi <b>AG = 4</b> ve <b>GD = 2</b> olarak böldü." },
+      { soru: "AG ÷ GD kaç?", secenekler: ["1", "2", "3"], dogru: 1, aciklama: "4 ÷ 2 = 2.", ipucu: "4'ü 2'ye böl." },
+      { s: "Başka bir üçgende de deneyelim…", yap: (api) => api.ucgen([[2, 4], [-4, -2], [5, -1]]) },
+      { formul: [["AG", "köşe tarafı"], ["="], ["2"], ["·"], ["GD", "kenar tarafı"]],
+        s: "Her üçgende G, kenarortayı köşeden itibaren <b>2 : 1</b> oranında böler.", oku: "A G eşittir iki çarpı G D." },
+      { soru: "Bir kenarortay 9 cm ise köşe ile G arasındaki uzaklık kaç cm?", secenekler: ["3", "4,5", "6"], dogru: 2,
+        aciklama: "9 cm, 2 + 1 = 3 eş parçaya bölünür; köşe tarafı 2 parça: 6 cm.", ipucu: "9'u 3 eş parçaya böl." },
+      { s: "Şimdi sen: varsayımını seç, farklı üçgenleri dene ve bir dik üçgende hipotenüse giden kenarortaya bak." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -365,6 +454,10 @@ const adimlar = [
       T.degisti(guncelle);
       T.birakti(() => { if (sayac.ekle([A, B, C]) >= 3) liste.isaretle(1); guncelle(); kontrol(); });
       guncelle();
+      return {
+        ucgen: (h) => hepsiniTasi([A, B, C], h),
+        sifirla() { durdurHepsi(); hepsiniKoy([A, B, C], [[-1.5, 4], [-4.5, -2.5], [4.5, -1.5]]); },
+      };
     },
   },
 
@@ -378,6 +471,21 @@ const adimlar = [
       <p>Üçgeni dar, dik ve geniş açılı yaparak O'nun yerini izle.</p>`,
     gorev: "Listedeki adımları tamamla.",
     ogretmen: "Programda farklı üçgenlerin iki kenar orta dikmesinin inşa edilmesi, üçüncünün bu kesim noktasından geçip geçmediğinin tartışılması (SDB2.2) ve kesim noktasının çevrel çemberin merkezi olduğuna dair çıkarım yapılması öneriliyor.",
+    anlat: [
+      { s: "Bir kenarın orta noktasından o kenara dik çizilen doğruya <b>kenar orta dikme</b> denir.", yap: (api) => api.sifirla() },
+      { s: "Kenar orta dikme üzerindeki her nokta, kenarın <b>iki ucuna</b> eşit uzaklıktadır." },
+      { soru: "AB'nin kenar orta dikmesi üzerindeki bir nokta neye eşit uzaklıktadır?", secenekler: ["A ve B köşelerine", "AB ve AC kenarlarına", "C köşesine ve AB'ye"], dogru: 0,
+        aciklama: "Kenar orta dikme, kenarın iki ucuna (A ve B) eşit uzaklıktaki noktaların hepsidir.", ipucu: "Dikme hangi kenarın ortasından geçiyor?" },
+      { s: "AB ve AC'nin dikmeleri <b>O</b>'da kesişti. O hem A ile B'ye, hem A ile C'ye eşit uzaklıkta." },
+      { soru: "Öyleyse O'nun B'ye ve C'ye uzaklıkları için ne söylenebilir?", secenekler: ["Eşittir", "B'ye daha yakındır", "Bilinemez"], dogru: 0,
+        aciklama: "OB = OA ve OA = OC ise OB = OC. Yani O, BC'nin kenar orta dikmesinin de üzerinde.", ipucu: "OB = OA ve OA = OC." },
+      { s: "BC'nin kenar orta dikmesini çizelim: gerçekten O'dan geçiyor.", yap: (api) => api.ucuncu(true) },
+      { s: "O merkezli, OA yarıçaplı çember üç köşeden de geçer. Buna <b>çevrel çember</b> denir.", yap: (api) => api.cember(true) },
+      { s: "Sahnenin üstündeki gösterge OA = OB = OC uzaklığını ve O'nun yerini yazıyor." },
+      { s: "Bu dar açılı üçgende O üçgenin <b>içinde</b>. Dik ya da geniş açılı üçgende ne olur?" },
+      { s: "Şimdi sen: iki varsayımını seç ve üç üçgen türünde O'nun yerini incele." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -438,6 +546,12 @@ const adimlar = [
       }
       T.degisti(guncelle);
       guncelle();
+      const ucuncuGoster = (v) => { ucuncu = v; acKapa(uBtn, v); T.yenile(); guncelle(); };
+      const cemberGoster = (v) => { cember = v; acKapa(cBtn, v); T.yenile(); };
+      return {
+        ucuncu: ucuncuGoster, cember: cemberGoster,
+        sifirla() { durdurHepsi(); ucuncuGoster(false); cemberGoster(false); hepsiniKoy([A, B, C], [[-1, 3.5], [-4, -2.5], [4, -2]]); },
+      };
     },
   },
 
@@ -451,6 +565,20 @@ const adimlar = [
       <p>Üç üçgen türünü de dene, sonra gözlemlerini önerme olarak yaz.</p>`,
     gorev: "Üç üçgen türünü de incele ve önermeleri tamamla.",
     ogretmen: "Programda öğrencilerin “Dar açılı üçgenlerde yükseklikler üçgenin içinde, geniş açılı üçgenlerde dışında, dik açılı üçgenlerde dik açılı köşede kesişir.” gibi sonuçlara ulaşması bekleniyor. Grupların farklı yardımcı elemanlarla afiş ya da dijital sunum hazırlaması performans görevi olarak verilebilir.",
+    anlat: [
+      { s: "Bir köşeden karşı kenara (ya da uzantısına) indirilen dikmeye <b>yükseklik</b> denir.", yap: (api) => api.ucgen([[-1, 3.5], [-4, -2.5], [4, -2]]) },
+      { soru: "Bir üçgenin kaç yüksekliği vardır?", secenekler: ["1", "2", "3"], dogru: 2,
+        aciklama: "Her köşeden bir tane: üç yükseklik.", ipucu: "Her köşeden bir dikme inebilir." },
+      { s: "Köşelerdeki küçük kareler dik açıyı gösteriyor. Bu dar açılı üçgende üç yükseklik de içeride." },
+      { s: "Üç yükseklik tek bir noktada kesişti: <b>H</b>. Buna <b>diklik merkezi</b> denir." },
+      { s: "Şimdi A köşesini sola çekip B'deki açıyı geniş yapalım. İzle…", yap: (api) => api.ucgen([[-5, 3], [-3, -2], [4, -2]]) },
+      { s: "Kesikli gri çizgilere bak: bazı yüksekliklerin ayağı kenara değil, kenarın <b>uzantısına</b> düştü." },
+      { soru: "Neden kenarın uzantısını kullandık?", secenekler: ["Dikmenin ayağı kenarın dışına düştüğü için", "Çizim hatası olduğu için", "Yükseklik hep uzantıda olduğu için"], dogru: 0,
+        aciklama: "Geniş açının yanındaki köşelerden inen dikmeler kenarın dışına düşer; kenarı uzatırız.", ipucu: "Dik açı işareti nerede?" },
+      { s: "H'nin yeri üçgenin türüne göre değişiyor. Sahnenin üstündeki gösterge H'nin yerini yazıyor." },
+      { s: "Şimdi sen: dar, dik ve geniş açılı üçgen kur, sonra önermeleri tamamla." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -500,110 +628,15 @@ const adimlar = [
       }
       T.degisti(guncelle);
       guncelle();
+      return {
+        ucgen: (h) => hepsiniTasi([A, B, C], h),
+        sifirla() { durdurHepsi(); hepsiniKoy([A, B, C], [[-1, 3.5], [-4, -2.5], [4, -2]]); },
+      };
     },
   },
 
   /* 7 ------------------------------------------------------------------ */
-  {
-    baslik: "Hangi merkez? Gerçek yaşam problemleri",
-    cikti: "MAT.10.1.2-d",
-    anlatim: `
-      <p>Üçgenin dört özel noktası, gerçek hayatta farklı sorulara cevap verir. Her problemde önce <b>hangi noktanın</b> aranan yer olduğuna karar ver.</p>
-      <p>Doğru seçince inşa çizgileri belirir. Sonra <b>P</b>'yi sürükleyip tam yerine yerleştir. Göstergeler yardımcı olur.</p>`,
-    gorev: "Üç problemin hepsini çöz.",
-    ogretmen: "Programda yardımcı elemanlarla ilgili önermelerin farklı problem durumlarında kullanılarak değerlendirilmesi öneriliyor. Problemleri sınıfta önce tartıştırın: “köşelere eşit uzaklık” ile “kenarlara eşit uzaklık” arasındaki farkı vurgulayın. Su deposu problemi geniş açılı yerleşimlerde deponun üçgenin dışına düşebileceğini tartışmak için de kullanılabilir.",
-    kur(ctx) {
-      const T = ctx.sahne;
-      T.sifirla();
-      T.goster({ alan: { xmin: -6, xmax: 6, ymin: -3.6, ymax: 5.2 }, izgara: 0 });
-      const cozulen = new Set();
-      let s = SENARYOLAR[0], secim = null, insa = false;
-      const P = T.nokta("P", { x: -1.5, y: -1, renk: RENK.yesil, etiket: "P", kisit: (q) => q });
-      const RNK = ["#d8b46a", "#7fb0d8", "#c98fd8"];
-      T.ciz((c) => {
-        const [A, B, C] = s.koseler;
-        if (s.ad === "depo") {
-          { const g = T.gorunur(), m = 4; c.cokgen([{ x: g.xmin - m, y: g.ymin - m }, { x: g.xmax + m, y: g.ymin - m }, { x: g.xmax + m, y: g.ymax + m }, { x: g.xmin - m, y: g.ymax + m }], { dolgu: "rgba(90,140,80,.12)", renk: null }); }
-          for (const [p, q] of [[A, B], [B, C], [C, A]]) c.parca(p, q, { renk: "rgba(216,180,106,.45)", kalinlik: 5 });
-        } else if (s.ad === "cesme") {
-          c.cokgen([A, B, C], { dolgu: "rgba(90,180,100,.22)", renk: null });
-          for (const [p, q] of [[A, B], [B, C], [C, A]]) { c.parca(p, q, { renk: "#4a5468", kalinlik: 16 }); c.parca(p, q, { renk: "rgba(255,255,255,.6)", kalinlik: 1.5, kesikli: "8 8" }); }
-          for (const [x, y] of [[-2.5, -1.2], [1.5, -1.6], [-1.6, 1.6], [0.3, -0.5]]) c.cember({ x, y }, 0.28, { dolgu: "rgba(60,140,70,.8)", renk: "#2f6b3a", kalinlik: 1 });
-        } else {
-          c.cokgen([A, B, C], { dolgu: "rgba(170,182,200,.55)", renk: "#cfd8e6", kalinlik: 3 });
-        }
-        if (insa) {
-          const k = [A, B, C];
-          if (s.dogru === "cevrel") for (const [p, q] of [[A, B], [B, C], [C, A]]) { const M = ortaNokta(p, q); c.dogru(M, topla(M, dik(fark(q, p))), { renk: RENK.sari, kesikli: "8 5", kalinlik: 1.6 }); }
-          if (s.dogru === "ic") k.forEach((V, i) => c.parca(V, icAciortayAyagi(V, k[(i + 1) % 3], k[(i + 2) % 3]), { renk: RENK.sari, kesikli: "8 5", kalinlik: 1.6 }));
-          if (s.dogru === "agirlik") k.forEach((V, i) => c.parca(V, ortaNokta(k[(i + 1) % 3], k[(i + 2) % 3]), { renk: RENK.sari, kesikli: "8 5", kalinlik: 1.6 }));
-        }
-        if (s.ad === "depo") {
-          s.koseler.forEach((K, i) => {
-            c.cokgen([{ x: K.x - 0.35, y: K.y - 0.3 }, { x: K.x + 0.35, y: K.y - 0.3 }, { x: K.x + 0.35, y: K.y + 0.15 }, { x: K.x, y: K.y + 0.45 }, { x: K.x - 0.35, y: K.y + 0.15 }], { dolgu: RNK[i], renk: "#1a2333", kalinlik: 1.5 });
-            c.yazi(K, s.adlar[i], { dy: K.y > 2 ? -30 : 28, kalin: true, boyut: 15, renk: RNK[i] });
-          });
-          for (const K of s.koseler) c.parca(P, K, { renk: RENK.yesil, kesikli: "3 5", kalinlik: 1.4 });
-        }
-        if (s.ad === "cesme") for (const [p, q] of [[A, B], [B, C], [C, A]]) c.parca(P, dikmeAyagi(P, p, q), { renk: RENK.yesil, kesikli: "3 5", kalinlik: 1.4 });
-        if (s.ad === "levha") c.parca(P, { x: P.x, y: P.y - 0.9 }, { renk: "#6b7486", kalinlik: 6 });
-      });
-      ctx.secenekler({
-        etiket: "Problem", deger: 0,
-        liste: SENARYOLAR.map((x, i) => ({ deger: i, metin: x.baslik })),
-        degisti: (i) => { s = SENARYOLAR[i]; secim = null; insa = false; merkezSec.deger = null; P.ayarla(-1.5, -1, true); yaz(); },
-      });
-      const metin = ctx.not("");
-      const merkezSec = ctx.secenekler({
-        etiket: "Aranan yer hangi nokta?", deger: null,
-        liste: Object.entries(MERKEZLER).map(([k, m]) => ({ deger: k, metin: `${m.ad} (${m.eleman})` })),
-        degisti: (v) => {
-          secim = v;
-          insa = v === s.dogru;
-          geri.className = `d-geri-bildirim ${insa ? "dogru" : "yanlis"}`;
-          geri.textContent = insa ? `Doğru seçim! Sarı ${MERKEZLER[v].eleman} çizildi. Şimdi P'yi kesişim noktasına taşı.` : s.yanlis[v];
-          T.yenile(); kontrol();
-        },
-      });
-      const geri = el("div", { class: "d-geri-bildirim" });
-      ctx.kontroller.append(geri);
-      const f = formulListesi(ctx, ["", "", ""]);
-      const durum = ctx.not("");
-      function yaz() {
-        metin.innerHTML = `<p>${s.metin}</p>`;
-        geri.textContent = cozulen.has(s.ad) ? "Bu problemi çözdün ✓" : "";
-        geri.className = `d-geri-bildirim ${cozulen.has(s.ad) ? "dogru" : ""}`;
-        const etiketler = s.ad === "depo" ? s.adlar.map((a) => `P – ${a}`) : s.ad === "cesme" ? ["P – 1. yol", "P – 2. yol", "P – 3. yol"] : ["Denge noktasından sapma", "", ""];
-        const degerler = f.el.querySelectorAll(".mt-deger");
-        f.el.querySelectorAll("span:not(.mt-deger)").forEach((sp, i) => {
-          sp.textContent = etiketler[i];
-          sp.hidden = degerler[i].hidden = !etiketler[i];
-        });
-        T.yenile(); olc();
-      }
-      function olc() {
-        const [A, B, C] = s.koseler;
-        if (s.ad === "depo") [A, B, C].forEach((K, i) => f.ayarla(i, `${kisa(uzaklik(P, K), 2)} km`));
-        else if (s.ad === "cesme") [[A, B], [B, C], [C, A]].forEach(([p, q], i) => f.ayarla(i, `${kisa(dogruyaUzaklik(P, p, q) * 10, 1)} m`));
-        else { const d = uzaklik(P, agirlikMerkezi(A, B, C)); f.ayarla(0, d < HEDEF_TOLERANS ? "dengede ✓" : `levha eğiliyor (${kisa(d * 10, 0)} cm)`); f.ayarla(1, ""); f.ayarla(2, ""); }
-        durum.innerHTML = `<p>Çözülen problem: ${cozulen.size}/3</p>`;
-      }
-      function kontrol() {
-        const hedef = senaryoHedefi(s);
-        if (secim === s.dogru && uzaklik(P, hedef) < HEDEF_TOLERANS && !cozulen.has(s.ad)) {
-          cozulen.add(s.ad);
-          P.ayarla(hedef.x, hedef.y, true);
-          geri.className = "d-geri-bildirim dogru";
-          geri.textContent = `Çözdün! ${MERKEZLER[s.dogru].ad} tam aranan yer.`;
-          olc();
-          if (cozulen.size === 3) ctx.gorevTamam();
-        }
-      }
-      T.degisti(() => olc());
-      T.birakti(() => kontrol());
-      yaz();
-    },
-  },
+  merkezAdimi,
 
   /* 8 ------------------------------------------------------------------ */
   {
@@ -613,6 +646,15 @@ const adimlar = [
       <p>En az <b>6 doğru</b> yaparsan dersi tamamlamış olursun.</p>`,
     gorev: "Değerlendirmede en az <b>6/8</b> doğru yap.",
     ogretmen: "Sorular programdaki öğrenme kanıtlarıyla (performans görevi, akran ve grup değerlendirme) uyumludur. Çeldiriciler “köşeye/kenara eşit uzaklık” karışıklığını ve oranın ters kurulmasını hedefler.",
+    anlat: [
+      { s: "Başlamadan önce dört özel noktayı hatırlayalım." },
+      { s: "İç açıortaylar <b>I</b>'da kesişir: üç <b>kenara</b> eşit uzaklık. Kenar orta dikmeler <b>O</b>'da: üç <b>köşeye</b> eşit uzaklık." },
+      { s: "Kenarortaylar <b>G</b>'de kesişir ve 2 : 1 bölünür. Yükseklikler <b>H</b>'de kesişir." },
+      { soru: "Dik üçgende hipotenüsün orta noktası hangi özel noktadır?", secenekler: ["Ağırlık merkezi", "Çevrel çemberin merkezi", "Diklik merkezi"], dogru: 1,
+        aciklama: "Üç köşeye eşit uzaklıktadır: çevrel çemberin merkezi O.", ipucu: "Hipotenüsün ortası köşelere eşit uzaklıkta mı?" },
+      { s: "Açıortay oranları: <b>BD / DC = AB / AC</b>, dış açıortayda <b>EB / EC = AB / AC</b>." },
+      { s: "Hazırsan başla. Her sorudan sonra açıklamayı okumayı unutma." },
+    ],
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -672,4 +714,4 @@ const adimlar = [
   },
 ];
 
-dersBaslat({ adimlar, sahneKur: tahtaKur });
+dersBaslat({ adimlar: anlatimliAdimlar(adimlar), sahneKur: tahtaKur });

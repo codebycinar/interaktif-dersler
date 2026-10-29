@@ -1,5 +1,5 @@
 // Derse özel duman senaryosu: noktaları gerçekten sürükleyip, teodolitle ölçüp görevleri tamamlar
-import { surukle, dugme, cevapla, gorevTamamMi, sinaviCoz, mobilGoruntuler } from "../ortak/duman-yardim.mjs";
+import { surukle, dunyaSurukle, dugme, cevapla, gorevTamamMi, sinaviCoz, mobilGoruntuler, anlatimDenetle } from "../ortak/duman-yardim.mjs";
 import { BOGAZ, tabanAcisi, acHesapla, cdHesapla, gercekUzaklik } from "./model.js";
 
 const hudOku = (page) => page.evaluate(() => [...document.querySelectorAll(".d-etiket-hud .d-gosterge b")].map((b) => b.textContent));
@@ -62,6 +62,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
 
   // 4. adım: sinüslü alan ve önermeler
   await adimaGit(3);
+  await anlatimDenetle(page, { bekle, kontrol, ekranGoruntusu }, "c4", 7);
   await surukle(page, "C", 0, 5);
   await surukle(page, "C", -3, 4);
   const f4 = await formuller(page);
@@ -77,7 +78,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
   await adimaGit(4);
   await dugme(page, "AB'yi çiz");
   await dugme(page, "M'den AB'ye paralel");
-  await surukle(page, "N", 7.5, 0);
+  await dunyaSurukle(page, "N", (7.5 - 6) * 10, 40);
   const t5 = await hudOku(page);
   kontrol(t5[0] === t5[1] && t5[2] === "%0", `5. adım: parsel alanı korunuyor (${t5.join(" / ")})`);
   const birim = await cevapla(page, 3.5);
@@ -88,6 +89,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
 
   // 6. adım: sinüs teoremi
   await adimaGit(5);
+  await anlatimDenetle(page, { bekle, kontrol, ekranGoruntusu }, "c6", 7);
   await dugme(page, "Her üçgende eşittir");
   await surukle(page, "A", 1, 4);
   await surukle(page, "B", -5, -1);
@@ -124,8 +126,9 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
 
   // 8. adım: Boğaz — teodolit ölçümleri
   await adimaGit(7);
+  await anlatimDenetle(page, { bekle, kontrol, ekranGoruntusu }, "c8", 3);
   await bekle(600);
-  const tuval = await page.evaluate(() => !!document.querySelector(".d-katman canvas.d-3b"));
+  const tuval = await page.evaluate(() => !!document.querySelector(".mt-dunya canvas.d-3b"));
   kontrol(tuval, "8. adım: 3B sahne kuruldu");
   const yuvarla = (v) => Math.round(v * 20) / 20;
   await kaydir(page, yuvarla(tabanAcisi("A", "C")) + 0.1);

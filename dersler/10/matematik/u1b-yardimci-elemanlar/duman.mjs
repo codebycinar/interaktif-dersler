@@ -1,5 +1,5 @@
 // Derse özel duman senaryosu: köşeleri gerçekten sürükleyip görevleri tamamlar
-import { surukle, dugme, cevapla, gorevTamamMi, sinaviCoz, mobilGoruntuler } from "../ortak/duman-yardim.mjs";
+import { surukle, dunyaSurukle, kameraDursun, dugme, cevapla, gorevTamamMi, sinaviCoz, mobilGoruntuler, anlatimDenetle } from "../ortak/duman-yardim.mjs";
 import { SENARYOLAR, senaryoHedefi } from "./model.js";
 
 const formul = (page, i) => page.evaluate((n) => document.querySelectorAll(".d-panel .mt-formuller .mt-deger")[n]?.textContent, i);
@@ -8,6 +8,7 @@ const hudOku = (page) => page.evaluate(() => [...document.querySelectorAll(".d-e
 export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
   // 1. adım: iç açıortay teoremi
   await adimaGit(0);
+  await anlatimDenetle(page, { bekle, kontrol, ekranGoruntusu }, "b1", 3);
   await dugme(page, "AB ÷ AC");
   await surukle(page, "A", 1, 4);
   const [o1, o2] = [await formul(page, 0), await formul(page, 1)];
@@ -20,6 +21,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
 
   // 2. adım: açıortaylar ve iç teğet çember
   await adimaGit(1);
+  await anlatimDenetle(page, { bekle, kontrol, ekranGoruntusu }, "b2", 7);
   await dugme(page, "Her üçgende tek noktada");
   await dugme(page, "B'nin açıortayı");
   await dugme(page, "C'nin açıortayı");
@@ -92,6 +94,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
 
   // 7. adım: üç gerçek yaşam problemi
   await adimaGit(6);
+  await anlatimDenetle(page, { bekle, kontrol, ekranGoruntusu }, "b7", 3);
   await dugme(page, "Ağırlık merkezi");
   const uyari = await page.evaluate(() => document.querySelector(".d-panel .d-geri-bildirim.yanlis")?.textContent || "");
   kontrol(uyari.includes("eşit uzaklıkta"), "7. adım: yanlış merkez seçimine açıklama");
@@ -100,10 +103,11 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
     const etiket = { cevrel: "Çevrel çemberin merkezi", ic: "İç teğet çemberin merkezi", agirlik: "Ağırlık merkezi" }[s.dogru];
     await dugme(page, etiket);
     const h = senaryoHedefi(s);
-    await surukle(page, "P", h.x + 0.05, h.y - 0.05);
-    if (s.ad === "depo") await ekranGoruntusu("b7-depo");
+    await kameraDursun(page);
+    const w = await page.evaluate((x, y) => document.querySelector(".mt-dunya").__dunyada(x, y), h.x + 0.05, h.y - 0.05);
+    await dunyaSurukle(page, s.ad, w.x, w.z);
+    await ekranGoruntusu(`b7-${s.ad}`);
   }
-  await ekranGoruntusu("b7-levha");
   const cozulen = await page.evaluate(() => document.querySelector(".d-panel").textContent.match(/Çözülen problem: (\d)\/3/)?.[1]);
   kontrol(cozulen === "3", `7. adım: üç problem çözüldü (${cozulen}/3)`);
   kontrol(await gorevTamamMi(page), "7. adım: görev tamamlanıyor");

@@ -26,6 +26,10 @@ export function dunyaAc(ctx, ayar = {}) {
     return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height };
   };
   kap.__ekran = ekran;
+  // kamera geçişi sürerken duman testleri beklesin
+  kap.__gecis = 0;
+  const git = S.kameraGit;
+  S.kameraGit = (o) => { kap.__gecis++; return git(o).finally(() => { kap.__gecis--; }); };
   kap.__tutamak = (ad) => { const t = tutamaklar[ad]; t.nesne.getWorldPosition(v); return ekran(v.x, v.y, v.z); };
 
   /* Sürükleme: tutamağa basılınca yörünge kontrolü durur, nokta y yüksekliğindeki yatay düzlemde gezer */
@@ -105,13 +109,29 @@ export function dunyaAc(ctx, ayar = {}) {
   };
 }
 
-/** Sahnenin üstünde yüzen küçük çizim/hesap paneli (sol alt). İçine sekilCiz ile çizim yapılır. */
-export function yuzenPanel(ctx, baslik) {
+/** Sahnenin üstünde yüzen küçük çizim/hesap paneli (konum: "sol-alt" | "sag-ust" | "sag-alt"). İçine sekilCiz ile çizim yapılır. */
+export function yuzenPanel(ctx, baslik, { konum = "sol-alt" } = {}) {
   stilEkle();
   const govde = el("div", { class: "mt-yuzen-govde" });
-  const kap = el("div", { class: "mt-yuzen" }, baslik ? el("div", { class: "mt-yuzen-baslik" }, baslik) : null, govde);
+  const kap = el("div", { class: `mt-yuzen ${konum}` }, baslik ? el("div", { class: "mt-yuzen-baslik" }, baslik) : null, govde);
   ctx.katman.append(kap);
   return govde;
+}
+
+/** Küçük nesneleri kolay tutmak için görünmez, geniş dokunma alanı (tutamak alanı olarak verilir) */
+export function dokunmaAlani(yaricap = 2, boy = 4) {
+  const m = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
+  const c = new THREE.Mesh(new THREE.CylinderGeometry(yaricap, yaricap, boy, 12), m);
+  c.position.y = boy / 2;
+  return c;
+}
+
+/** Sürüklenebilir nesnenin altındaki parlak halka */
+export function halka(yaricap = 1.2, renk = 0xffb547) {
+  const h = new THREE.Mesh(new THREE.RingGeometry(yaricap * 0.78, yaricap, 40), malzeme.isik(renk, 1.1));
+  h.rotation.x = -Math.PI / 2;
+  h.position.y = 0.04;
+  return h;
 }
 
 /* ---------------- Doğal yapı parçaları ---------------- */

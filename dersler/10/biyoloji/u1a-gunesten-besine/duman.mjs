@@ -5,7 +5,8 @@ import { gorevTamamMi, gorevBekle, kaydir, dugme, yerlestir, sinaviCoz, telefon 
 const igneler = (page) => page.evaluate(() => [...document.querySelectorAll(".d-igne")].filter((e) => e.style.display !== "none").map((e) => e.textContent));
 const igneVar = async (page, metin) => (await igneler(page)).some((t) => t.includes(metin));
 const metin = (page, secici) => page.evaluate((s) => document.querySelector(s)?.textContent || "", secici);
-const perdeAcik = (page) => page.evaluate(() => parseFloat(getComputedStyle(document.querySelector(".bio-perde")).opacity) < 0.05);
+// karartmalı geçiş yavaş makinede (CI) uzayabilir: 10 sn'ye kadar açılmasını bekle
+const perdeAcik = (page) => page.waitForFunction(() => parseFloat(getComputedStyle(document.querySelector(".bio-perde")).opacity) < 0.05, { timeout: 10000 }).then(() => true, () => false);
 
 export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
   // anlatım kareleri bitince kamera istasyon görünümüne döner; iğneler yerine otursun

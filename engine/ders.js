@@ -259,6 +259,8 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
   });
 
   function baglamOlustur(i, kontroller) {
+    // Anlatım kareleri oynarken (ve anlatBitti sıfırlarken) yapılan gösterim görevi tamamlamaz
+    let gosterim = false;
     const ctx = {
       meta: META,
       sahne: sahneApi,
@@ -268,12 +270,16 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
       /** Adım değişince çalışacak temizlik fonksiyonu */
       temizlik(fn) { temizlikler.push(fn); },
       gorevTamam() {
+        if (gosterim) return;
         if (!depo.tamam.includes(i)) { depo.tamam.push(i); depoYaz(depo); }
         gorevKutusu?.classList.add("tamam");
         gorevKutusu?.classList.remove("onceden");
         ilerlemeGuncelle();
       },
       gorevTamamMi: () => depo.tamam.includes(i),
+      /** Adım adım anlatım şu an oynuyor mu (gösterim görev saymaz) */
+      gosteriyor: () => gosterim,
+      _gosterim(v) { gosterim = v; },
       kaydirici(o) { const k = kaydirici(o); kontroller.append(k.el); return k; },
       dugmeler(liste) {
         const satir = el("div", { class: "d-satir" });
@@ -445,9 +451,12 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
       const izlendi = depo.anlatildi.includes(i);
       aktifAkis = anlatimAkisi({
         kareler: a.anlat, api, ctx: sonCtx, ses, ozetHtml: a.anlatim,
+        // ↺ Baştan dahil: anlatım oynarken alıştırma gizli, gösterim görev saymaz
+        basladi: () => { uygulamaBlok.hidden = true; sonCtx._gosterim(true); },
         bitince: () => {
           // Adım, anlatımdaki gösterimin bıraktığı durumu alıştırma için sıfırlayabilir
           try { a.anlatBitti?.(api, sonCtx); } catch (e) { console.error(e); }
+          sonCtx._gosterim(false);
           uygulamaBlok.hidden = false;
           if (!depo.anlatildi.includes(i)) { depo.anlatildi.push(i); depoYaz(depo); }
           requestAnimationFrame(() => uygulamaBlok.scrollIntoView({ block: "start", behavior: "smooth" }));
@@ -455,7 +464,7 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
       });
       anlatimKap.replaceWith(aktifAkis.el);
       if (izlendi) aktifAkis.izlendi();
-      else { uygulamaBlok.hidden = true; aktifAkis.baslat(); }
+      else aktifAkis.baslat();
     }
     ilerlemeGuncelle();
   }

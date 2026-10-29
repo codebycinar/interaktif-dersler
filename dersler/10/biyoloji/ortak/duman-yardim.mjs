@@ -5,12 +5,15 @@ export const kaydir = (page, sira, deger) => page.evaluate((i, v) => {
   const r = document.querySelectorAll(".d-panel input[type=range]")[i];
   r.value = v; r.dispatchEvent(new Event("input"));
 }, sira, deger);
-/** Metni içeren ilk düğmeye tıklar */
-export const dugme = (page, metin, kok = ".d-uygulama") => page.evaluate((m, k) => {
-  const b = [...document.querySelectorAll(`${k} button`)].find((x) => x.textContent.includes(m) && !x.disabled);
-  if (!b) throw new Error(`Düğme yok: ${m}`);
-  b.click();
-}, metin, kok);
+/** Metni içeren ilk etkin düğmeye tıklar; yavaş makinede (CI) düğme belirene ya da etkinleşene kadar 15 sn bekler */
+export const dugme = async (page, metin, kok = ".d-uygulama") => {
+  const tiklandi = await page.waitForFunction((m, k) => {
+    const b = [...document.querySelectorAll(`${k} button`)].find((x) => x.textContent.includes(m) && !x.disabled);
+    b?.click();
+    return !!b;
+  }, { timeout: 15000 }, metin, kok).then(() => true, () => false);
+  if (!tiklandi) throw new Error(`Düğme yok: ${metin}`);
+};
 /** Sınıflandırma: [kart metninin başı, kutu adı] çiftlerini yerleştirip “Kontrol et”e basar */
 export const yerlestir = (page, ciftler) => page.evaluate((c) => {
   for (const [metin, kutu] of c) {

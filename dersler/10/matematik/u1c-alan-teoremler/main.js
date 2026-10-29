@@ -7,8 +7,10 @@ import {
   uzaklik, fark, topla, olcekle, birimVektor, dikmeAyagi, parametre, kenarlar, acilar, alan, cevrelCember, agirlikMerkezi,
   alanFormulleri, ucgenTuru, radyan,
 } from "../ortak/geometri.js";
-import { IZGARA, yapistir, sinirla, ortakOlmayan, bolmeCizgileri, TARLA, solParselKirik, solParselDuz, paralelN } from "./model.js";
+import { IZGARA, yapistir, sinirla, ortakOlmayan, bolmeCizgileri } from "./model.js";
 import { bogazAdimi } from "./bogaz.js";
+import { tarlaAdimi } from "./tarla3b.js";
+import { anlatimliAdimlar, kaydir, hepsiniTasi, hepsiniKoy, gecis, durdurHepsi } from "../ortak/anlat.js";
 
 const ALAN = { alan: { xmin: -6.2, xmax: 6.2, ymin: -3.4, ymax: 5.2 }, izgara: 1 };
 const TUR_ADI = { dar: "dar açılı", dik: "dik açılı", genis: "geniş açılı" };
@@ -50,6 +52,21 @@ const adimlar = [
       <p>İki deney yapacağız. Her deneyden önce bir <b>varsayımda</b> bulun, sonra noktayı sürükleyip ölçümleri grafikte izle.</p>`,
     gorev: "İki varsayımı seç ve her deneyde <b>en az 4 farklı ölçüm</b> al.",
     ogretmen: "Programda matematik yazılımıyla bir kenar sabit tutulup yüksekliğin, ya da yükseklik sabit tutulup kenarın değiştirilmesiyle alandaki değişime dair varsayımda bulunulması öneriliyor (MAB5). Varsayımları ölçümden önce tahtaya yazdırın; grafik çizildikten sonra sınıfla karşılaştırın.",
+    anlat: [
+      { s: "Bir üçgen düşün: tabanı <b>a = 6</b>, tepe noktası A tabandan <b>h = 4</b> birim yukarıda.", yap: (api) => api.sifirla() },
+      { s: "Bu üçgen, kenarları 6 ve 4 olan bir dikdörtgenin tam <b>yarısı</b> kadardır: 24 ÷ 2 = <b>12</b>." },
+      { formul: [["Alan"], ["="], ["½"], ["·"], ["a", "taban"], ["·"], ["h", "yükseklik"]],
+        s: "Bu yüzden üçgenin alanı ½ · a · h.", oku: "Alan eşittir yarım çarpı taban çarpı yükseklik." },
+      { s: "Tabanı sabit tutalım ve yüksekliği <b>h = 3</b> yapalım. Alan: ½ · 6 · 3 = <b>9</b>.", yap: (api) => { api.mod("h"); api.a(3); } },
+      { s: "Şimdi A'yı yukarı çekip yüksekliği <b>iki katına</b>, h = 6'ya çıkaralım. İzle…", yap: (api) => api.a(6) },
+      { soru: "h = 6 iken alan kaç?", secenekler: ["12", "18", "36"], dogru: 1,
+        aciklama: "½ · 6 · 6 = 18. Yükseklik 2 katı oldu, alan da 9'dan 18'e, yani 2 katına çıktı.", ipucu: "½ · 6 · 6 işlemini yap." },
+      { s: "Taban sabitken alan, yükseklikle <b>doğru orantılıdır</b>: biri kaç katına çıkarsa öbürü de o kadar." },
+      { soru: "Tahmin et: yükseklik sabitken taban 3 katına çıkarsa alan ne olur?", secenekler: ["Değişmez", "3 katına çıkar", "9 katına çıkar"], dogru: 1,
+        aciklama: "½ · a · h içinde yalnızca a değişti: alan da 3 katına çıkar.", ipucu: "Formülde h sabit kalınca geriye ne değişiyor?" },
+      { s: "Şimdi sen: iki varsayımını seç, iki deneyi yap ve ölçümlerin grafikte nasıl dizildiğine bak." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -121,6 +138,13 @@ const adimlar = [
       T.degisti(guncelle);
       T.birakti(kaydet);
       guncelle();
+      // anlatım: deney seçilmiş gibi gösterir ama ölçüm kaydetmez
+      const modGoster = (m) => { mod = m; acKapa(d1, m === "h"); acKapa(d2, m === "a"); T.yenile(); guncelle(); };
+      return {
+        mod: modGoster,
+        a: (y) => kaydir(A, A.x, y),
+        sifirla() { durdurHepsi(); modGoster(null); zorla = true; A.ayarla(2, 4); C.ayarla(6, 0); zorla = false; T.yenile(); },
+      };
     },
   },
 
@@ -133,6 +157,22 @@ const adimlar = [
       <p>ABC ve DBC üçgenlerinin tabanı ortak. Tepe noktası d₂ boyunca kayarken alan değişir mi? Varsayımını seç ve farklı konumlarda dene.</p>`,
     gorev: "Varsayımını seç, A'yı farklı yerlere taşı, ortak olmayan bölgeleri incele ve problemi çöz.",
     ogretmen: "Programda paralel doğrular arasında ortak tabanlı iki üçgenin alanlarının ve ortak olmayan bölgelerinin alanlarının eşit olduğuna ulaşılması bekleniyor. Öğrencilere “yükseklik nedir, burada neden değişmiyor?” sorusunu sorun; yamuk problemi bu genellemenin yeni bir duruma aktarılmasıdır.",
+    anlat: [
+      { s: "İki paralel doğru çizdik: <b>d₁ ∥ d₂</b>. Aralarındaki uzaklık her yerde 4 birim.", yap: (api) => api.sifirla() },
+      { s: "BC tabanı d₁ üzerinde, uzunluğu 6. Turuncu üçgenin tepesi <b>A</b>, d₂ üzerinde." },
+      { soru: "ABC üçgeninin A'dan inen yüksekliği kaçtır?", secenekler: ["4", "6", "AB kadar"], dogru: 0,
+        aciklama: "Yükseklik, A'nın d₁'e uzaklığıdır: iki paralel arasındaki uzaklık, yani 4.", ipucu: "Kesikli dik çizgiye bak." },
+      { s: "Öyleyse Alan(ABC) = ½ · 6 · 4 = <b>12</b>." },
+      { s: "A'yı d₂ boyunca sağa kaydıralım. İzle…", yap: (api) => api.a(5) },
+      { soru: "Üçgen eğildi. Alanı ne oldu?", secenekler: ["Küçüldü", "Büyüdü", "Değişmedi, hâlâ 12"], dogru: 2,
+        aciklama: "Taban yine 6, yükseklik yine 4: alan yine 12. Göstergeye de bak.", ipucu: "Taban ve yükseklik değişti mi?" },
+      { s: "Mavi DBC üçgeninin de tabanı BC, tepesi d₂ üzerinde. Onun alanı da <b>12</b>." },
+      { s: "İki üçgen üst üste biniyor. Ortak parçayı çıkarınca kalan bölgelere bakalım.", yap: (api) => { api.a(-4.5); api.bolge(true); } },
+      { soru: "Pembe ve yeşil bölgelerin alanları için ne söylenebilir?", secenekler: ["Eşittir", "Pembe daha büyük", "Yeşil daha büyük"], dogru: 0,
+        aciklama: "İki 12'den aynı ortak parçayı (KBC) çıkardık; kalanlar eşit.", ipucu: "Eşit iki sayıdan aynı sayıyı çıkarırsan?" },
+      { s: "Şimdi sen: varsayımını seç, A'yı farklı yerlere taşı ve yamuk problemini çöz." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -205,6 +245,12 @@ const adimlar = [
         kontrol();
       });
       guncelle();
+      const bolgeGoster = (v) => { bolge = v; acKapa(bBtn, v); T.yenile(); guncelle(); };
+      return {
+        a: (x) => kaydir(A, x, Y),
+        bolge: bolgeGoster,
+        sifirla() { durdurHepsi(); bolgeGoster(false); A.ayarla(-4.5, Y); },
+      };
     },
   },
 
@@ -217,6 +263,21 @@ const adimlar = [
       <p>Kenarlar k katına çıkınca alan kaç katına çıkar? Önce varsayımını seç, sonra k'yi değiştirip <b>genellemeni varsayımınla karşılaştır</b>.</p>`,
     gorev: "Varsayımını seç; k = 2, k = 3 ve tam sayı olmayan bir k dene; sonra problemi çöz.",
     ogretmen: "Programda benzer üçgenlerin alanları oranının benzerlik oranının karesine eşit olduğuna ulaşılması bekleniyor. Tam sayı k için büyük üçgenin k² eş küçük üçgene bölünmesi görsel bir gerekçedir; tam sayı olmayan k için ½·(ka)·(kh) = k²·½·a·h hesabını tahtada yapın.",
+    anlat: [
+      { s: "Soldaki küçük turuncu üçgenin alanına <b>S₁</b> diyelim.", yap: (api) => api.k(1) },
+      { s: "Her kenarını <b>2 katına</b> çıkaralım: benzerlik oranı k = 2. İzle…", yap: (api) => api.k(2) },
+      { s: "Büyük üçgenin içine sarı çizgilerle küçük üçgenin kopyalarını yerleştirdik." },
+      { soru: "Büyük üçgende kaç tane eş küçük üçgen var?", secenekler: ["2", "4", "8"], dogru: 1,
+        aciklama: "4 tane: kenarlar 2 katı olunca alan 4 katı oldu, 2 katı değil!", ipucu: "Sarı çizgilerin ayırdığı üçgenleri say." },
+      { s: "Neden 4? Hem taban hem yükseklik 2 katına çıktı: 2 · 2 = <b>4</b>." },
+      { formul: [["S₂", "büyük alan"], ["/"], ["S₁", "küçük alan"], ["="], ["k²", "oranın karesi"]],
+        s: "Benzerlik oranı k ise alanlar oranı <b>k²</b>.", oku: "S iki bölü S bir eşittir k kare." },
+      { s: "Tam sayı olmayan oranda da aynı: k = 1,5 iken alan 1,5 · 1,5 = <b>2,25</b> katı olur.", yap: (api) => api.k(1.5) },
+      { soru: "Kenarlar 4 katına çıkarsa alan kaç katına çıkar?", secenekler: ["4", "8", "16"], dogru: 2,
+        aciklama: "4² = 16.", ipucu: "k²'yi hesapla." },
+      { s: "Şimdi sen: varsayımını seç ve kaydırıcıyla k'yi değiştirerek dene." },
+    ],
+    anlatBitti: (api) => api.k(1),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -242,7 +303,7 @@ const adimlar = [
         liste: [{ deger: 3, metin: "3" }, { deger: 6, metin: "6" }, { deger: 9, metin: "9" }, { deger: 27, metin: "27" }],
         degisti: (v) => { iddia = v; liste.isaretle(0); kontrol(); },
       });
-      ctx.kaydirici({ etiket: "Benzerlik oranı k", min: 1, max: 4, adim: 0.5, deger: 1, degisti: (v) => { k = v; denenen.add(v); T.yenile(); guncelle(); kontrol(); } });
+      const kay = ctx.kaydirici({ etiket: "Benzerlik oranı k", min: 1, max: 4, adim: 0.5, deger: 1, degisti: (v) => { k = v; denenen.add(v); T.yenile(); guncelle(); kontrol(); } });
       const f = formulListesi(ctx, ["Küçük alan S₁", "Büyük alan S₂", "S₂ ÷ S₁", "k²"]);
       const liste = gorevListesi(ctx, ["Varsayımını seç", "k = 2 dene", "k = 3 dene", "Tam sayı olmayan bir k dene", "Problemi çöz"]);
       const sonuc = ctx.not("");
@@ -275,6 +336,8 @@ const adimlar = [
       }
       T.degisti(guncelle);
       guncelle();
+      // anlatım: k'yi gösterir ama "denenen" listesine eklemez
+      return { k(v) { k = v; kay.deger = v; T.yenile(); guncelle(); } };
     },
   },
 
@@ -288,6 +351,22 @@ const adimlar = [
       <p>C'yi sürükleyerek A açısını değiştir; altı formülün hep aynı sonucu verdiğini gör. Sonra gözlemlerinden yola çıkarak önermeleri değerlendir.</p>`,
     gorev: "A açısını dar, dik ve geniş yap; önermeleri değerlendir; problemi çöz.",
     ogretmen: "Programda üçgenin bir yüksekliği sinüs yardımıyla ifade edildiğinde farklı bir alan bağıntısı oluştuğuna ulaşılması ve elde edilen genellemelerin önerme olarak ifade edilmesi bekleniyor. Geniş açıda yüksekliğin ayağı uzantıya düşer: h = b · sin(180° − A) = b · sin A olduğunu vurgulayın.",
+    anlat: [
+      { s: "İki kenar ve aradaki açı belli: <b>b = AC = 5</b>, <b>c = AB = 6</b> ve aradaki <b>A</b> açısı.", yap: (api) => api.c(3, 4) },
+      { s: "Alan için bir yükseklik lazım: C'den AB'ye inen turuncu dikme <b>CH</b>." },
+      { soru: "AHC dik üçgeninde CH, A açısının hangi kenarıdır?", secenekler: ["Karşı dik kenar", "Komşu dik kenar", "Hipotenüs"], dogru: 0,
+        aciklama: "CH, A'nın karşısında. sin A = CH ÷ b, yani <b>CH = b · sin A</b>.", ipucu: "Hipotenüs b = AC." },
+      { s: "Bu üçgende sin A = 0,8. Öyleyse CH = 5 · 0,8 = <b>4</b>." },
+      { formul: [["Alan"], ["="], ["½"], ["·"], ["c", "taban"], ["·"], ["b · sin A", "yükseklik"]],
+        s: "Yüksekliği yerine koyunca: <b>Alan = ½ · b · c · sin A</b>.", oku: "Alan eşittir yarım çarpı b çarpı c çarpı sinüs A." },
+      { cozum: ["b = 5, c = 6, sin A = 0,8", "Alan = ½ · 5 · 6 · 0,8", "Alan = 15 · 0,8 = 12"] },
+      { s: "C'yi sola çekip A'yı geniş açı yapalım. İzle…", yap: (api) => api.c(-3, 4) },
+      { s: "Dikmenin ayağı H, AB'nin uzantısına düştü. Yükseklik yine 4, b yine 5." },
+      { soru: "Bu geniş açılı üçgenin alanı kaç?", secenekler: ["12", "12'den küçük", "12'den büyük"], dogru: 0,
+        aciklama: "½ · 6 · 4 = 12. sin(180° − A) = sin A olduğundan formül geniş açıda da çalışır.", ipucu: "Taban ve yükseklik değişti mi?" },
+      { s: "Şimdi sen: A'yı dar, dik ve geniş yap, önermeleri değerlendir ve problemi çöz." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -361,85 +440,15 @@ const adimlar = [
       }
       T.degisti(guncelle);
       guncelle();
+      return {
+        c: (x, y) => kaydir(C, x, y, 1.1),
+        sifirla() { durdurHepsi(); B.ayarla(6, 0); C.ayarla(2.5, 4); },
+      };
     },
   },
 
   /* 5 ------------------------------------------------------------------ */
-  {
-    baslik: "Tarla sınırını düzelt",
-    cikti: "MAT.10.1.3-d",
-    anlatim: `
-      <p>İki komşu tarlanın arasındaki sınır <b>A – M – B</b> diye kırılıyor; traktör sürmek zor. Komşular sınırı A'dan alt kenardaki bir <b>N</b> noktasına giden <b>düz</b> bir çizgiyle değiştirmek istiyor; ama kimsenin toprağı azalmamalı.</p>
-      <p>Ölçek: 1 kare = 10 m × 10 m. N'yi nereye koymalıyız? Önce AB'yi çiz; sonra M'den AB'ye bir <b>paralel</b> çizmenin neden işe yaradığını düşün.</p>`,
-    gorev: "AB'yi ve M'den geçen paraleli çiz, N'yi doğru yere taşı ve soruyu yanıtla.",
-    ogretmen: "Programda alan önermelerinin gerçek yaşam problemleri bağlamında değerlendirilmesi bekleniyor. ABM ve ABN üçgenleri AB tabanını paylaşır ve tepe noktaları AB'ye paralel bir doğru üzerindedir; alanları eşit olduğundan parsel alanları değişmez. Sınıfta kâğıt üzerinde cetvel ve gönye ile aynı inşayı yaptırın.",
-    kur(ctx) {
-      const T = ctx.sahne;
-      T.sifirla();
-      const h = hud(ctx, [{ ad: "eski", etiket: "1. parsel (eski sınır)" }, { ad: "yeni", etiket: "1. parsel (A–N sınırı)" }, { ad: "fark", etiket: "Fark" }]);
-      T.goster({ alan: { xmin: -0.8, xmax: 12.8, ymin: -1.4, ymax: 9 }, izgara: 1 });
-      const { A, M, B, gen, yuk, metre } = TARLA;
-      const N = T.nokta("N", { x: 2, y: 0, adim: IZGARA, renk: RENK.yesil, kisit: (q) => ({ x: sinirla(yapistir(q.x), 0, gen), y: 0 }) });
-      let ab = false, par = false;
-      const eski = solParselKirik();
-      T.ciz((c) => {
-        c.cokgen([{ x: 0, y: 0 }, B, M, A, { x: 0, y: yuk }], { dolgu: "rgba(214,178,94,.22)", renk: null });
-        c.cokgen([B, { x: gen, y: 0 }, { x: gen, y: yuk }, A, M], { dolgu: "rgba(90,180,100,.2)", renk: null });
-        c.cokgen([{ x: 0, y: 0 }, { x: gen, y: 0 }, { x: gen, y: yuk }, { x: 0, y: yuk }], { renk: "#cfd8e6", kalinlik: 2.5 });
-        c.yazi({ x: 1.8, y: 6.6 }, "1. parsel", { renk: "#e8cf8a", kalin: true, boyut: 16 });
-        c.yazi({ x: 10.2, y: 6.6 }, "2. parsel", { renk: "#9fe0a6", kalin: true, boyut: 16 });
-        c.yol([A, M, B], { renk: "#c9894a", kalinlik: 5 });
-        if (ab) c.parca(A, B, { renk: RENK.mor, kalinlik: 2, kesikli: "7 5" });
-        if (par) {
-          const d = fark(B, A);
-          c.dogru(M, topla(M, d), { renk: RENK.pembe, kalinlik: 1.8, kesikli: "4 4" });
-          if (ab) c.cokgen([A, B, M], { dolgu: "rgba(184,156,255,.22)", renk: null });
-          if (ab) c.cokgen([A, B, N], { dolgu: "rgba(255,143,199,.18)", renk: null });
-        }
-        c.parca(A, N, { renk: RENK.kenar, kalinlik: 3, kesikli: "10 6" });
-        etiket(c, A, "A", { x: A.x, y: 0 }, "#c9894a");
-        etiket(c, M, "M", { x: 0, y: M.y }, "#c9894a");
-        etiket(c, B, "B", { x: B.x, y: 4 }, "#c9894a");
-        c.kenarYazisi({ x: 0, y: 0 }, { x: gen, y: 0 }, `${gen * metre} m`, { uzak: { x: 6, y: 4 }, renk: RENK.soluk, mesafe: 34 });
-        c.yazi({ x: 0, y: yuk / 2 }, `${yuk * metre} m`, { dx: 8, hiza: "start", renk: RENK.soluk });
-      });
-      const [abBtn, pBtn] = ctx.dugmeler([
-        { metin: "AB'yi çiz", tik: () => { ab = !ab; acKapa(abBtn, ab); if (ab) liste.isaretle(0); T.yenile(); } },
-        { metin: "M'den AB'ye paralel", tik: () => { par = !par; acKapa(pBtn, par); if (par) liste.isaretle(1); T.yenile(); } },
-      ]);
-      acKapa(abBtn, false); acKapa(pBtn, false);
-      const liste = gorevListesi(ctx, ["AB'yi çiz", "M'den AB'ye paralel çiz", "N'yi alanlar eşit olacak yere taşı (fark &lt; %0,5)", "Soruyu yanıtla"]);
-      const sonuc = ctx.not("");
-      const soruKap = el("div");
-      ctx.kontroller.append(soruKap);
-      let acildi = false;
-      function guncelle() {
-        const yeni = solParselDuz(N.x), fk = Math.abs(yeni - eski) / eski;
-        h.ayarla("eski", `${sayi(eski * metre * metre, 0)} m²`);
-        h.ayarla("yeni", `${sayi(yeni * metre * metre, 0)} m²`);
-        h.ayarla("fark", `%${kisa(fk * 100, 1)}`);
-        if (fk < TARLA.tolerans) liste.isaretle(2);
-        if (acildi || !liste.tamamMi(2)) return;
-        acildi = true;
-        const dogruN = paralelN();
-        sonuc.innerHTML = `<p class="d-geri-bildirim dogru">Parseller korundu! N, M'den AB'ye çizilen paralelin alt kenarı kestiği nokta: N = (${kisa(dogruN.x)}; 0).</p>
-          <p><b>Neden?</b> ABM ve ABN üçgenlerinin tabanı AB ortak, M ve N de AB'ye paralel aynı doğru üzerinde. Yükseklikleri eşit → alanları eşit. 1. parsel ABM'yi kaybedip ABN'yi kazanıyor.</p>`;
-        soruKap.append(ctx.sayiSorusu({
-          etiket: "Yeni sınır için N noktası <b>B'den kaç metre</b> uzakta olmalı?",
-          birim: "m",
-          kontrol: (v) => {
-            if (Math.abs(v - 35) < 0.5) { liste.isaretle(3); ctx.gorevTamam(); return true; }
-            if (Math.abs(v - 3.5) < 0.05) return "Birim kareleri metreye çevir: 1 kare = 10 m.";
-            if (Math.abs(v - 75) < 0.5) return "Bu, N'nin sol köşeye uzaklığı. B'den uzaklığı soruluyor.";
-            return "B = (4; 0) ve N'nin x koordinatını karşılaştır; 1 birim = 10 m.";
-          },
-          dogruMesaj: "Doğru! N = (7,5; 0), B = (4; 0): 3,5 birim = 35 m.",
-        }).el);
-      }
-      T.degisti(guncelle);
-      guncelle();
-    },
-  },
+  tarlaAdimi,
 
   /* 6 ------------------------------------------------------------------ */
   {
@@ -450,6 +459,23 @@ const adimlar = [
       <p>Bu üç oran arasında bir ilişki var mı? Varsayımını seç, farklı üçgenlerde dene, sonra alan formülünü kullanarak <b>neden</b> böyle olduğunu adım adım göster.</p>`,
     gorev: "Varsayımını seç, en az 3 farklı üçgen (biri geniş açılı) dene ve doğrulamayı sırala.",
     ogretmen: "Programda sinüs teoreminin her üçgen için geçerli olup olmadığının sorgulanması ve sinüslü alan formülüyle yapılan doğrulamanın değerlendirilmesi öneriliyor. Ortak oranın çevrel çemberin çapı (2R) olduğu ek bir gözlem olarak sunulabilir.",
+    anlat: [
+      { s: "Bir üçgende her kenarın karşısında bir açı var: <b>a</b>'nın karşısında A, <b>b</b>'nin karşısında B, <b>c</b>'nin karşısında C.", yap: (api) => { api.cember(false); api.ucgen([[2, 1], [-2, -2], [2, -2]]); } },
+      { s: "Önce kolay bir örnek: bu dik üçgende a = 4, b = 3, c = 5 ve C = 90°." },
+      { soru: "sin A = 4 ÷ 5 = 0,8. Öyleyse a ÷ sin A kaç?", secenekler: ["4", "5", "0,8"], dogru: 1,
+        aciklama: "4 ÷ 0,8 = 5.", ipucu: "4'ü 0,8'e böl." },
+      { s: "b ÷ sin B = 3 ÷ 0,6 = <b>5</b> ve c ÷ sin C = 5 ÷ 1 = <b>5</b>. Üç oran da aynı!" },
+      { s: "Rastlantı mı? Dik olmayan bir üçgen deneyelim. İzle…", yap: (api) => api.ucgen([[-1, 3.5], [-4, -2.5], [4, -2]]) },
+      { s: "Bu üçgende ölçünce üç oranın her biri yine aynı çıkıyor: yaklaşık <b>8,6</b>." },
+      { s: "Bu ortak sayının bir anlamı var. Üç köşeden geçen <b>çevrel çemberi</b> çizelim.", yap: (api) => api.cember(true) },
+      { s: "Çemberin yarıçapı R ≈ 4,3. Çapı 2R ≈ <b>8,6</b>: ortak oranın ta kendisi!" },
+      { formul: [["a / sin A"], ["="], ["b / sin B"], ["="], ["c / sin C"], ["="], ["2R", "çevrel çemberin çapı"]],
+        s: "Bu, <b>sinüs teoremidir</b>.", oku: "a bölü sinüs A eşittir b bölü sinüs B eşittir c bölü sinüs C eşittir iki R." },
+      { soru: "İlk dik üçgende 2R neye eşitti?", secenekler: ["Hipotenüse (5)", "En kısa kenara (3)", "Yüksekliğe"], dogru: 0,
+        aciklama: "Dik üçgende çevrel çemberin merkezi hipotenüsün ortasıdır: çap = hipotenüs = 5.", ipucu: "Ortak oran 5 çıkmıştı." },
+      { s: "Şimdi sen: varsayımını seç, biri geniş açılı üç üçgen dene ve doğrulamayı sırala." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -507,6 +533,12 @@ const adimlar = [
       T.degisti(guncelle);
       T.birakti(() => { sayac.ekle([A, B, C]); if (ucgenTuru(A, B, C, 0.3) === "genis") liste.isaretle(2); guncelle(); kontrol(); });
       guncelle();
+      const cemberGoster = (v) => { cember = v; acKapa(cBtn, v); T.yenile(); };
+      return {
+        ucgen: (h) => hepsiniTasi([A, B, C], h),
+        cember: cemberGoster,
+        sifirla() { durdurHepsi(); cemberGoster(false); hepsiniKoy([A, B, C], [[-1, 3.5], [-4, -2.5], [4, -2]]); },
+      };
     },
   },
 
@@ -519,6 +551,22 @@ const adimlar = [
       <p>Pisagor'u kullanabilmek için üçgene bir <b>ek çizim</b> yapmalıyız. Hangisi? Sonra parçaları b, c ve A cinsinden yaz ve ispatı adım adım tamamla.</p>`,
     gorev: "Doğru ek çizimi seç, parçaları ifade et, ispatı sırala ve A geniş açıyken dene.",
     ogretmen: "Programda kosinüs teoreminin ispatı için öğrencilerin ek çizim önerileri alınarak tartışma yapılması ve Pisagor teoreminin kullanılması gerektiğinin fark ettirilmesi öneriliyor (E3.6, E3.7). A geniş açıyken H, BA'nın uzantısına düşer; AH = b · |cos A| ve HB = c − b · cos A ifadesi yine geçerlidir.",
+    anlat: [
+      { s: "İki kenarı ve aradaki açısı bilinen bir üçgende <b>üçüncü kenarı</b> arıyoruz.", yap: (api) => api.ucgen([[-3, -2], [1, -2], [-3, 1]]) },
+      { s: "Bu üçgende A = 90°, b = 3, c = 4. Pisagor yeter: a² = 3² + 4² = 25, yani a = <b>5</b>." },
+      { s: "Peki A dik değilse? C'yi sağa kaydırıp A'yı dar açı yapalım. İzle…", yap: (api) => api.ucgen([[-3, -2], [1, -2], [-1.5, 1]]) },
+      { soru: "Sahnenin üstündeki göstergeye bak. A dar açıyken a² ile b² + c² nasıl?", secenekler: ["a², b² + c²'den küçük", "İkisi eşit", "a², b² + c²'den büyük"], dogru: 0,
+        aciklama: "A daraldıkça a kenarı kısalır; a² < b² + c². Pisagor'a bir düzeltme gerek.", ipucu: "A açısı kapanınca karşısındaki kenar kısalır mı, uzar mı?" },
+      { s: "Bu düzeltme <b>2bc · cos A</b> terimidir. Göstergedeki iki değer artık eşit." },
+      { formul: [["a²"], ["="], ["b²"], ["+"], ["c²"], ["−"], ["2bc · cos A", "düzeltme"]],
+        s: "Bu, <b>kosinüs teoremidir</b>.", oku: "a kare eşittir b kare artı c kare eksi iki b c kosinüs A." },
+      { soru: "A = 90° iken cos A = 0. Formül neye dönüşür?", secenekler: ["a² = b² + c²", "a = b + c", "a² = 2bc"], dogru: 0,
+        aciklama: "Pisagor teoremine! Kosinüs teoremi, Pisagor'un her üçgene genişletilmiş hâlidir.", ipucu: "Son terim sıfır olur." },
+      { cozum: ["Örnek: b = 3, c = 5, A = 120° (cos 120° = −½)", "a² = 3² + 5² − 2 · 3 · 5 · (−½) = 9 + 25 + 15 = 49", "a = 7"] },
+      { s: "A geniş açıyken cos A negatif olur; bu yüzden a² büyür, Pisagor'dan fazla çıkar." },
+      { s: "Bu formül nereden geliyor? Şimdi sen: doğru ek çizimi seç ve ispatı adım adım kur." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -599,6 +647,10 @@ const adimlar = [
       }
       T.degisti(guncelle);
       guncelle();
+      return {
+        ucgen: (h) => hepsiniTasi([A, B, C], h),
+        sifirla() { durdurHepsi(); hepsiniKoy([A, B, C], [[-4, -2], [4.5, -2], [-1, 3.5]]); },
+      };
     },
   },
 
@@ -613,6 +665,15 @@ const adimlar = [
       <p>En az <b>6 doğru</b> yaparsan dersi tamamlamış olursun.</p>`,
     gorev: "Değerlendirmede en az <b>6/8</b> doğru yap.",
     ogretmen: "Sorular programdaki önermeleri (taban–yükseklik orantısı, paralel doğrular, benzerlik, sinüslü alan) ve iki teoremin problemde kullanımını yoklar. Çeldiriciler “alan k katına çıkar” ve “½'yi unutma” yanılgılarını hedefler.",
+    anlat: [
+      { s: "Başlamadan önce kısaca hatırlayalım: taban sabitken alan yükseklikle, yükseklik sabitken tabanla <b>doğru orantılıdır</b>." },
+      { s: "Benzerlik oranı k ise alanlar oranı <b>k²</b>. İki kenar ve aradaki açı biliniyorsa Alan = ½ · b · c · sin A." },
+      { soru: "Benzerlik oranı 3 olan iki üçgenin alanları oranı kaçtır?", secenekler: ["3", "6", "9"], dogru: 2,
+        aciklama: "3² = 9.", ipucu: "Oranın karesini al." },
+      { s: "Sinüs teoremi: a / sin A = b / sin B = c / sin C = 2R. Bir kenar ve iki açı yeter." },
+      { s: "Kosinüs teoremi: a² = b² + c² − 2bc · cos A. İki kenar ve aradaki açı yeter." },
+      { s: "Hazırsan başla. Her sorudan sonra açıklamayı okumayı unutma." },
+    ],
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -686,4 +747,4 @@ const adimlar = [
   },
 ];
 
-dersBaslat({ adimlar, sahneKur: tahtaKur });
+dersBaslat({ adimlar: anlatimliAdimlar(adimlar), sahneKur: tahtaKur });

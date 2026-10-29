@@ -3,8 +3,9 @@
 import { sayi } from "../../../../engine/ders.js";
 import { sekilCiz, RENK } from "../ortak/tahta.js";
 import { hud, gorevListesi } from "../ortak/yardim.js";
-import { dunyaAc, yuzenPanel, dokuluMalzeme, agac, ev, insan, cubuk, serit, THREE, malzeme, organiklestir, rastgele } from "../ortak/dunya3b.js";
+import { dunyaAc, yuzenPanel, dokuluMalzeme, agac, ev, insan, cubuk, serit, halka, dokunmaAlani, THREE, malzeme, organiklestir, rastgele } from "../ortak/dunya3b.js";
 import { MINARE, bakisAcisi } from "./model.js";
+import { gecis, durdurHepsi } from "../ortak/anlat.js";
 
 const DMIN = 10, DMAX = 60;
 
@@ -34,9 +35,9 @@ function avluKur(S) {
   const alemK = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.6, 6), malzeme.metal(0xd8b25a, { puruz: 0.25 }));
   alemK.position.y = 20.6;
   cami.add(govde, kasnak, kubbe, alemK);
-  for (const [x, z, a] of [[-10, 0, Math.PI / 2], [10, 0, -Math.PI / 2]]) {
-    const yk = new THREE.Mesh(new THREE.SphereGeometry(4, 24, 12, 0, Math.PI, 0, Math.PI / 2), kursun);
-    yk.position.set(x * 0.62, 11, z); yk.rotation.y = a; yk.castShadow = true;
+  for (const x of [-6.8, 6.8]) {
+    const yk = new THREE.Mesh(new THREE.SphereGeometry(3.4, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), kursun);
+    yk.position.set(x, 11, 0); yk.castShadow = true;
     cami.add(yk);
   }
   const pencere = malzeme.plastik(0x1e2c3c, { puruz: 0.2, parlak: 0.6 });
@@ -44,9 +45,9 @@ function avluKur(S) {
     const p = new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.2, 0.15), pencere);
     p.position.set(-8 + i * 4, y, yuz * 9.03);
     cami.add(p);
-    const kemer = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.15, 16, 1, false, 0, Math.PI), pencere);
-    kemer.rotation.set(Math.PI / 2, Math.PI / 2, 0);
-    kemer.position.set(-8 + i * 4, y + 1.1, yuz * 9.03);
+    const kemer = new THREE.Mesh(new THREE.CircleGeometry(0.65, 16, 0, Math.PI), pencere);
+    kemer.rotation.y = yuz > 0 ? 0 : Math.PI;
+    kemer.position.set(-8 + i * 4, y + 1.1, yuz * 9.11);
     cami.add(kemer);
   }
   cami.position.set(-14, 0, -12);
@@ -120,16 +121,37 @@ export const minareAdimi = {
     <p>Hangi trigonometrik oran <b>karşı dik kenarı</b> ve <b>komşu dik kenarı</b> birbirine bağlar? Ölçümünü yap, minarenin yüksekliğini hesapla.</p>`,
   gorev: "<b>İki farklı yerden</b> ölçüm kaydet ve minarenin yüksekliğini bul (±0,6 m).",
   ogretmen: "Programda ulaşılan oranların gerçek yaşam problemlerinde kullanılması ve trigonometrik oranlar gerektiren performans görevleri öneriliyor. Okul bahçesinde kâğıt ve iletki ile yapılmış basit bir klinometreyle aynı ölçüm yaptırılabilir. Araştırma ödevi için Uluğ Bey'in Semerkant rasathanesinde hazırlattığı yıldız cetvelindeki (Zîc) sinüs ve tanjant tabloları önerilebilir. Sahne temsilîdir; minare yüksekliği 38 m kabul edilmiştir.",
+  anlat: [
+    { s: "Minarenin tepesine çıkmadan boyunu bulmak istiyoruz. Elimizde bir <b>açıölçer</b> ve bir şerit metre var.", yap: (api) => api.yuru(30, 0.01) },
+    { s: "Minareden <b>40 m</b> uzaklaşalım. İzle…", yap: (api) => api.yuru(40) },
+    { s: "Açıölçerle tepeye bakınca bakış açısı <b>α ≈ 42,3°</b> çıkıyor. Şerit metre <b>d = 40 m</b> gösteriyor." },
+    { s: "Sağ üstteki çizime bak: gözün, minarenin ekseni ve tepesi bir <b>dik üçgen</b> oluşturuyor." },
+    { soru: "α açısına göre d = 40 m hangi kenar?", secenekler: ["Karşı dik kenar", "Komşu dik kenar", "Hipotenüs"], dogru: 1,
+      aciklama: "d, α'nın yanındaki dik kenar: komşu dik kenar. Aradığımız yükseklik karşı dik kenar.", ipucu: "α'nın kollarından biri olan dik kenar hangisi?" },
+    { soru: "Karşı ve komşu dik kenarı birbirine bağlayan oran hangisi?", secenekler: ["sin α", "cos α", "tan α"], dogru: 2,
+      aciklama: "tan α = karşı ÷ komşu. Hipotenüs (bakış çizgisi) bilinmiyor, ona gerek yok.", ipucu: "Hipotenüsü içermeyen oranı seç." },
+    { formul: [["karşı", "h − 1,6"], ["="], ["d", "komşu"], ["·"], ["tan α", "oran"]],
+      s: "tan α = karşı ÷ komşu olduğundan karşı = komşu · tan α.", oku: "Karşı dik kenar eşittir d çarpı tanjant alfa." },
+    { cozum: ["Verilen: d = 40 m, tan 42,3° ≈ 0,910", "Karşı kenar: 40 · 0,910 ≈ 36,4 m", "Göz yüksekliğini ekle: h ≈ 36,4 + 1,6 = 38 m"] },
+    { soru: "Neden 1,6 m ekledik?", secenekler: ["Minarenin kaidesi için", "Bakış çizgisi gözünden başladığı için", "Ölçüm hatası için"], dogru: 1,
+      aciklama: "Üçgenin alt köşesi yerde değil, gözünün hizasında. Yerden yükseklik için göz yüksekliğini ekleriz.", ipucu: "Çizimde 1,6 m nerede?" },
+    { s: "Şimdi sen iki farklı yerden ölç. Uzaklık değişince α da değişir ama h hep aynı çıkmalı.", yap: (api) => api.yuru(20) },
+  ],
+  anlatBitti: (api) => api.sifirla(),
   kur(ctx) {
     const { h: HM, goz } = MINARE;
-    const D = dunyaAc(ctx, { kameraKonum: [24, 13, 80], hedef: [21, 15, 0], arkaPlan: [0x7fb0dc, 0xdfe9f1], sis: [140, 420] });
+    const D = dunyaAc(ctx, { kameraKonum: [30, 6, 100], hedef: [28, 16, 0], arkaPlan: [0x7fb0dc, 0xdfe9f1], sis: [160, 460] });
     const { S } = D;
+    // dar ekranda (telefon) tüm ölçüm hattı sığsın diye kamera geri çekilir
+    const dar = D.kap.clientWidth < 600;
+    if (dar) S.kameraKoy({ konum: [28, 12, 112], hedef: [28, 26, 0] });
     avluKur(S);
     let d = 30;
     const aciOku = () => Math.round(bakisAcisi(HM, d) * 10) / 10;
 
     // gözlemci, klinometre, bakış çizgisi, şerit metre
     const sen = insan({ giysi: 0xd9822b });
+    sen.add(halka(1.3), dokunmaAlani(2.6, 4.5));
     S.scene.add(sen);
     const klino = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.03, 16, 1, false, 0, Math.PI), malzeme.plastik(0xf2c230));
     klino.rotation.x = Math.PI / 2;
@@ -139,7 +161,7 @@ export const minareAdimi = {
     const bakis = cubuk([d, goz, 0], [0, HM, 0], { renk: 0xffe066, kalinlik: 0.07, opaklik: 0.9 });
     const serit3 = serit({ x: 0, z: 1.2 }, { x: d, z: 1.2 }, { renk: 0xf2c230, genislik: 0.12, y: 0.02 });
     S.scene.add(bakis, serit3);
-    S.igne(new THREE.Vector3(0, HM, 0), "Minarenin tepesi<small>h = ?</small>", { renk: "#5ad38b", yon: "sag" });
+    S.igne(new THREE.Vector3(0, HM, 0), `${dar ? "Tepe" : "Minarenin tepesi"}<small>h = ?</small>`, { renk: "#5ad38b", yon: "sag" });
     // iğneler bu iki noktaya bağlı; noktalar her güncellemede taşınır
     const gozNoktasi = new THREE.Object3D(), seritOrta = new THREE.Object3D();
     S.scene.add(gozNoktasi, seritOrta);
@@ -148,7 +170,7 @@ export const minareAdimi = {
 
     const h = hud(ctx, [{ ad: "d", etiket: "Yatay uzaklık d" }, { ad: "a", etiket: "Bakış açısı α" }, { ad: "tan", etiket: "tan α" }]);
     // yüzen panel: ölçümün dik üçgen modeli
-    const panel = yuzenPanel(ctx, "Ölçümün modeli (yandan görünüş)");
+    const panel = yuzenPanel(ctx, "Ölçümün modeli (yandan görünüş)", { konum: "sag-ust" });
     const cizim = sekilCiz(panel, { alan: { xmin: -6, xmax: 64, ymin: -5, ymax: 42 }, izgara: 0 }, (c) => {
       const g = { x: d, y: goz }, ayak = { x: 0, y: goz }, tepe = { x: 0, y: HM };
       c.parca({ x: -6, y: 0 }, { x: 64, y: 0 }, { renk: RENK.soluk, kalinlik: 1.5 });
@@ -221,5 +243,10 @@ export const minareAdimi = {
         <p>Uzaklaştıkça α küçülür ama d · tan α çarpımı değişmez. Trigonometri, ulaşamadığın yükseklikleri ve uzaklıkları ölçmenin yoludur.</p>`;
       ctx.gorevTamam();
     }
+    const yuru = (hedef, sure = 1.2) => {
+      const d0 = d;
+      return gecis(sen, sure, (k) => { const v = Math.round(d0 + (hedef - d0) * k); if (v !== d) { d = v; kay.deger = d; guncelle(); } });
+    };
+    return { yuru, sifirla() { durdurHepsi(); d = 30; kay.deger = d; guncelle(); } };
   },
 };

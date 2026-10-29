@@ -6,6 +6,7 @@ import { hud, gorevListesi, formulListesi, onermeler, secimTablosu, kisa } from 
 import { dikUcgenOranlari, trigOranlar, birimCemberNoktasi, yonluAciAc, derece, OZEL_DEGERLER } from "../ortak/geometri.js";
 import { AILELER, aileUcgeni, kYapistir } from "./model.js";
 import { minareAdimi } from "./minare3b.js";
+import { anlatimliAdimlar, kaydir, gecis, durdurHepsi } from "../ortak/anlat.js";
 
 const sinirla = (v, a, b) => Math.min(b, Math.max(a, v));
 const yuvarla = (v, adim) => Math.round(v / adim) * adim;
@@ -54,12 +55,28 @@ const adimlar = [
       <p><b>B</b> köşesini sürükle: üçgen büyür ya da küçülür ama α değişmez, yani üçgenler <b>benzer</b> kalır. Önce bir varsayımda bulun, sonra ölç ve tabloya yaz.</p>`,
     gorev: "Varsayımını seç ve aynı ailede <b>en az 3 farklı boyutta</b> üçgeni ölçüp tabloya yaz.",
     ogretmen: "Programda 3-4-5 gibi kenarları rasyonel olan benzer dik üçgenlerin çalışma kâğıdına çizilmesi ve bir dar açıya göre dört oranın tabloda düzenlenmesi öneriliyor (SDB2.1, SDB2.2). Grupları farklı ailelere (3-4-5, 5-12-13, 8-15-17) ayırıp tablolarını tahtada karşılaştırtın; “oranlar hep eşit çıktı” genellemesini (OB1) öğrencilerin kendisi ifade etsin.",
+    anlat: [
+      { s: "Duvara yaslanan bir merdiven yerle bir <b>dik üçgen</b> oluşturur. Yerdeki dar açıya <b>α</b> diyelim.", yap: (api) => api.boyut(1) },
+      { s: "α'ya göre: <b style=\"color:var(--vurgu-2)\">mavi kenar komşu</b>, <b style=\"color:var(--yesil)\">yeşil kenar karşı</b>, en uzun kenar <b>hipotenüs</b>." },
+      { s: "Bu üçgende karşı kenar 3, hipotenüs 5. Karşıyı hipotenüse bölelim: 3 ÷ 5 = <b>0,6</b>." },
+      { s: "Şimdi açıyı hiç değiştirmeden üçgeni <b>2 katına</b> büyütelim. İzle…", yap: (api) => api.boyut(2, { iz: true }) },
+      { soru: "Yeni üçgende karşı 6, hipotenüs 10. Karşı ÷ hipotenüs kaç?", secenekler: ["0,3", "0,6", "1,2"], dogru: 1,
+        aciklama: "6 ÷ 10 = 0,6. Kenarlar büyüdü ama oran aynı kaldı.", ipucu: "6'yı 10'a böl." },
+      { s: "Kenarların hepsi <b>aynı oranda</b> büyüdü, açılar aynı kaldı. Böyle üçgenlere <b>benzer üçgenler</b> denir." },
+      { s: "Yarı boyuta küçültsek de değişmez: 1,5 ÷ 2,5 = <b>0,6</b>.", yap: (api) => api.boyut(0.5, { iz: true }) },
+      { soru: "Peki komşu ÷ hipotenüs oranı üçgen büyüyünce ne olur?", secenekler: ["Artar", "Azalır", "Değişmez"], dogru: 2,
+        aciklama: "4 ÷ 5, 8 ÷ 10, 2 ÷ 2,5: hepsi 0,8. Benzer üçgenlerde bütün kenar oranları korunur.", ipucu: "4 ÷ 5 ile 8 ÷ 10'u karşılaştır." },
+      { s: "Sonuç: Bu oranlar üçgenin <b>boyutuna</b> değil, yalnızca <b>α açısına</b> bağlıdır." },
+      { s: "Şimdi sıra sende: önce varsayımını seç, sonra üç farklı boyutta ölçüp tabloya yaz." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
       T.goster({ alan: { xmin: -0.8, xmax: 10.4, ymin: -1.3, ymax: 8.4 }, izgara: 1 });
       let aile = AILELER[0], k = 1, iddia = null, bitti = false;
-      const olculen = [];
+      // ornek: anlatımda iz bırakan boyutlar (tabloya yazılmaz)
+      const olculen = [], ornek = [];
       const klavyeAdimi = () => (aile.kAdim * aile.hip * 0.6) / Math.min(aile.komsu, aile.karsi) * aile.hip;
       const B = T.nokta("B", {
         x: aile.komsu * k, y: aile.karsi * k, adim: klavyeAdimi(),
@@ -70,7 +87,7 @@ const adimlar = [
         },
       });
       T.ciz((c) => {
-        for (const kk of olculen) {
+        for (const kk of [...olculen, ...ornek]) {
           if (Math.abs(kk - k) < 1e-9) continue;
           const g = aileUcgeni(aile, kk);
           c.cokgen([O, { x: g.komsu, y: g.karsi }, { x: g.komsu, y: 0 }], { renk: "rgba(169,182,201,.45)", kalinlik: 1.5, kesikli: true });
@@ -121,6 +138,10 @@ const adimlar = [
         bitti = true;
         ctx.gorevTamam();
       }
+      return {
+        boyut(kk, { iz = false } = {}) { if (iz) ornek.push(k); return kaydir(B, aile.komsu * kk, aile.karsi * kk); },
+        sifirla() { durdurHepsi(); ornek.length = 0; B.ayarla(aile.komsu, aile.karsi, true); T.yenile(); },
+      };
     },
   },
 
@@ -135,6 +156,22 @@ const adimlar = [
       <p>Şimdi <b>B</b>'yi serbestçe sürükle: açı da değişir. Hangi açıya göre baktığını değiştirirsen (α ya da β) karşı ve komşu kenarların <b>yer değiştirdiğine</b> dikkat et.</p>`,
     gorev: "Listedeki üç üçgeni kur.",
     ogretmen: "Öğrencilerin genellemelerini varsayımlarıyla karşılaştırdıktan sonra oranları sinüs, kosinüs, tanjant, kotanjant olarak adlandırın. “Karşı” ve “komşu” sözcüklerinin açıya göre değiştiğini β seçeneğiyle vurgulayın; bu, sonraki adımdaki tümler açı önermesine hazırlık olur.",
+    anlat: [
+      { s: "Az önce dört sabit oran bulduk. Bu oranlar o kadar önemli ki her birinin bir <b>adı</b> var.", yap: (api) => { api.odak("α"); api.kur(3, 4); } },
+      { s: "Bu üçgende α'nın <b>karşısındaki</b> kenar 4, <b>komşusu</b> 3, hipotenüs 5." },
+      { formul: [["sin α", "sinüs"], ["="], ["karşı", "4"], ["/"], ["hipotenüs", "5"]], s: "<b>Sinüs</b>: karşı bölü hipotenüs. Burada 4 ÷ 5 = 0,8.", oku: "Sinüs alfa eşittir karşı bölü hipotenüs." },
+      { formul: [["cos α", "kosinüs"], ["="], ["komşu", "3"], ["/"], ["hipotenüs", "5"]], s: "<b>Kosinüs</b>: komşu bölü hipotenüs. Burada 3 ÷ 5 = 0,6.", oku: "Kosinüs alfa eşittir komşu bölü hipotenüs." },
+      { soru: "<b>Tanjant</b> karşı ÷ komşu ise bu üçgende tan α kaç?", secenekler: ["3/5", "4/3", "3/4"], dogru: 1,
+        aciklama: "tan α = karşı ÷ komşu = 4/3.", ipucu: "Hipotenüs işin içinde yok: yalnızca iki dik kenar." },
+      { s: "<b>Kotanjant</b> bunun tersidir: cot α = komşu ÷ karşı = <b>3/4</b>. tan ile cot birbirinin tersi." },
+      { s: "Şimdi aynı üçgene <b>B köşesindeki β açısından</b> bakalım. İzle…", yap: (api) => api.odak("β") },
+      { s: "Renkler yer değiştirdi! β'nın karşısındaki kenar artık 3, komşusu 4." },
+      { soru: "Bu üçgende cos β kaçtır?", secenekler: ["3/5", "4/5", "3/4"], dogru: 1,
+        aciklama: "cos β = komşu ÷ hipotenüs = 4/5. Bu, sin α ile aynı sayı!", ipucu: "β'ya göre komşu kenar 4." },
+      { s: "Unutma: <b>karşı</b> ve <b>komşu</b> sözcükleri, hangi açıya baktığına göre değişir.", yap: (api) => api.odak("α") },
+      { s: "Şimdi B'yi sürükleyerek listedeki üç üçgeni kur. Açıyı istediğin gibi seçebilirsin." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -146,7 +183,7 @@ const adimlar = [
         { ad: "tan", etiket: "tan" }, { ad: "cot", etiket: "cot" },
       ]);
       T.ciz((c) => dikUcgenCiz(c, B, odak));
-      ctx.secenekler({
+      const odakSec = ctx.secenekler({
         etiket: "Hangi açıya göre?", deger: "α",
         liste: [{ deger: "α", metin: "α (A köşesi)" }, { deger: "β", metin: "β (B köşesi)" }],
         degisti: (v) => { odak = v; guncelle(); T.yenile(); },
@@ -178,6 +215,12 @@ const adimlar = [
       }
       T.degisti(guncelle);
       guncelle();
+      const odakla = (v) => { odak = v; odakSec.deger = v; guncelle(); T.yenile(); };
+      return {
+        kur: (x, y) => kaydir(B, x, y),
+        odak: odakla,
+        sifirla() { durdurHepsi(); odakla("α"); B.ayarla(6, 2.5); },
+      };
     },
   },
 
@@ -191,6 +234,22 @@ const adimlar = [
       <p>Önce iki varsayımda bulun. Sonra <b>B</b>'yi çember yayı üzerinde sürükleyip farklı açılarda ölçüm al ve varsayımlarını tabloyla karşılaştır.</p>`,
     gorev: "İki varsayımını seç ve <b>en az 4 farklı açıda</b> ölçüm al.",
     ogretmen: "Programda Pisagor teoremi ve cebirsel işlemlerle sin²x + cos²x = 1 ve tan x · cot x = 1 özdeşliklerine ulaşılması, hipotenüsü 1 birim olan dik üçgende dik kenarların trigonometrik oranlarla ilişkisinin keşfedilmesi öneriliyor. “sin α + cos α = 1” sık görülen bir kavram yanılgısıdır; tabloda neden tutmadığını tartıştırın.",
+    anlat: [
+      { s: "Bu kez hipotenüsü tam <b>1 birim</b> olan bir dik üçgen var. α = 37°.", yap: (api) => api.aci(37) },
+      { s: "sin α = karşı ÷ 1 = karşı. Yani <b style=\"color:var(--yesil)\">yeşil kenarın</b> uzunluğu doğrudan <b>sin α</b>." },
+      { soru: "Peki <b style=\"color:var(--vurgu-2)\">mavi</b> (komşu) kenarın uzunluğu neye eşit?", secenekler: ["sin α", "cos α", "tan α"], dogru: 1,
+        aciklama: "cos α = komşu ÷ 1 = komşu.", ipucu: "Kosinüs komşu kenarı hipotenüse böler; hipotenüs 1." },
+      { s: "37°'de sin α ≈ 0,60 ve cos α ≈ 0,80. Toplayalım: 0,60 + 0,80 = <b>1,40</b>. Toplam 1 değil!" },
+      { s: "Kenarların üzerine kareler kurduk. Yeşil karenin alanı sin²α ≈ 0,36, mavi karenin alanı cos²α ≈ 0,64." },
+      { soru: "0,36 + 0,64 kaç eder?", secenekler: ["0,28", "1", "1,4"], dogru: 1, aciklama: "Tam 1: turuncu karenin alanı.", ipucu: "İki ondalık sayıyı topla." },
+      { s: "B'yi 60°'ye götürelim, kareler değişsin. İzle…", yap: (api) => api.aci(60) },
+      { s: "Şimdi sin²α = 0,75, cos²α = 0,25. Toplam yine <b>1</b>. Bu bir rastlantı değil." },
+      { formul: [["sin²α", "yeşil kare"], ["+"], ["cos²α", "mavi kare"], ["="], ["1", "turuncu kare"]],
+        s: "Bu, hipotenüsü 1 olan dik üçgende <b>Pisagor teoremidir</b>. Her dar açıda doğrudur.", oku: "Sinüs kare alfa artı kosinüs kare alfa eşittir bir." },
+      { s: "Bir de şuna bak: <b>tan α = sin α ÷ cos α</b> ve tan α · cot α = 1." },
+      { s: "Şimdi iki varsayımını seç ve dört farklı açıda ölçüm alarak sına." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -272,6 +331,10 @@ const adimlar = [
       }
       T.degisti(guncelle);
       guncelle();
+      return {
+        aci(a, sure = 1) { const a0 = aci; return gecis(B, sure, (k) => { const q = birimCemberNoktasi(a0 + (a - a0) * k); B.ayarla(q.x, q.y); }); },
+        sifirla() { durdurHepsi(); const q = birimCemberNoktasi(37); B.ayarla(q.x, q.y); },
+      };
     },
   },
 
@@ -286,6 +349,22 @@ const adimlar = [
       <p>İki şekli incele ve tabloyu doldur.</p>`,
     gorev: "Tablodaki <b>12 hücrenin</b> hepsini doğru doldur.",
     ogretmen: "Programda sınıfın ikiye ayrılması; bir grubun eşkenar üçgenden, diğerinin ikizkenar dik üçgenden 30°, 45°, 60°'nin oranlarını bulup birbirine sunması öneriliyor. Tabloyu tahtada iki grubun sonuçlarını birleştirerek doldurun; sin 30° = cos 60° gibi eşitlikleri öğrencilerin kendisi fark etsin.",
+    anlat: [
+      { s: "30°, 45° ve 60° çok sık karşımıza çıkar. Bu açıların oranlarını <b>tam değer</b> olarak bulabiliriz.", yap: (api) => { api.sekil("eskenar"); api.yukseklik(false); } },
+      { s: "Kenarı 2 olan bir <b>eşkenar üçgen</b> alalım. Bütün açıları 60°." },
+      { s: "C köşesinden tabana bir <b>yükseklik</b> indirelim. İzle…", yap: (api) => api.yukseklik(true) },
+      { s: "Taban ikiye bölündü: HB = <b>1</b>. Tepedeki 60° de ikiye bölündü: <b>30°</b>." },
+      { soru: "HBC dik üçgeninde hipotenüs 2, HB = 1. Yükseklik CH kaçtır?", secenekler: ["1", "√3", "3"], dogru: 1,
+        aciklama: "Pisagor: CH² = 2² − 1² = 3, yani CH = √3.", ipucu: "2² − 1² işlemini yap, sonra karekök al." },
+      { s: "30°'nin karşısındaki kenar 1, hipotenüs 2. Demek ki <b>sin 30° = 1/2</b>." },
+      { s: "60°'nin karşısı √3: <b>sin 60° = √3/2</b>. Aynı kenar 30°'ye komşu: <b>cos 30° = √3/2</b>." },
+      { soru: "cos 60° kaçtır?", secenekler: ["1/2", "√3/2", "√3"], dogru: 0,
+        aciklama: "60°'ye komşu kenar HB = 1, hipotenüs 2: cos 60° = 1/2. sin 30° ile aynı!", ipucu: "60° B köşesinde; ona komşu dik kenar HB." },
+      { s: "45° için dik kenarları 1 olan <b>ikizkenar dik üçgeni</b> kullanalım.", yap: (api) => api.sekil("ikizkenar") },
+      { s: "Hipotenüs <b>√2</b> çıkar (1² + 1² = 2). Öyleyse sin 45° = 1/√2 = <b>√2/2</b> ve tan 45° = <b>1</b>." },
+      { s: "Şimdi iki şekli kullanarak tablonun 12 hücresini doldur." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -333,11 +412,12 @@ const adimlar = [
           for (const [p, ad, dx, dy] of [[A, "A", -14, 12], [C, "C", 14, 12], [B, "B", 14, -12]]) { c.nokta(p); c.yazi(p, ad, { dx, dy, kalin: true, boyut: 16 }); }
         }
       });
-      ctx.secenekler({
+      const sekilSec = ctx.secenekler({
         etiket: "Şekil", deger: "eskenar",
         liste: [{ deger: "eskenar", metin: "Eşkenar üçgen (30°, 60°)" }, { deger: "ikizkenar", metin: "İkizkenar dik üçgen (45°)" }],
-        degisti: (v) => { sekil = v; yBtn.hidden = v !== "eskenar"; T.goster(alanlar[v]); },
+        degisti: (v) => sekilSecildi(v),
       });
+      const sekilSecildi = (v) => { sekil = v; sekilSec.deger = v; yBtn.hidden = v !== "eskenar"; T.goster(alanlar[v]); };
       const [yBtn] = ctx.dugmeler([{ metin: "⟂ C'den yükseklik indir", tik: () => { yukseklik = true; yBtn.disabled = true; T.yenile(); } }]);
       const ip = {
         sin: { 30: "30°'nin karşısındaki kenar 1, hipotenüs 2.", 45: "İkizkenar dik üçgende karşı 1, hipotenüs √2: 1/√2 = √2/2.", 60: "60°'nin karşısındaki kenar √3, hipotenüs 2." },
@@ -355,6 +435,11 @@ const adimlar = [
         },
       });
       const sonuc = ctx.not("");
+      const yukseklikIndir = (v) => { yukseklik = v; yBtn.disabled = v; T.yenile(); };
+      return {
+        sekil: sekilSecildi, yukseklik: yukseklikIndir,
+        sifirla() { sekilSecildi("eskenar"); yukseklikIndir(false); },
+      };
     },
   },
 
@@ -368,6 +453,21 @@ const adimlar = [
       <p>B köşesindeki açı <b>90° − α</b>'dır: α ile tümlerdir.</p>`,
     gorev: "Altı önermenin hepsini doğru sınıflandır.",
     ogretmen: "Programın “önermeler sunar” ve “önermeleri değerlendirir” vurgusuna uygun olarak öğrencilerden kendi önermelerini yazmalarını da isteyebilirsiniz. Her yanlış önerme için bir karşı örnek açıyı tahtada gösterin.",
+    anlat: [
+      { s: "<b>Önerme</b>, doğru ya da yanlış olabilen bir cümledir. Örneğin: “sin α + cos α = 1”.", yap: (api) => api.kur(6, 4.5) },
+      { s: "Bir önerme <b>her açı için</b> doğruysa bunu genel bir nedenle göstermeliyiz." },
+      { s: "Yanlış olduğunu göstermek daha kolay: tek bir <b>karşı örnek</b> yeter." },
+      { s: "α = 45° yapalım: iki dik kenar eşit olsun. İzle…", yap: (api) => api.kur(4, 4) },
+      { soru: "45°'de sin α ≈ 0,707 ve cos α ≈ 0,707. Toplamları kaç?", secenekler: ["1", "≈ 1,414", "0"], dogru: 1,
+        aciklama: "Toplam 1 değil. 45° bir karşı örnek: “sin α + cos α = 1” önermesi yanlış.", ipucu: "0,707 + 0,707 işlemini yap." },
+      { s: "Şimdi başka bir önerme: “sin α = cos(90° − α)”. B köşesindeki açı tam <b>90° − α</b>.", yap: (api) => api.kur(8, 3) },
+      { s: "α'nın karşısındaki <b style=\"color:var(--yesil)\">yeşil kenar</b>, B köşesindeki açının <b>komşu</b> kenarıdır." },
+      { soru: "Öyleyse sin α ile cos(90° − α) için ne söylenebilir?", secenekler: ["Her açıda eşittir", "Yalnızca 45°'de eşittir", "Hiç eşit değildir"], dogru: 0,
+        aciklama: "İkisi de aynı oran: yeşil kenar ÷ hipotenüs. Bu önerme her dar açı için doğru.", ipucu: "İki oranın payında da yeşil kenar var." },
+      { s: "Sahnenin üstündeki göstergelerde bu iki değer hep aynı çıkar. B'yi sürükleyip görebilirsin." },
+      { s: "Şimdi altı önermeyi sınıflandır. Emin değilsen önce B'yi sürükleyip sına." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -394,6 +494,7 @@ const adimlar = [
         { metin: "tan α · cot α = 1", dogru: true, aciklama: "(karşı / komşu) · (komşu / karşı) = 1.", ipucu: "İki değeri çarp." },
         { metin: "Bir dar açının sinüsü 1'den büyük olabilir", dogru: false, aciklama: "Dik kenar her zaman hipotenüsten kısadır, bu yüzden 0 < sin α < 1.", ipucu: "Karşı kenar hipotenüsten uzun olabilir mi?" },
       ], () => ctx.gorevTamam());
+      return { kur: (x, y) => kaydir(B, x, y), sifirla() { durdurHepsi(); B.ayarla(6, 4.5); } };
     },
   },
 
@@ -407,6 +508,23 @@ const adimlar = [
       <p>Dar açılarda gördüğümüz gibi <span class="formul">P = (cos θ, sin θ)</span>. Bu tanım her açı için geçerlidir; işaretler P'nin hangi bölgede olduğuna göre değişir.</p>`,
     gorev: "Listedeki üç açıyı birim çemberde bul.",
     ogretmen: "Programda “Geniş açıların trigonometrik oranları nasıl bulunur?” sorusundan hareketle birim çemberin tanıtılması, yönlü açının birim çember üzerindeki noktalarla ilişkilendirilmesi öneriliyor. P'yi ok tuşlarıyla 1° adımla da taşıyabilirsiniz.",
+    anlat: [
+      { s: "Dik üçgende yalnızca dar açılar var. Peki <b>135°</b>'nin sinüsü ne olacak?", yap: (api) => api.aci(40) },
+      { s: "Merkezi orijinde, yarıçapı <b>1</b> olan bir çember çizdik. Buna <b>birim çember</b> denir." },
+      { s: "P noktası çemberin üstünde. OP ile x ekseni arasındaki açı <b>θ = 40°</b>." },
+      { s: "OP = 1 bir hipotenüs gibi. Bu yüzden P'nin x'i <b style=\"color:var(--vurgu-2)\">cos 40°</b>, y'si <b style=\"color:var(--yesil)\">sin 40°</b>." },
+      { formul: [["P", "nokta"], ["="], ["(cos θ", "x koordinatı"], [","], ["sin θ)", "y koordinatı"]],
+        s: "Bu tanımı artık <b>her açı</b> için kullanıyoruz, geniş açılar dahil.", oku: "P eşittir kosinüs teta, sinüs teta." },
+      { s: "P'yi 135°'ye döndürelim. İzle…", yap: (api) => api.aci(135) },
+      { soru: "P şimdi sol üst bölgede. x koordinatı, yani cos 135° nasıl bir sayı?", secenekler: ["Pozitif", "Negatif", "Sıfır"], dogru: 1,
+        aciklama: "P, y ekseninin solunda: cos 135° ≈ −0,71. Yukarıda olduğu için sin 135° ≈ 0,71 pozitif.", ipucu: "x ekseninde sıfırın solu negatiftir." },
+      { s: "Saat yönünün tersine dönüş <b>pozitif</b> açıdır. Saat yönünde dönersek açı <b>negatif</b> olur. Buna <b>yönlü açı</b> denir." },
+      { s: "Saat yönünde dönelim: θ = <b>−45°</b>. İzle…", yap: (api) => api.aci(-45, 1.6) },
+      { soru: "θ = −45° iken P hangi bölgede?", secenekler: ["I. bölge", "II. bölge", "IV. bölge"], dogru: 2,
+        aciklama: "Sağ altta, IV. bölgede: cos θ > 0, sin θ < 0.", ipucu: "P, x ekseninin altına indi." },
+      { s: "Şimdi P'yi sürükle ya da düğmeleri kullan ve listedeki üç açıyı bul." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -464,6 +582,10 @@ const adimlar = [
       }
       T.degisti(guncelle);
       guncelle();
+      return {
+        aci(t, sure = 1.1) { const t0 = teta; return gecis(P, sure, (k) => { const q = birimCemberNoktasi(Math.round(t0 + (t - t0) * k)); P.ayarla(q.x, q.y); }); },
+        sifirla() { durdurHepsi(); teta = 40; const q = birimCemberNoktasi(40); P.ayarla(q.x, q.y); },
+      };
     },
   },
 
@@ -478,6 +600,15 @@ const adimlar = [
       <p>En az <b>6 doğru</b> yaparsan dersi tamamlamış olursun. Yanlış yaptığın konular için ilgili adıma dönebilirsin.</p>`,
     gorev: "Değerlendirmede en az <b>6/8</b> doğru yap.",
     ogretmen: "Sorular programdaki öğrenme kanıtlarıyla (çalışma kâğıdı, gerçek yaşam problemleri içeren performans görevi) uyumludur. Akıllı tahtada birlikte çözülüp her çeldiricinin hangi kavram yanılgısını hedeflediği tartışılabilir.",
+    anlat: [
+      { s: "Başlamadan önce kısaca hatırlayalım: trigonometrik oranlar üçgenin boyutuna değil, <b>açıya</b> bağlıdır." },
+      { s: "sin = karşı ÷ hipotenüs, cos = komşu ÷ hipotenüs, tan = karşı ÷ komşu, cot = komşu ÷ karşı." },
+      { soru: "α bir dar açı ise sin²α + cos²α kaçtır?", secenekler: ["sin α + cos α", "1", "α'ya göre değişir"], dogru: 1,
+        aciklama: "Her dar açıda 1. Bu, hipotenüs 1 iken Pisagor teoremidir.", ipucu: "Kenarlar üzerindeki kareleri hatırla." },
+      { s: "Özel açılar: sin 30° = 1/2, sin 45° = √2/2, sin 60° = √3/2. Tümler açılarda sin ile cos yer değiştirir." },
+      { s: "Birim çemberde P = (cos θ, sin θ). İşaretler, P'nin hangi bölgede olduğuna bağlıdır." },
+      { s: "Hazırsan başla. Her sorudan sonra açıklamayı okumayı unutma." },
+    ],
     kur(ctx) {
       const T = ctx.sahne;
       T.sifirla();
@@ -544,4 +675,4 @@ const adimlar = [
   },
 ];
 
-dersBaslat({ adimlar, sahneKur: tahtaKur });
+dersBaslat({ adimlar: anlatimliAdimlar(adimlar), sahneKur: tahtaKur });
