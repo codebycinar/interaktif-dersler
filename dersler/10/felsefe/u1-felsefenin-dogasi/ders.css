@@ -1,0 +1,53 @@
+/* Felsefe 1. ünite — derse özel bileşenler */
+.fe-soluk { color: var(--metin-2); font-size: 13.5px; }
+.fe-ag { position: relative; height: 360px; border: 1px solid var(--cizgi); border-radius: var(--radius); background: rgba(15, 23, 36, .6); }
+.fe-ag svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.fe-merkez {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  padding: 12px 18px; border-radius: 999px; background: var(--vurgu); color: #2a1a00; font-weight: 800; letter-spacing: .08em; font-size: 15px;
+}
+.fe-kavram { position: absolute; transform: translate(-50%, -50%); min-width: 92px; }
+.fe-kavram.secili { border-color: var(--vurgu); color: var(--vurgu); }
+.fe-kavram.tamam { border-color: var(--yesil); background: rgba(90, 211, 139, .15); }
+.fe-kavram.tamam::after { content: " ✓"; color: var(--yesil); }
+.fe-secim { display: flex; flex-direction: column; gap: 8px; }
+.fe-siklar { display: flex; flex-direction: column; gap: 6px; }
+.fe-cubuklar { display: grid; gap: 4px; margin: 8px 0; }
+.fe-cubuklar div { display: grid; grid-template-columns: minmax(120px, 230px) 1fr 24px; gap: 8px; align-items: center; font-size: 13px; }
+.fe-cubuklar i { display: block; height: 10px; border-radius: 5px; }
+.fe-gemi-kutu { padding: 6px; }
+.fe-gemi { width: 100%; height: auto; display: block; }
+.fe-gemi .fe-gemi-ad { fill: var(--metin-2); font-size: 15px; font-family: var(--font); }
+.fe-gemi-sorular { display: flex; flex-direction: column; gap: 8px; }
+.fe-gemi-soru { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border: 1px solid var(--cizgi); border-radius: 10px; background: rgba(15, 23, 36, .8); font-size: 14.5px; }
+.fe-gemi-soru .d-btn[aria-pressed="true"], .fe-durumlar .d-btn[aria-pressed="true"], .ok-kutu .d-satir .d-btn[aria-pressed="true"] { border-color: var(--vurgu); color: var(--vurgu); background: rgba(255, 181, 71, .1); }
+.fe-not { padding: 8px 12px; border-left: 3px solid var(--vurgu); background: rgba(255, 181, 71, .08); border-radius: 0 8px 8px 0; font-size: 14.5px; }
+.fe-bilgi { min-height: 64px; font-size: 14.5px; }
+.fe-ozellik ul { margin: 6px 0 0; padding-left: 20px; font-size: 14px; }
+.fe-durumlar { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.ok-kutu .d-satir { margin-top: 6px; }
+.fe-soru-girdi {
+  width: 100%; margin-top: 6px; font-size: 18px; font-weight: 600; padding: 10px 12px;
+  background: var(--zemin); border: 1px solid var(--vurgu); border-radius: 10px; color: var(--metin);
+}
+.fe-tablo-kutu { overflow-x: auto; border: 1px solid var(--cizgi); border-radius: var(--radius); background: rgba(15, 23, 36, .8); }
+.fe-tablo { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 560px; }
+.fe-tablo th, .fe-tablo td { border-bottom: 1px solid var(--cizgi); border-right: 1px solid var(--cizgi); padding: 6px 8px; vertical-align: top; text-align: left; }
+.fe-tablo thead th { font-size: 14px; }
+.fe-tablo tbody th { color: var(--metin-2); width: 70px; }
+.fe-tablo td { color: var(--metin-2); width: 23%; }
+.fe-tablo tr.fe-aktif th, .fe-tablo tr.fe-aktif td { background: rgba(255, 181, 71, .07); }
+@media (max-width: 760px) {
+  .fe-ag { height: 300px; }
+  .fe-kavram { min-width: 0; font-size: 12.5px; padding: 5px 8px; }
+  .fe-merkez { font-size: 12px; padding: 8px 10px; }
+  .fe-cubuklar div { grid-template-columns: 110px 1fr 20px; }
+}
+.fe-deste { position: sticky; top: -16px; z-index: 3; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: var(--radius); background: rgba(23, 34, 52, .97); border: 1px solid var(--vurgu); box-shadow: 0 8px 20px rgba(0, 0, 0, .35); }
+.fe-deste-kart { cursor: default; font-size: 15px; border-color: var(--vurgu); background: rgba(255, 181, 71, .1); }
+@media (max-width: 760px) {
+  .fe-deste { top: -12px; padding: 8px; gap: 6px; }
+  .fe-deste .ok-geri:not(.dogru):not(.yanlis) { display: none; }
+  .fe-deste .ok-geri { font-size: 13px; padding: 6px 8px; min-height: 0; }
+  .fe-deste-kart { font-size: 13.5px; padding: 6px 10px; }
+}

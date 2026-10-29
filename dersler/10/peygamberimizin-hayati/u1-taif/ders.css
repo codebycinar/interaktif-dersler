@@ -1,0 +1,41 @@
+/* Peygamberimizin Hayatı 1. ünite (Taif) — derse özel bileşenler */
+.ph-soluk { color: var(--metin-2); font-size: 13.5px; }
+.ph-yesil { color: var(--yesil); }
+.ph-siklar { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.ph-siklar .ok-kart { text-align: left; }
+.ph-siklar .ok-kart[aria-pressed="true"] { border-color: var(--vurgu); background: rgba(255, 181, 71, .1); }
+.ph-siklar .ok-kart.dogru { border-color: var(--yesil); background: rgba(90, 211, 139, .12); }
+.ph-siklar .ok-kart.yanlis { border-color: var(--kirmizi); background: rgba(255, 107, 107, .1); }
+
+/* SVG grafikleri */
+.ph-profil, .ph-grafik { width: 100%; height: auto; display: block; }
+.ph-profil text, .ph-grafik text { fill: var(--metin-2); font-family: var(--font); font-size: 12px; }
+.ph-profil text.ph-b, .ph-grafik text.ph-b { fill: var(--metin); font-weight: 700; }
+.ph-dag { fill: rgba(90, 211, 139, .16); }
+.ph-dag-cizgi { fill: none; stroke: var(--yesil); stroke-width: 2.5; stroke-linejoin: round; }
+.ph-izgara { stroke: rgba(169, 182, 201, .18); stroke-width: 1; }
+.ph-cubuk { fill: var(--vurgu-2); opacity: .8; }
+.ph-cubuk.vurgu { fill: var(--vurgu); opacity: 1; }
+.ph-cubuk.bugun { fill: var(--yesil); }
+.ph-grafik text.ph-deger { fill: var(--metin); font-family: var(--mono); font-size: 12px; }
+
+/* 3. adım: yolculuk oynatıcısı */
+.ph-oynatici { display: flex; flex-direction: column; gap: 10px; }
+.ph-durak { min-height: 92px; font-size: 14.5px; border-left: 3px solid var(--mor); }
+
+/* 5. adım */
+.ph-yanit { margin-top: 8px; padding: 8px 12px; border-left: 3px solid var(--vurgu); background: rgba(255, 181, 71, .08); border-radius: 0 8px 8px 0; font-size: 14.5px; }
+.ph-yanit p { margin: 0; }
+.ok-kutu .d-satir .d-btn[aria-pressed="true"] { border-color: var(--vurgu); color: var(--vurgu); background: rgba(255, 181, 71, .1); }
+
+/* 6. adım: araştırma */
+.ph-bilgi { min-height: 64px; font-size: 14.5px; }
+.ph-arastir { border-left: 3px solid var(--yesil); }
+.ph-kaynak { margin: 6px 0 8px; padding: 8px 12px; background: var(--zemin); border-radius: 8px; font-size: 14.5px; font-style: italic; }
+
+/* 9. adım: köşe yazısı denetimi */
+.ph-unsurlar { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+.ph-unsur { font-size: 12.5px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--cizgi); color: var(--metin-2); }
+.ph-unsur.var { border-color: var(--yesil); color: var(--yesil); background: rgba(90, 211, 139, .1); }
+.ph-ozdeg { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.ph-ozdeg label { color: var(--metin-2); cursor: pointer; }

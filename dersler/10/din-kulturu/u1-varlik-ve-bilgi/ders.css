@@ -1,0 +1,59 @@
+/* DKAB 1. ünite — derse özel bileşenler */
+.dk-soluk { color: var(--metin-2); font-size: 13.5px; }
+.dk-siklar { display: flex; flex-direction: column; gap: 6px; }
+.dk-kunye { color: var(--vurgu); font-size: .88em; font-weight: 600; white-space: nowrap; }
+.dk-ayet { font-style: italic; }
+.dk-liste { margin: 6px 0 0; padding-left: 20px; font-size: 14px; }
+.dk-liste li { margin: 3px 0; }
+
+/* 2. adım: yanılsama ve haber modeli */
+.dk-yanilsama svg, .dk-haber-svg { width: 100%; height: auto; display: block; }
+.dk-yanilsama .dk-cizgi line, .dk-yanilsama .dk-cizgi polyline { stroke: var(--metin); stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.dk-yanilsama text, .dk-haber-svg text { fill: var(--metin-2); font-family: var(--font); font-size: 14px; }
+.dk-yanilsama text.dk-b, .dk-haber-svg text.dk-b { fill: #10203a; font-weight: 800; font-size: 15px; }
+.dk-yanilsama > svg > text.dk-b { fill: var(--metin); font-size: 20px; }
+.dk-cetvel rect { fill: var(--vurgu-2); opacity: .75; }
+.dk-cetvel text { fill: var(--vurgu-2); font-family: var(--mono); font-size: 13px; }
+.dk-hat { stroke: var(--vurgu-2); stroke-width: 1.6; opacity: .8; }
+.dk-hat.soluk { opacity: .35; }
+.dk-kisi { fill: var(--panel-2); stroke: var(--vurgu-2); stroke-width: 2; }
+.dk-kaynak { fill: var(--kirmizi); opacity: .85; }
+.dk-olay { fill: var(--yesil); }
+.dk-sen { fill: var(--vurgu); }
+.dk-haber-baslik { margin-bottom: 4px; }
+.dk-durum { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dk-durum .d-gosterge b { font-size: 15px; }
+.dk-mut { border-color: var(--yesil); background: rgba(90, 211, 139, .12); }
+.dk-mut b { color: var(--yesil); }
+
+/* 4–5. adım: merak ve bilgi kutusu */
+.dk-merak { margin-top: 4px; }
+.dk-merak .d-btn[aria-pressed="true"], .ok-sekmeler .d-btn[data-konu][aria-pressed="true"] { border-color: var(--renk, var(--vurgu)); color: var(--renk, var(--vurgu)); background: rgba(255, 181, 71, .1); }
+.dk-hazir { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.dk-hazir .ok-kart { text-align: left; }
+.d-girdi input.dk-girdi { flex: 1; min-width: 180px; width: auto; font-family: var(--font); font-size: 15px; }
+.dk-kutu-sar { border: 2px dashed var(--vurgu); border-radius: var(--radius); background: rgba(255, 181, 71, .05); padding: 8px 10px; }
+.dk-kutu-ust { font-weight: 700; margin-bottom: 6px; }
+.dk-kutu { display: flex; flex-direction: column; gap: 6px; }
+.dk-kutu-soru { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-left: 4px solid var(--renk); background: var(--zemin); border-radius: 0 8px 8px 0; font-size: 14.5px; }
+.dk-kutu-soru > span { font-size: 11.5px; color: var(--renk); font-weight: 700; white-space: nowrap; }
+.dk-kutu-soru .d-btn { margin-left: auto; }
+
+/* 8. adım: ayet çözümleme */
+.dk-kunye-baslik { color: var(--vurgu); font-weight: 700; font-size: 14px; }
+.dk-ayet-metin { font-size: 18px; line-height: 2; margin: 4px 0 0; text-align: left; word-spacing: 0; }
+.dk-kelime { font: inherit; color: inherit; background: none; border: none; padding: 1px 2px; border-radius: 4px; cursor: pointer; }
+button.dk-kelime { border-bottom: 2px dotted var(--metin-2); }
+button.dk-kelime:hover { background: rgba(255, 181, 71, .12); }
+button.dk-kelime.bulundu { color: var(--vurgu); border-bottom: 2px solid var(--vurgu); background: rgba(255, 181, 71, .1); }
+span.dk-kelime.soluk:hover { background: rgba(255, 255, 255, .05); }
+.dk-bilgi-karti { min-height: 70px; font-size: 14.5px; border-left: 3px solid var(--vurgu); }
+
+/* 9. adım: durumlar */
+.dk-durum-kart { font-size: 15px; }
+.dk-durum-kart .ok-kart { text-align: left; }
+
+@media (max-width: 760px) {
+  .dk-durum { grid-template-columns: 1fr; }
+  .dk-ayet-metin { font-size: 16px; }
+}

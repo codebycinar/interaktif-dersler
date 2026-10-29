@@ -65,6 +65,14 @@ tools/           müfredat çekici, paketleyici
 | Sınıf | Ders | Ünite | Ders | Öğrenme çıktıları |
 |---|---|---|---|---|
 | 10 | Fizik | 1. Kuvvet ve Hareket | Yolda Hareket: Sabit Hız ve Sabit İvme | FİZ.10.1.1 · FİZ.10.1.2 · FİZ.10.1.3 |
+| 10 | Matematik | 1. Tema: Geometrik Şekiller | Dik Üçgende Trigonometri: Açının Değişmeyen Oranları | MAT.10.1.1 |
+| 10 | Matematik | 1. Tema: Geometrik Şekiller | Üçgenin Gizli Merkezleri: Yardımcı Elemanlar | MAT.10.1.2 |
+| 10 | Matematik | 1. Tema: Geometrik Şekiller | Üçgende Alan, Sinüs ve Kosinüs Teoremleri | MAT.10.1.3 · MAT.10.1.4 |
+| 10 | Felsefe | 1. Ünite: Felsefenin Doğası | Bilgeliği Sevmek: Felsefe Nedir, Ne İşe Yarar? | FEL.10.1.1 |
+| 10 | Din Kültürü ve Ahlak Bilgisi | 1. Ünite: İslam'da Varlık ve Bilgi | Bunu Nereden Biliyorsun? Bilgi, Varlık ve Tefekkür | DKAB.10.1.1 · DKAB.10.1.2 · DKAB.10.1.3 |
+| 10 | Peygamberimizin Hayatı | 1. Ünite: Taif | Taşlandığı Şehir İçin Dua: Taif'in On Bir Yılı | PH.10.1.1 · PH.10.1.2 |
+
+Tarih, coğrafya, kimya ve bazı başka derslerde geçen tarih, sayı ve konum bilgileri öğretmen/uzman kontrolünü bekliyor; temsilî olan yerler derste belirtilir.
 
 Yol haritası: [PLAN.md](PLAN.md)
 

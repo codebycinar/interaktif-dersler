@@ -1,0 +1,12 @@
+{
+  "slug": "fel10-u1-felsefenin-dogasi",
+  "sinif": 10,
+  "ders": "Felsefe",
+  "unite": "1. Ünite: Felsefenin Doğası",
+  "baslik": "Bilgeliği Sevmek: Felsefe Nedir, Ne İşe Yarar?",
+  "soru": "Limandaki bir geminin bütün tahtaları tek tek değiştirilse, geriye kalan hâlâ aynı gemi midir? Böyle bir soruyu sormak ne işe yarar?",
+  "tur": "Sınıflandırma oyunları + düşünce deneyi + zaman çizelgesi + soru atölyesi",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 30,
+  "ciktiKodlari": ["FEL.10.1.1"]
+}

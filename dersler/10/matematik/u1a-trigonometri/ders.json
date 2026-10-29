@@ -1,0 +1,15 @@
+{
+  "slug": "mat10-u1a-trigonometri",
+  "sinif": 10,
+  "ders": "Matematik",
+  "unite": "1. Tema: Geometrik Şekiller",
+  "baslik": "Dik Üçgende Trigonometri: Açının Değişmeyen Oranları",
+  "soru": "Mahallendeki caminin minaresine çıkmadan, yalnızca bir açıölçer ve şerit metreyle boyunu bulabilir misin?",
+  "tur": "Etkileşimli geometri (sürüklenebilir dik üçgen, birim çember)",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 260,
+  "ciktiKodlari": [
+    "MAT.10.1.1"
+  ],
+  "yerlesim": "tam"
+}

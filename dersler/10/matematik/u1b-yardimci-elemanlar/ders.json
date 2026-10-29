@@ -1,0 +1,15 @@
+{
+  "slug": "mat10-u1b-yardimci-elemanlar",
+  "sinif": 10,
+  "ders": "Matematik",
+  "unite": "1. Tema: Geometrik Şekiller",
+  "baslik": "Üçgenin Gizli Merkezleri: Yardımcı Elemanlar",
+  "soru": "Üç köy ortak bir su deposu kuracak. Deponun yeri her köye eşit uzaklıkta olsun istiyorlar. Haritada bu noktayı nasıl bulursun?",
+  "tur": "Etkileşimli geometri (sürüklenebilir üçgen, kesişim noktaları)",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 260,
+  "ciktiKodlari": [
+    "MAT.10.1.2"
+  ],
+  "yerlesim": "tam"
+}

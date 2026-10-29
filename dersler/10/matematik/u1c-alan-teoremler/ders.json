@@ -1,0 +1,16 @@
+{
+  "slug": "mat10-u1c-alan-teoremler",
+  "sinif": 10,
+  "ders": "Matematik",
+  "unite": "1. Tema: Geometrik Şekiller",
+  "baslik": "Üçgende Alan, Sinüs ve Kosinüs Teoremleri",
+  "soru": "Denizi geçmeden karşı kıyıdaki saat kulesinin sana kaç metre uzakta olduğunu bulabilir misin?",
+  "tur": "Etkileşimli geometri + 3B ölçüm sahnesi (teodolit)",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 260,
+  "ciktiKodlari": [
+    "MAT.10.1.3",
+    "MAT.10.1.4"
+  ],
+  "yerlesim": "tam"
+}

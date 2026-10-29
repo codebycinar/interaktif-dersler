@@ -1,0 +1,12 @@
+{
+  "slug": "dkab10-u1-varlik-ve-bilgi",
+  "sinif": 10,
+  "ders": "Din Kültürü ve Ahlak Bilgisi",
+  "unite": "1. Ünite: İslam'da Varlık ve Bilgi",
+  "baslik": "Bunu Nereden Biliyorsun? Bilgi, Varlık ve Tefekkür",
+  "soru": "Hiç görmediğin hâlde Çanakkale Savaşı'nın yapıldığını kesin olarak biliyorsun. Peki gruplarda binlerce kez paylaşılan bir haber neden kesin bilgi değildir?",
+  "tur": "Bilgi kaynakları deneyleri + haber modeli + kavram haritası + bilgi kutusu + ayet çözümleme",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 144,
+  "ciktiKodlari": ["DKAB.10.1.1", "DKAB.10.1.2", "DKAB.10.1.3"]
+}
