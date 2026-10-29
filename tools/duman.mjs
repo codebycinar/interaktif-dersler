@@ -165,7 +165,12 @@ for (const d of dersler) {
     }
 
     // mobil görünüm
+    // isMobile değişince Puppeteer sayfayı yeniden yükler: giriş kartı yeniden açılır, kapat
     await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+    await page.waitForSelector(".d-adimlar li button", { timeout: 15000 }).catch(() => {});
+    await bekle(500);
+    await page.evaluate(() => [...document.querySelectorAll(".d-giris button")].find((b) => /^(Başla|Baştan başla|Devam et)/.test(b.textContent))?.click());
+    await bekle(300);
     await adimaGit(0);
     await page.screenshot({ path: join(cikti, "mobil.png"), fullPage: true });
     await page.close();

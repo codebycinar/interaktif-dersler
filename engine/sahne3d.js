@@ -80,7 +80,7 @@ const yumusak = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
  */
 export function sahne3dKur(kap, {
   kameraKonum = [0, 20, 40], hedef = [0, 0, 0], arkaPlan = 0x0d1522, sis = null,
-  ortam = true, isik = "studyo", pozlama = 1, gorusAcisi = 45,
+  ortam = true, isik = "studyo", pozlama = 1, gorusAcisi = 45, uzaklik = [5, 400],
 } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: kalite !== "dusuk", powerPreference: "high-performance" });
   const azamiOran = { dusuk: 1, orta: 1.5, yuksek: 2 }[kalite];
@@ -112,8 +112,8 @@ export function sahne3dKur(kap, {
   kontrol.target.set(...hedef);
   kontrol.enableDamping = true;
   kontrol.maxPolarAngle = Math.PI * 0.49;
-  kontrol.minDistance = 5;
-  kontrol.maxDistance = 400;
+  // kullanıcının yakınlaştırma sınırı; kameraGit/kameraKoy bu sınıra kırpılır, büyük sahnelerde uzaklik ile genişletin
+  [kontrol.minDistance, kontrol.maxDistance] = uzaklik;
 
   const gok = new THREE.HemisphereLight(0xdfeaff, 0x3a3326, isik === "studyo" ? 0.55 : 1.1);
   const gunes = new THREE.DirectionalLight(0xfff4e6, isik === "studyo" ? 2.6 : 2.2);

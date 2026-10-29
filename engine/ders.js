@@ -270,6 +270,7 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
       gorevTamam() {
         if (!depo.tamam.includes(i)) { depo.tamam.push(i); depoYaz(depo); }
         gorevKutusu?.classList.add("tamam");
+        gorevKutusu?.classList.remove("onceden");
         ilerlemeGuncelle();
       },
       gorevTamamMi: () => depo.tamam.includes(i),
@@ -409,7 +410,7 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
     }, "🔊 Dinle");
 
     const kontroller = el("div", { class: "d-kontroller" });
-    gorevKutusu = a.gorev ? el("div", { class: `d-gorev${depo.tamam.includes(i) ? " tamam" : ""}`, html: a.gorev }) : null;
+    gorevKutusu = a.gorev ? el("div", { class: `d-gorev${depo.tamam.includes(i) ? " tamam onceden" : ""}`, html: a.gorev }) : null;
     // Adım adım anlatım varsa: önce kareler, bitince "Şimdi sen dene" bölümü açılır
     const adimAdim = Array.isArray(a.anlat) && a.anlat.length > 0;
     const uygulamaBlok = el("div", { class: "d-uygulama-blok" },
