@@ -151,6 +151,7 @@ export function anlatimAkisi({ kareler, api, ctx, ses, bitince, ozetHtml }) {
     n = -1; bitti = false; bekliyor = false;
     kok.classList.remove("bitti");
     devamBtn.hidden = false;
+    if (ozetKutu) ozetKutu.hidden = true;
     ileri();
   }
 

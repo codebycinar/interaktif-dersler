@@ -1,0 +1,67 @@
+/* Biyoloji 10 · u1a: ATP pili, denklem şeridi, kloroplast lejantı */
+.bio-pil {
+  position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+  background: rgba(15, 23, 36, .88); border: 1px solid var(--cizgi); border-radius: var(--radius); padding: 8px 12px;
+}
+.bio-pil b { font-size: 13px; color: var(--vurgu); }
+.bio-pil span { font-family: var(--mono); font-size: 13px; color: var(--metin-2); }
+.bio-pil-govde { display: flex; gap: 4px; padding: 4px; border: 2px solid var(--metin-2); border-radius: 6px; position: relative; }
+.bio-pil-govde::after { content: ""; position: absolute; right: -8px; top: 30%; width: 5px; height: 40%; background: var(--metin-2); border-radius: 0 3px 3px 0; }
+.bio-pil-govde i { width: 18px; height: 28px; border-radius: 3px; background: #2b3444; transition: background .3s; }
+.bio-pil-govde i.dolu { background: var(--yesil); box-shadow: 0 0 8px rgba(90, 211, 139, .6); }
+.bio-denklem {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); white-space: nowrap;
+  background: rgba(15, 23, 36, .88); border: 1px solid var(--cizgi); border-radius: 999px; padding: 6px 16px;
+  font-family: var(--mono); color: var(--vurgu-2); font-size: 15px;
+}
+.bio-lejant {
+  position: absolute; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px 12px; max-width: calc(100% - 24px);
+  background: rgba(15, 23, 36, .85); border: 1px solid var(--cizgi); border-radius: 10px; padding: 6px 10px; font-size: 13px;
+}
+.bio-lejant span { display: inline-flex; align-items: center; gap: 5px; }
+.bio-lejant i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.bio-bilgi-kutu { border: 1px solid var(--cizgi); border-radius: 10px; padding: 8px 10px; background: var(--zemin); font-size: 14.5px; }
+.d-btn.bio-yapildi { border-color: var(--yesil); color: var(--yesil); }
+.d-btn.bio-yapildi::before { content: "✓"; }
+@media (max-width: 760px) {
+  .bio-denklem { font-size: 12px; bottom: 8px; }
+  .bio-pil-govde i { width: 13px; height: 22px; }
+}
+
+/* Tam ekran 3B dünya: ortam geçişi karartması ve sahne üstü bilgi panelleri */
+.bio-perde { position: absolute; inset: 0; background: #05080d; opacity: 0; pointer-events: none; transition: opacity .38s ease-out; }
+.bio-hud {
+  position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; align-items: stretch; gap: 4px;
+  background: rgba(15, 23, 36, .86); border: 1px solid var(--cizgi); border-radius: var(--radius); padding: 8px 10px;
+  font-size: 13px; color: var(--metin-2); backdrop-filter: blur(8px);
+}
+.bio-akis-gun { font-size: 13px; text-align: center; } .bio-akis-gun b { color: var(--metin); font-size: 16px; }
+.bio-akis { width: 150px; }
+.bio-akis-kutu { border: 1.5px solid var(--renk); border-radius: 8px; padding: 3px 8px; text-align: center; background: rgba(0, 0, 0, .25); }
+.bio-akis-kutu b { display: block; color: var(--renk); font-size: 13px; } .bio-akis-kutu span { font-family: var(--mono); }
+.bio-akis-ok { align-self: center; width: var(--k); height: 14px; background: #ffe066; position: relative; margin-bottom: 6px; border-radius: 2px; }
+.bio-akis-ok::after { content: ""; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); border: 7px solid transparent; border-top-color: #ffe066; border-bottom: 0; width: 0; height: 0; margin-left: 0; border-left-width: calc(var(--k) / 2 + 5px); border-right-width: calc(var(--k) / 2 + 5px); }
+.bio-akis-yok { align-self: center; color: #ff6b6b; font-style: normal; font-weight: 700; }
+.bio-gaz { width: 150px; align-items: center; } .bio-gaz small { font-size: 11px; }
+.bio-gaz-ikili { display: flex; gap: 14px; }
+.bio-gaz-cubuk { display: flex; flex-direction: column; align-items: center; gap: 3px; font-family: var(--mono); }
+.bio-gaz-tup { width: 26px; height: 130px; border: 1px solid var(--cizgi); border-radius: 6px; position: relative; overflow: hidden; background: #0b111b; }
+.bio-gaz-tup > i { position: absolute; left: 3px; right: 3px; bottom: 3px; border-radius: 3px; transition: height .2s; }
+.bio-gaz-esik { position: absolute; left: 0; right: 0; height: 0; border-top: 2px dashed #ff6b6b; }
+.bio-sayac { width: 128px; align-items: center; text-align: center; }
+.bio-sayac b { font-size: 32px; color: var(--vurgu); font-family: var(--mono); line-height: 1.1; }
+.bio-sayac.aktif { border-color: var(--vurgu); }
+@media (max-width: 760px) {
+  .bio-hud { top: 6px; right: 6px; padding: 5px 7px; font-size: 11px; }
+  .bio-akis { width: 118px; } .bio-gaz-tup { height: 80px; } .bio-sayac b { font-size: 24px; }
+}
+@media (max-width: 760px) {
+  .bio-akis { width: 92px; gap: 2px; } .bio-akis-kutu { padding: 1px 4px; } .bio-akis-kutu b { font-size: 10px; } .bio-akis-kutu span { font-size: 10px; }
+  .bio-akis-ok { height: 6px; margin-bottom: 4px; } .bio-akis-ok::after { border-top-width: 4px; bottom: -4px; }
+}
+/* Anlatım karesinde sözü edilen yapının iğnesi parlar */
+.d-igne.bio-vurgu { z-index: 3; }
+.d-igne.bio-vurgu > span { box-shadow: 0 0 0 3px var(--renk), 0 0 22px var(--renk); animation: bio-nabiz 1.2s ease-in-out infinite; }
+.d-igne.bio-vurgu > i { box-shadow: 0 0 0 6px color-mix(in srgb, var(--renk) 45%, transparent); }
+@keyframes bio-nabiz { 50% { box-shadow: 0 0 0 5px var(--renk), 0 0 34px var(--renk); } }
+@media (prefers-reduced-motion: reduce) { .d-igne.bio-vurgu > span { animation: none; } }

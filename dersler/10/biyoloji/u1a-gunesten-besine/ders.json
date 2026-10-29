@@ -1,0 +1,17 @@
+{
+  "slug": "bio10-u1a-gunesten-besine",
+  "sinif": 10,
+  "ders": "Biyoloji",
+  "unite": "1. Tema: Enerji",
+  "baslik": "Güneşten Besine: ATP ve Fotosentez",
+  "soru": "Güneş bir gün sönse, hiç ot yemeyen bir tilki de aç kalır mıydı? Bir su bitkisinin çıkardığı kabarcıkları sayarak fotosentezin sırrını çözebilir misin?",
+  "tur": "3B model + deney simülasyonu + canlı grafik",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 8,
+  "ciktiKodlari": [
+    "BİY.10.1.1",
+    "BİY.10.1.2",
+    "BİY.10.1.3"
+  ],
+  "yerlesim": "tam"
+}

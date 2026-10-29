@@ -65,6 +65,7 @@ tools/           müfredat çekici, paketleyici
 | Sınıf | Ders | Ünite | Ders | Öğrenme çıktıları |
 |---|---|---|---|---|
 | 10 | Fizik | 1. Kuvvet ve Hareket | Yolda Hareket: Sabit Hız ve Sabit İvme | FİZ.10.1.1 · FİZ.10.1.2 · FİZ.10.1.3 |
+| 10 | Biyoloji | 1. Tema: Enerji | Güneşten Besine: ATP ve Fotosentez | BİY.10.1.1 · BİY.10.1.2 · BİY.10.1.3 |
 | 10 | Matematik | 1. Tema: Geometrik Şekiller | Dik Üçgende Trigonometri: Açının Değişmeyen Oranları | MAT.10.1.1 |
 | 10 | Matematik | 1. Tema: Geometrik Şekiller | Üçgenin Gizli Merkezleri: Yardımcı Elemanlar | MAT.10.1.2 |
 | 10 | Matematik | 1. Tema: Geometrik Şekiller | Üçgende Alan, Sinüs ve Kosinüs Teoremleri | MAT.10.1.3 · MAT.10.1.4 |
