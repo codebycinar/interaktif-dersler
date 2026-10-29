@@ -449,7 +449,7 @@ function sinav(katman, sorular, { baslik = "Değerlendirme", gecmeOrani = 0.7 } 
     kart.replaceChildren(
       el("h3", {}, `${baslik} · Soru ${n + 1}/${sorular.length}`),
       noktalar(),
-      grafikKap,
+      ...(grafikKap ? [grafikKap] : []),
       el("div", { class: "d-soru-metni", html: s.metin }),
       govde, aciklama,
       el("div", { class: "d-satir", style: "margin-top:14px;justify-content:flex-end" }, sonraki));
