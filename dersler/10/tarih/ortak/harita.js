@@ -509,6 +509,8 @@ export function haritaKur(kap, ayar = {}) {
     get kutu() { return d.kutu; },
     /** Görünür alandan düşülen pay (tahta, şerit) */
     get pay() { return d.pay; },
+    /** Zeminin geçerli ayarlarının kopyası (anlatım karesi geçici değişikliği geri almak için) */
+    get ayar() { return { ...d }; },
     /** Kutunun dünya birimindeki genişliğinin yüzde biri: maket nesnelerin boyu için */
     get olcek() { return gorus?.olcek || 1; },
     get mod() { return arazi?.mod; },

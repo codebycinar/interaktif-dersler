@@ -359,13 +359,14 @@ export function araziUret(sinirlar, katmanlar, { kabartma = true, akarsu = true,
     const f = { type: "Polygon", coordinates: [saatYonu(yumusat(g.halka, true))] };
     if (g.tuzlu) {
       // tuz gölü: kıyıda yumuşak geçişli tuzla düzlüğü, ortada sığ, açık turkuaz su (bulanıklaştırma filtresi yavaş: katmanlı çizgiler)
-      const w = Math.max(2, pxDerece * 0.1);
-      for (let k = 4; k >= 1; k--) { c.strokeStyle = `rgba(226,222,206,${0.22 * (5 - k) / 4})`; c.lineWidth = (w * k) / 2; c.beginPath(); yol(f); c.stroke(); }
+      const w = Math.max(1.5, pxDerece * 0.012);
+      for (let k = 3; k >= 1; k--) { c.strokeStyle = `rgba(214,210,190,${0.18 * (4 - k) / 3})`; c.lineWidth = w * k; c.beginPath(); yol(f); c.stroke(); }
       c.save(); c.beginPath(); yol(f); c.clip();
       c.fillStyle = `#${P.tuz.getHexString()}`; c.fill();
       const r = rastgeleSayi(11);
+      const mx = g.halka.reduce((t, q) => t + q[0], 0) / g.halka.length, my = g.halka.reduce((t, q) => t + q[1], 0) / g.halka.length;
       for (let i = 0; i < 26; i++) {
-        const q = g.halka[i % g.halka.length], [x, y] = proj([q[0] * 0.6 + 33.45 * 0.4 + (r() - 0.5) * 0.2, q[1] * 0.6 + 38.75 * 0.4 + (r() - 0.5) * 0.2]);
+        const q = g.halka[i % g.halka.length], [x, y] = proj([q[0] * 0.6 + mx * 0.4 + (r() - 0.5) * 0.12, q[1] * 0.6 + my * 0.4 + (r() - 0.5) * 0.12]);
         const R = pxDerece * (0.06 + r() * 0.08);
         const gr = c.createRadialGradient(x, y, 0, x, y, R);
         gr.addColorStop(0, i % 3 ? "rgba(170,210,212,.5)" : "rgba(240,224,228,.55)"); gr.addColorStop(1, "rgba(200,220,220,0)");
@@ -423,9 +424,10 @@ export function araziUret(sinirlar, katmanlar, { kabartma = true, akarsu = true,
           if (onceki && Math.abs(ll[0] - onceki[0]) < 90) {
             const p = proj(onceki);
             const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, L = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
-            // dar koy ve dalgakıranlarda kıyı "iki yanı kara" sanılmasın: iki uzaklıkta yokla
-            const o = Math.max(2.5, Math.min(5, pxDerece * 0.003)), nx = (-(q[1] - p[1]) / L) * o, ny = ((q[0] - p[0]) / L) * o;
-            if (karaMi(mx + nx, my + ny) && karaMi(mx - nx, my - ny) && karaMi(mx + 2 * nx, my + 2 * ny) && karaMi(mx - 2 * nx, my - 2 * ny)) {
+            // dar koy, dalgakıran ve boğazlarda kıyı "iki yanı kara" sanılmasın: kenarın hemen yanında ve
+            // iki uzaklıkta yokla (boğazda karşı kıyı da karadır ama kenarın hemen dışı sudur)
+            const o = Math.max(2.5, Math.min(5, pxDerece * 0.003)), ux = -(q[1] - p[1]) / L, uy = (q[0] - p[0]) / L;
+            if ([1.2, 2, o, 2 * o].every((k) => karaMi(mx + ux * k, my + uy * k) && karaMi(mx - ux * k, my - uy * k))) {
               if (!acik) { c.moveTo(p[0], p[1]); acik = true; }
               c.lineTo(q[0], q[1]);
             } else acik = false;

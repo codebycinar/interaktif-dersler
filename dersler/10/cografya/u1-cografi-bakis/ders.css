@@ -1,0 +1,34 @@
+/* 10. sınıf coğrafya · 1. ünite */
+.cog-gizli-kutular .hrt-kutular { display: none; }
+.cog-gizli-kutular .hrt-kutu-dugmeleri .d-btn { flex: 1 1 150px; font-size: 13.5px; padding: 7px 9px; }
+.hrt-sinir.cog-sinirsiz { display: none; }
+.cog-gol { fill-opacity: .75; stroke-opacity: .9; }
+.cog-halka { fill: rgba(90, 211, 139, .08); stroke: #5ad38b; stroke-width: 1.6; stroke-dasharray: 6 5; }
+.cog-hedef { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; padding: 8px 12px; border-radius: 10px; background: rgba(79, 195, 247, .1); border: 1px solid rgba(79, 195, 247, .35); }
+.cog-hedef b { font-size: 18px; letter-spacing: .3px; }
+.cog-katmanlar .d-btn[aria-pressed="true"] { border-color: var(--vurgu-2); }
+.cog-pusula { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; max-width: 360px; margin: 8px 0; }
+.cog-pusula .d-btn { padding: 7px 4px; font-size: 13.5px; }
+.cog-pusula .d-btn.yanlis { opacity: .45; }
+.cog-pusula-orta { display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12.5px; font-weight: 700; border-radius: 50%; border: 2px dashed rgba(232, 238, 247, .35); min-height: 38px; }
+.cog-olay { margin: 0 0 8px; padding: 8px 12px; border-left: 3px solid #ffb547; background: rgba(255, 181, 71, .08); border-radius: 0 10px 10px 0; font-weight: 600; }
+.cog-iklim-kap { margin: 6px 0; }
+.cog-iklim { width: 100%; max-width: 360px; display: block; }
+.cog-iklim-izgara { stroke: rgba(232, 238, 247, .12); }
+.cog-iklim-sutun { fill: #4fc3f7; fill-opacity: .75; }
+.cog-iklim-cizgi { fill: none; stroke: #ff6b6b; stroke-width: 2.2; }
+.cog-iklim-nokta { fill: #ff6b6b; }
+.cog-iklim-et { fill: #b8c4d6; font-size: 10px; }
+.cog-iklim-et.yagis { fill: #7fd3f7; }
+.cog-iklim-et.sicak { fill: #ff8f8f; }
+.cog-iklim-baslik { fill: #e8eef7; font-size: 11.5px; font-weight: 700; }
+@media (max-width: 760px) {
+  .cog-gizli-kutular .hrt-kutu-dugmeleri .d-btn { flex: 1 1 120px; font-size: 12.5px; padding: 5px 7px; }
+  .cog-pusula .d-btn { font-size: 12.5px; padding: 5px 3px; }
+}
+.hrt-harita .hrt-ulke.cog-turkiye { fill: #ffb547; fill-opacity: .8; }
+.cog-kita { fill: rgba(232, 238, 247, .45); font-size: 12px; font-weight: 700; letter-spacing: 3px; pointer-events: none; }
+.cog-dort .hrt-kutular { grid-template-columns: 1fr 1fr; }
+.cog-ozet { margin: 4px 0 0; display: grid; gap: 6px; }
+.cog-ozet dt { font-weight: 700; color: var(--vurgu); font-size: 13px; }
+.cog-ozet dd { margin: 0 0 4px; font-size: 13.5px; line-height: 1.4; color: var(--metin); }

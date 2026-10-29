@@ -1,0 +1,13 @@
+{
+  "yerlesim": "tam",
+  "slug": "cog10-u1-cografi-bakis",
+  "sinif": 10,
+  "ders": "Coğrafya",
+  "unite": "1. Ünite: Coğrafyanın Doğası",
+  "baslik": "Bir Yere Coğrafyacı Gözüyle Bakmak",
+  "soru": "Bir göl, bir boğaz ya da bir çay bahçesi hakkında coğrafyacı hangi soruları sorar? Konumu, koşulları, ilişkileri ve çevresine etkisi nasıl ortaya konur?",
+  "tur": "Örnek olay inceleme + harita etkinlikleri + coğrafi bakış raporu",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 56,
+  "ciktiKodlari": ["COĞ.10.1.1"]
+}
