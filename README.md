@@ -80,6 +80,8 @@ tools/           müfredat çekici, paketleyici
 | 10 | Türk Dili ve Edebiyatı | 1. Tema: Sözün Ezgisi | Masaldan Film Şeridine: Konuşan Kaval | TDE1.1 · TDE1.2 · TDE1.3 · TDE1.4 · TDE4.1 · TDE4.2 · TDE4.3 · TDE4.4 |
 | 10 | İngilizce | Theme 1: School Life & Education | Schools Around the World: Listen and Read | ENG.10.1.L1 · ENG.10.1.L2 · ENG.10.1.L3 · ENG.10.1.L4 · ENG.10.1.P1 · ENG.10.1.R1 · ENG.10.1.R2 · ENG.10.1.R3 · ENG.10.1.R4 · ENG.10.1.V1 |
 | 10 | İngilizce | Theme 1: School Life & Education | Clubs, Stress and Celebrations: Speak and Write | ENG.10.1.G1 · ENG.10.1.S1 · ENG.10.1.S2 · ENG.10.1.S3 · ENG.10.1.S4 · ENG.10.1.S5 · ENG.10.1.S6 · ENG.10.1.W1 · ENG.10.1.W2 · ENG.10.1.W3 · ENG.10.1.W4 · ENG.10.1.W5 · ENG.10.1.W6 · ENG.10.1.W7 |
+| 10 | Tarih | 1. Ünite: Türkistan'dan Türkiye'ye (1040-1299) | Dandanakan'dan Kösedağ'a: Savaşlar ve Devlet | TAR.10.1.1 · TAR.10.1.2 |
+| 10 | Tarih | 1. Ünite: Türkistan'dan Türkiye'ye (1040-1299) | Kervan Yolundan Medreseye: Şehir, Ticaret ve Medeniyet | TAR.10.1.3 · TAR.10.1.4 |
 
 Tarih, coğrafya, kimya ve bazı başka derslerde geçen tarih, sayı ve konum bilgileri öğretmen/uzman kontrolünü bekliyor; temsilî olan yerler derste belirtilir.
 

@@ -1,0 +1,23 @@
+/* 10. sınıf tarih · 1. ders */
+.tar-kart-listesi { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.tar-kart-listesi .hrt-kart { padding: 6px 9px; font-size: 13.5px; }
+.tar-rozet:hover circle { stroke: #fff; }
+.tar-kaynak { border-left: 3px solid var(--vurgu-2); background: rgba(79, 195, 247, .07); border-radius: 0 10px 10px 0; padding: 8px 12px; }
+.tar-kaynak p { margin: 0 0 6px; font-size: 14.5px; line-height: 1.45; font-style: italic; }
+.tar-kaynak small { color: var(--metin-2); font-size: 12px; }
+.tar-cubuklar { position: absolute; top: 12px; right: 56px; width: min(330px, 60%); display: flex; flex-direction: column; gap: 6px;
+  background: rgba(13, 19, 30, .9); border: 1px solid var(--cizgi); border-radius: 12px; padding: 10px 12px; }
+.tar-cubuk-baslik { font-size: 12px; color: var(--metin-2); text-transform: uppercase; letter-spacing: .05em; }
+.tar-cubuk { display: grid; grid-template-columns: 1fr 34px; gap: 2px 8px; align-items: center; font-size: 12.5px; }
+.tar-cubuk > span { grid-column: 1 / -1; }
+.tar-cubuk-hat { position: relative; height: 9px; border-radius: 5px; background: var(--panel-2); }
+.tar-cubuk-hat i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; transition: width .25s; }
+.tar-cubuk-hat b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #fff; opacity: .8; }
+.tar-cubuk output { font-family: var(--mono); text-align: right; }
+@media (max-width: 760px) {
+  .tar-kart-listesi { grid-template-columns: 1fr; }
+  .tar-cubuklar { top: auto; bottom: 6px; right: 6px; width: 62%; padding: 6px 8px; gap: 3px; }
+  .tar-cubuk { font-size: 11px; }
+}
+
+body.d-gosterimde .tar-cubuklar { display: none; }
