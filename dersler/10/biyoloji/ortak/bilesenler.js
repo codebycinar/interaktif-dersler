@@ -64,7 +64,7 @@ export const karistir = (dizi) => dizi.map((v) => [Math.random(), v]).sort((p, q
 /** Sahne üstünde kaydırılabilir kart (katman içinde) */
 export function ortuKart(ctx, baslik, { stilEk = "" } = {}) {
   stil();
-  const kart = el("div", { class: "bio-ortu-kart", style: stilEk }, baslik ? el("h3", {}, baslik) : null);
+  const kart = el("div", { class: "bio-ortu-kart d-alistirma", style: stilEk }, baslik ? el("h3", {}, baslik) : null);
   ctx.katman.append(kart);
   return kart;
 }

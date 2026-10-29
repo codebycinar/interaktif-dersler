@@ -3,7 +3,14 @@ import { gorevTamamMi, gorevBekle, kaydir, dugme, yerlestir, sinaviCoz, telefon 
 
 // 3B dünyadaki iğne etiketleri ve sahne üstü paneller
 const igneler = (page) => page.evaluate(() => [...document.querySelectorAll(".d-igne")].filter((e) => e.style.display !== "none").map((e) => e.textContent));
-const igneVar = async (page, metin) => (await igneler(page)).some((t) => t.includes(metin));
+// iğne görünürlüğü birkaç karede bir ölçülür (panel altı gizleme); yavaş makinede 10 sn'ye kadar bekle
+const igneVar = async (page, metin) => {
+  for (let t = 0; t < 20; t++) {
+    if ((await igneler(page)).some((x) => x.includes(metin))) return true;
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  return false;
+};
 const metin = (page, secici) => page.evaluate((s) => document.querySelector(s)?.textContent || "", secici);
 // karartmalı geçiş yavaş makinede (CI) uzayabilir: 10 sn'ye kadar açılmasını bekle
 const perdeAcik = (page) => page.waitForFunction(() => parseFloat(getComputedStyle(document.querySelector(".bio-perde")).opacity) < 0.05, { timeout: 10000 }).then(() => true, () => false);

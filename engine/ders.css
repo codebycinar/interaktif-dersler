@@ -198,6 +198,8 @@ body:not(.ogretmen-modu) .d-ogretmen { display: none; }
 /* Anlatım sürerken grafik sahneyi kapatmasın: { grafik: true } diyen kareye kadar gizli */
 .d-grafikler { transition: opacity .35s, transform .35s; }
 .d-gosterimde .d-grafikler:not(.acik) { opacity: 0; transform: translateY(16px); pointer-events: none; }
+/* Sahne katmanındaki alıştırma parçaları (sınav örtüsü, sınıflandırma kartı…) anlatım bitene dek gizli */
+.d-gosterimde .d-katman > .d-alistirma { visibility: hidden; }
 .d-grafik {
   background: rgba(15, 23, 36, .88); border: 1px solid var(--cizgi); border-radius: var(--radius);
   height: clamp(140px, 26vh, 240px); position: relative; backdrop-filter: blur(4px);

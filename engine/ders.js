@@ -582,7 +582,7 @@ function secenekler({ etiket, liste, deger, degisti }) {
  * sorular: [{ metin, tur: "coktan"|"sayi", siklar?, dogru, tolerans?, birim?, aciklama, grafik?: (kap)=>void }]
  */
 function sinav(katman, sorular, { baslik = "Değerlendirme", gecmeOrani = 0.7 } = {}, gecti) {
-  const ortu = el("div", { class: "d-ortu" });
+  const ortu = el("div", { class: "d-ortu d-alistirma" });
   const kart = el("div", { class: "d-kart d-sinav" });
   ortu.append(kart);
   katman.append(ortu);
