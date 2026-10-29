@@ -1,9 +1,11 @@
 // Derse özel duman senaryosu (tools/duman.mjs çalıştırır): görevleri gerçekten yapıp tamamlandığını doğrular
-import { gorevTamamMi, gorevBekle, dugme, yerlestir, sinaviCoz, telefon, anlatKaresi } from "../ortak/duman-yardim.mjs";
+import { gorevTamamMi, gorevBekle, dugme, yerlestir, sinaviCoz, telefon, anlatKaresi, alistirmaBekle } from "../ortak/duman-yardim.mjs";
 
 const P = ".d-panel";
 
-export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
+export default async ({ page, adimaGit: git, bekle, kontrol, ekranGoruntusu }) => {
+  // yavaş makinede (CI) anlatım bitip alıştırma görünmeden düğme aranmasın
+  const adimaGit = async (i, o) => { await git(i, o); if (o?.anlatimiGec !== false) await alistirmaBekle(page); };
   // 1. adım: güvenilmez araç reddedilir, sonra beş bilgi noktası
   await adimaGit(0);
   await dugme(page, "Kaynağı belirsiz", P);
@@ -16,7 +18,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
   // 3B sahnedeki iğneye (nesneye bağlı etiket) gerçekten dokun: ilk iğne hidrotermal bacadır
   await page.evaluate(() => document.querySelector(".d-igne.tiklanir span").click());
   await bekle(300);
-  kontrol(await page.evaluate(() => document.querySelector(".d-gosterge b")?.textContent.startsWith("1 /") && document.querySelector(".d-igne.tiklanir")?.textContent.includes("✓")), "1. adım: sahnedeki iğneye dokununca bilgi toplanıyor");
+  kontrol(await page.waitForFunction(() => document.querySelector(".d-gosterge b")?.textContent.startsWith("1 /") && document.querySelector(".d-igne.tiklanir")?.textContent.includes("✓"), { timeout: 10000 }).then(() => true, () => false), "1. adım: sahnedeki iğneye dokununca bilgi toplanıyor");
   for (const ad of ["Kemosentetik bakteriler", "Dev tüp solucanı", "Midye, yengeç"]) await dugme(page, ad, P);
   kontrol(!(await gorevTamamMi(page)), "1. adım: dört bilgiyle görev henüz tamamlanmıyor");
   await dugme(page, "Bilim tarihinden", P);
@@ -105,7 +107,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
   for (const [i, k] of [[0, 4], [2, 7], [3, 6], [5, 7], [6, 4]]) {
     await adimaGit(i);
     await anlatKaresi(page, bekle, k);
-    if (i === 5) kontrol(await page.evaluate(() => document.querySelectorAll(".d-igne.bio-vurgu").length === 1 && document.querySelector(".d-uygulama-blok").hidden), "6. adım: anlatımda tek iğne vurgulu, alıştırma gizli");
+    if (i === 5) kontrol(await page.waitForFunction(() => document.querySelectorAll(".d-igne.bio-vurgu").length === 1 && document.querySelector(".d-uygulama-blok").hidden, { timeout: 10000 }).then(() => true, () => false), "6. adım: anlatımda tek iğne vurgulu, alıştırma gizli");
     await ekranGoruntusu(`anlat-${String(i + 1).padStart(2, "0")}-${k}`);
   }
 

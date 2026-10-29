@@ -344,7 +344,7 @@ const adimlar = [
     anlat: [
       { s: "Tezgâhta üç örnek var: <b>1 g şeker</b>, <b>1 g zeytinyağı</b> ve <b>1 g tavuk eti</b>.", yap: (api) => { api.vurgula(api.ig.k, api.ig.y, api.ig.p); api.bak(); } },
       { s: "Şeker bir <b>karbonhidrattır</b>. Zeytinyağı <b>yağdır</b>. Tavuk eti çoğunlukla <b>proteindir</b>." },
-      { s: "Besindeki enerjiyi <b>kilokalori (kcal)</b> ile ölçeriz. Üstteki grafik, her birinin 1 gramındaki enerjiyi gösteriyor.", yap: (api) => api.vurgula() },
+      { s: "Besindeki enerjiyi <b>kilokalori (kcal)</b> ile ölçeriz. Üstteki grafik, her birinin 1 gramındaki enerjiyi gösteriyor.", yap: (api) => { api.vurgula(); api.grafik(); } },
       { soru: "Grafiğe göre hangisinin 1 gramı en çok enerji verir?", secenekler: ["Şeker", "Zeytinyağı", "Tavuk eti"], dogru: 1,
         aciklama: "Yağın 1 gramı yaklaşık 9 kcal verir; şeker ve protein yaklaşık 4 kcal.", ipucu: "Grafikteki en uzun çubuğa bak.", yap: (api) => api.vurgula(api.ig.y) },
       { formul: [["enerji", "kcal"], ["="], ["kütle", "gram"], ["×"], ["kcal/g", "1 gramın enerjisi"]],
@@ -397,14 +397,15 @@ const adimlar = [
         { ad: "l", etiket: "Laktik asit", ondalik: 1 }, { ad: "f", etiket: "Fermantasyon" },
       ]);
       ctx.not(`<p><span style="color:${MAVI}">━━</span> oksijenli solunum &nbsp; <span style="color:${KIRMIZI}">━━</span> fermantasyon (grafik)</p>`);
-      let son = performance.now();
+      let son = performance.now(), son0 = null;
       S.adimKare(ctx, () => {
-        const simdi = performance.now(), dt = Math.min(0.25, (simdi - son) / 1000); son = simdi;
+        const simdi = performance.now(); son0 = son; son = simdi;
         if (gosterim) { KS.ayarla(gosterim); igL.gizle(gosterim.laktat < 1.5); return; }
         if (kosuyor) {
-          // 10 alt adım: 60 saniyelik koşu yaklaşık 6 saniyede izlenir
-          for (let i = 0; i < 10; i++) {
-            d = kasAdim(d, I, dt); atpO += d.oksijenli * dt; atpF += d.fermantasyon * dt;
+          // simülasyon gerçek zamanın 10 katı hızda (60 s'lik koşu ~6 s); yavaş makinede kare seyrekleşse de hız aynı kalır
+          const h = Math.min(1, (simdi - (son0 ?? simdi)) / 1000) * 10, n = Math.max(1, Math.ceil(h / 0.1)), adim = h / n;
+          for (let i = 0; i < n; i++) {
+            d = kasAdim(d, I, adim); atpO += d.oksijenli * adim; atpF += d.fermantasyon * adim;
             if (Math.round(d.t * 10) % 5 === 0) { sO.ekle(d.t, d.oksijenli); sF.ekle(d.t, d.fermantasyon); }
             if (d.t >= 60) { kosuyor = false; bitirKosu(); break; }
           }
@@ -459,7 +460,8 @@ const adimlar = [
       { soru: "Fermantasyonda glikoz tamamen parçalanır mı?", secenekler: ["Evet, CO₂ ve suya kadar", "Hayır, enerjinin çoğu laktik asitte kalır"], dogru: 1,
         aciklama: "Glikoz yalnızca piruvata kadar yıkılır; enerjinin çoğu laktik asitte kalır.", ipucu: "Krebs döngüsü ve ETS çalışıyor mu?" },
       { s: "Fermantasyon hızlıdır ama <b>az</b> ATP verir. Aynı iş için çok daha fazla glikoz harcanır." },
-      { s: "Sıra sende: iki farklı şiddette koş ve grafikte ATP'nin nereden geldiğini izle.", yap: (api) => { api.goster(null); api.don(); } },
+      { s: "Alttaki grafik koşu boyunca ATP'nin kaynağını çizecek: mavi oksijenli solunum, kırmızı fermantasyon.", grafik: true, yap: (api) => { api.goster(null); api.don(); } },
+      { s: "Sıra sende: iki farklı şiddette koş ve grafikte ATP'nin nereden geldiğini izle." },
     ],
     anlatBitti: (api) => { api.goster(null); api.don(); },
   },
@@ -504,14 +506,16 @@ const adimlar = [
       }
       let son = performance.now();
       S.adimKare(ctx, () => {
-        const t = performance.now(), gercek = Math.min(0.25, (t - son) / 1000); son = t;
+        const t = performance.now(), gercek = Math.min(1, (t - son) / 1000); son = t;
         // anlatım: balonlar temsilî olarak yavaşça şişer
         if (gosterimT != null) { gosterimT += gercek; siseler.forEach((s, i) => { s.co2 = Math.min(260, gosterimT * 45); hiz[i] = s.co2 < 260 ? 3 : 0; }); }
         if (calisiyor) {
-          // saniyede 6 dakika: 60 dakikalık deney yaklaşık 10 saniyede izlenir
-          const dk = Math.min(gercek * 6, 60 - dakika);
-          dakika += dk;
-          siseler.forEach((s, i) => { const once = s.co2; Object.assign(s, mayaAdim(s, dk / 60)); hiz[i] = (s.co2 - once) / Math.max(1e-6, dk); seriler[i].ekle(dakika, s.co2); });
+          // saniyede 6 dakika: 60 dakikalık deney yaklaşık 10 saniyede izlenir (en fazla 1,5 dk'lık alt adımlarla)
+          const dk = Math.min(gercek * 6, 60 - dakika), n = Math.max(1, Math.ceil(dk / 1.5));
+          for (let j = 0; j < n; j++) {
+            dakika += dk / n;
+            siseler.forEach((s, i) => { const once = s.co2; Object.assign(s, mayaAdim(s, dk / n / 60)); hiz[i] = (s.co2 - once) / Math.max(1e-6, dk / n); seriler[i].ekle(dakika, s.co2); });
+          }
           if (dakika >= 60 - 1e-9) { calisiyor = false; hiz.fill(0); deneyBitti(); }
         }
         sahneGuncelle();
@@ -617,7 +621,8 @@ const adimlar = [
         aciklama: "İki şey birden değişirse etkileri birbirine karışır.", ipucu: "Balon daha çok şişse bunu neye bağlarsın?" },
       { soru: "Mayası olmayan bir şişe ne işe yarar?", secenekler: ["Hiçbir işe yaramaz", "Gazı mayanın ürettiğini gösterir: karşılaştırma için kontrol şişesidir"], dogru: 1,
         aciklama: "Değişkenin 0 olduğu şişe <b>kontrol grubudur</b>; diğer şişeler onunla karşılaştırılır.", ipucu: "Mayasız şişede balon şişmezse ne anlarız?" },
-      { s: "Sıra sende: dört şişeni tasarla, onayla ve deneyi başlat.", yap: (api) => { api.sisir(false); api.don(); } },
+      { s: "Alttaki grafik, deney boyunca her balondaki gaz hacmini dakika dakika çizecek.", grafik: true, yap: (api) => { api.sisir(false); api.don(); } },
+      { s: "Sıra sende: dört şişeni tasarla, onayla ve deneyi başlat." },
     ],
     anlatBitti: (api) => { api.sisir(false); api.don(); },
   },
@@ -794,7 +799,7 @@ const adimlar = [
       { soru: "50 kg biri 1 saat koşuyor (MET 7). Yaklaşık kaç kcal harcar?", secenekler: ["57 kcal", "350 kcal", "700 kcal"], dogru: 1,
         aciklama: "7 × 50 × 1 = 350 kcal.", ipucu: "Üç sayıyı çarp: MET × kütle × süre." },
       { s: "Tabağa bir porsiyon <b>pilav</b> koyalım: yeşil sütun yükseliyor.", yap: (api) => { api.ekle("Pilav"); api.vurgula(api.ig.alinan, api.ig.tabak); } },
-      { s: "Üstteki çubuklar, aldığın enerjinin ne kadarının karbonhidrat, protein ve yağdan geldiğini gösterir.", yap: (api) => api.vurgula() },
+      { s: "Üstteki çubuklar, aldığın enerjinin ne kadarının karbonhidrat, protein ve yağdan geldiğini gösterir.", yap: (api) => { api.vurgula(); api.grafik(); } },
       { soru: "Aldığın enerji harcadığından çok daha fazla olursa ne olur?", secenekler: ["Fazlası hemen atılır", "Fazlası çoğunlukla yağ olarak depolanır", "Hiçbir şey olmaz"], dogru: 1,
         aciklama: "Kullanılmayan enerji, vücutta çoğunlukla yağ dokusunda depolanır.", ipucu: "Yağlar vücutta ne işe yarıyordu?" },
       { s: "Sıra sende: gününü ayarla, tabağını doldur ve dengeli menüyü kaydet.", yap: (api) => { api.bosalt(); api.don(); } },
@@ -868,7 +873,7 @@ const adimlar = [
       { soru: "Bir top yokuş aşağı kendiliğinden yuvarlanır. Yokuş yukarı çıkması için ne gerekir?", secenekler: ["Hiçbir şey", "Enerji"], dogru: 1,
         aciklama: "Pompalar da maddeleri “yokuş yukarı” taşır; bu iş ATP harcar. Buna <b>aktif taşıma</b> denir.", ipucu: "Topu yukarı kim, nasıl çıkarır?" },
       { s: "Maddelerin çok olduğu yerden az olduğu yere kendiliğinden geçmesi ise <b>difüzyondur</b>; ATP gerekmez.", yap: (api) => api.bak() },
-      { s: "Alttaki grafik, dinlenirken ATP'nin <b>yaklaşık</b> nereye harcandığını gösteriyor.", yap: (api) => api.vurgula() },
+      { s: "Alttaki grafik, dinlenirken ATP'nin <b>yaklaşık</b> nereye harcandığını gösteriyor.", yap: (api) => { api.vurgula(); api.grafik(); } },
       { soru: "Grafiğe göre dinlenirken ATP'nin en büyük payı nereye gidiyor?", secenekler: ["Kas kasılması", "Protein sentezi", "Üre yapımı"], dogru: 1,
         aciklama: "Dinlenirken bile hücreler sürekli protein yapar; ATP'nin en büyük payı buraya gider.", ipucu: "En uzun çubuğa bak." },
       { s: "Harcanan enerjinin bir kısmı da <b>ısıya</b> dönüşür; bu ısı vücut sıcaklığını korur." },
@@ -944,16 +949,13 @@ const adimlar = [
           aciklama: "Difüzyon, maddelerin çok olduğu yerden az olduğu yere kendiliğinden geçişidir; ATP gerektirmez.",
         },
       ], { baslik: "Solunum ve fermantasyon", gecmeOrani: 0.75 });
-      const sinavOrtu = ctx.katman.querySelector(".d-sinav")?.closest(".d-ortu");
       return {
         git: (yer, bakis) => S.git(yer, bakis),
-        /** Anlatım sürerken sınav kartı sahneyi örtmesin */
-        sinavGizle(b) { if (sinavOrtu) sinavOrtu.hidden = b; },
-        bitir() { this.sinavGizle(false); S.git("hucre", "genel").then(() => S.dondur(ctx, 0.35)); },
+        bitir() { S.git("hucre", "genel").then(() => S.dondur(ctx, 0.35)); },
       };
     },
     anlat: [
-      { s: "Glikozun yolculuğunu hatırla: glikoliz, piruvat oksidasyonu, Krebs döngüsü ve ETS.", yap: (api) => { api.sinavGizle(true); api.git("hucre", "ana"); } },
+      { s: "Glikozun yolculuğunu hatırla: glikoliz, piruvat oksidasyonu, Krebs döngüsü ve ETS.", yap: (api) => { api.git("hucre", "ana"); } },
       { s: "O₂ yetmezse yalnızca glikoliz çalışır: <b>fermantasyon</b>. Kasta laktik asit oluşur.", yap: (api) => api.git("kas") },
       { s: "Mayada ise etil alkol ve CO₂ oluşur. Ekmeği kabartan bu CO₂'dir.", yap: (api) => api.git("lab") },
       { soru: "Hangisi bir glikozdan en çok ATP elde etmeyi sağlar?", secenekler: ["Laktik asit fermantasyonu", "Oksijenli solunum", "Etil alkol fermantasyonu"], dogru: 1,

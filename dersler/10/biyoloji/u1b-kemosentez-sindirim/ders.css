@@ -15,6 +15,10 @@
 /* Anlatım kareleri: anlatılan iğne parlar, diğerleri solar */
 .d-igne { transition: opacity .35s; }
 .d-igne.bio-soluk { opacity: .3; }
+.d-igne.bio-ortuk { opacity: .08; }
+/* Yüzen şema panelleri anlatımda gizli; grafiğe değinen kare açar */
+.bio-yuzen { transition: opacity .35s; }
+.d-gosterimde .bio-yuzen:not(.acik) { opacity: 0; }
 .d-igne.bio-vurgu { z-index: 2; }
 .d-igne.bio-vurgu > span { box-shadow: 0 0 0 3px var(--renk), 0 0 24px var(--renk); }
 .d-igne.bio-vurgu > i { animation: bio-nabiz 1.2s ease-in-out infinite; }

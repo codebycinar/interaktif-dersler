@@ -205,7 +205,7 @@ const adimlar = [
       { soru: "Bu bakteriler besin ağında hangi rolü üstlenir?", secenekler: ["Tüketici", "Üretici", "Ayrıştırıcı"], dogru: 1,
         aciklama: "Kendi besinini inorganik maddelerden yapan canlı üreticidir. Baca ekosistemi bu bakterilere dayanır.", ipucu: "Besinlerini başkasından mı alıyorlar, kendileri mi yapıyorlar?" },
       { s: "Şimdi kemosentezi tanıdığın <b>fotosentezle</b> karşılaştıracağız." },
-      { s: "Her özelliği üç kutudan birine koyacaksın: yalnız fotosentez, yalnız kemosentez ya da ikisi de." },
+      { s: "Üstteki şemada üç bölge var: yalnız fotosentez, ikisi de, yalnız kemosentez. Her özellik birine girecek.", yap: (api) => api.grafik() },
       { baslik: "Birlikte yapalım", cozum: [
         "Kart: “Süreç hücrenin içinde gerçekleşir.”",
         "Fotosentez hücrede mi olur? Evet, kloroplastta.",
@@ -565,6 +565,7 @@ const adimlar = [
       { s: `İnce bağırsak yaklaşık <b>${sayi(6)} m</b> uzunluğunda, <b>${sayi(2.5, 1)} cm</b> genişliğinde bir borudur.`, yap: (api) => { api.yapi({}); api.vurgula(api.ig.dis); api.bak(); } },
       { s: `İçi düz olsaydı yüzeyi yalnızca <b>${sayi(boruAlani(), 2)} m²</b> olurdu: bir okul sırasının üstü kadar.` },
       { s: "Besin bu yüzeyden emilir. Yüzey ne kadar büyükse, aynı sürede o kadar çok besin geçer.", yap: (api) => api.vurgula(api.ig.bosluk) },
+      { s: "Alttaki grafik, 4 saatte glikozun ne kadarının emildiğini gösteriyor. Düz boruda eğri neredeyse yerde!", grafik: true, yap: (api) => api.vurgula() },
       { soru: "Bir sünger ile aynı boydaki düz bir taş: hangisi daha çok su tutar?", secenekler: ["Düz taş", "Sünger: içi gözeneklerle dolu, yüzeyi çok büyük"], dogru: 1,
         aciklama: "Aynı boyda ama yüzeyi çok daha büyük. Bağırsak da yüzeyini böyle büyütür.", ipucu: "Hangisinin iç yüzeyi daha büyük?" },
       { s: "Bağırsak çeperi düz değildir; büyük <b>kıvrımlar</b> yapar.", yap: (api) => { api.yapi({ kivrim: true }); api.vurgula(api.ig.kivrim); } },
@@ -757,16 +758,13 @@ const adimlar = [
           aciklama: "Villuslar emilim yüzeyini büyütür. Körelince yapı taşlarının çoğu kana geçemez; hücreler yeterli glikoz alamaz ve daha az ATP üretir.",
         },
       ], { baslik: "Güneşsiz besin ve sindirim", gecmeOrani: 0.75 });
-      const sinavOrtu = ctx.katman.querySelector(".d-sinav")?.closest(".d-ortu");
       return {
         git: (yer, bakis) => S.git(yer, bakis),
-        /** Anlatım sürerken sınav kartı sahneyi örtmesin */
-        sinavGizle(b) { if (sinavOrtu) sinavOrtu.hidden = b; },
-        bitir() { this.sinavGizle(false); S.git("baca", "genel").then(() => S.dondur(ctx)); },
+        bitir() { S.git("baca", "genel").then(() => S.dondur(ctx)); },
       };
     },
     anlat: [
-      { s: "Ders boyunca nerelere gittik, kısaca hatırlayalım.", yap: (api) => { api.sinavGizle(true); api.git("baca", "ana"); } },
+      { s: "Ders boyunca nerelere gittik, kısaca hatırlayalım.", yap: (api) => { api.git("baca", "ana"); } },
       { s: "Işıksız derin denizde besini <b>kemosentez</b> yapan bakteriler üretir: enerji ışıktan değil, H₂S gibi maddelerden gelir." },
       { s: "<b>Sindirim</b>, büyük besinleri küçük yapı taşlarına ayırır; hücre içinde ya da dışında olabilir.", yap: (api) => api.git("lab") },
       { s: "Dişler, mide ve bağırsak, canlının <b>beslenme tipine</b> uygundur.", yap: (api) => api.git("muze") },

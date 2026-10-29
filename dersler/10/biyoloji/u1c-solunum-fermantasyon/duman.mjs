@@ -1,5 +1,5 @@
 // Derse özel duman senaryosu (tools/duman.mjs çalıştırır): görevleri gerçekten yapıp tamamlandığını doğrular
-import { gorevTamamMi, kaydir, dugme, yerlestir, sinaviCoz, telefon, anlatKaresi } from "../ortak/duman-yardim.mjs";
+import { gorevTamamMi, kaydir, dugme, yerlestir, sinaviCoz, telefon, anlatKaresi, alistirmaBekle } from "../ortak/duman-yardim.mjs";
 
 const P = ".d-panel";
 const sayiYaz = (page, v) => page.evaluate((x) => {
@@ -7,10 +7,12 @@ const sayiYaz = (page, v) => page.evaluate((x) => {
   g.value = x;
   [...g.parentElement.querySelectorAll("button")].find((b) => b.textContent === "Kontrol et").click();
 }, v);
-const dugmeHazir = (page, metin, ms = 25000) => page.waitForFunction((m) =>
+const dugmeHazir = (page, metin, ms = 60000) => page.waitForFunction((m) =>
   [...document.querySelectorAll(".d-panel button")].some((b) => b.textContent.includes(m) && !b.disabled), { timeout: ms }, metin).catch(() => {});
 
-export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
+export default async ({ page, adimaGit: git, bekle, kontrol, ekranGoruntusu }) => {
+  // yavaş makinede (CI) anlatım bitip alıştırma görünmeden düğme aranmasın
+  const adimaGit = async (i, o) => { await git(i, o); if (o?.anlatimiGec !== false) await alistirmaBekle(page); };
   // 1. adım: dört basamak + CO₂ sayısı
   await adimaGit(0);
   await dugme(page, "▶ Glikoliz", P); await bekle(1500);
@@ -65,9 +67,10 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
   // 5. adım: iki koşu + fermantasyon ATP'si
   await adimaGit(4);
   await kaydir(page, 0, 60);
-  await dugme(page, "60 saniye koş", P); await bekle(500); await dugmeHazir(page, "60 saniye koş");
+  await dugme(page, "60 saniye koş", P, 30000); await bekle(500); await dugmeHazir(page, "60 saniye koş");
   await kaydir(page, 0, 180);
-  await dugme(page, "60 saniye koş", P); await bekle(500); await dugmeHazir(page, "60 saniye koş");
+  await dugme(page, "60 saniye koş", P, 30000); await bekle(500); await dugmeHazir(page, "60 saniye koş");
+  await page.waitForFunction(() => document.querySelectorAll(".d-tablo tbody tr").length >= 2, { timeout: 60000 }).catch(() => {});
   kontrol(!(await gorevTamamMi(page)), "5. adım: ATP sorusu cevaplanmadan görev tamamlanmıyor");
   await sayiYaz(page, "2");
   kontrol(await gorevTamamMi(page), "5. adım: iki koşu ve net 2 ATP");
@@ -88,11 +91,25 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
   await dugme(page, "Deneyi başlat", P);
   await bekle(4000);
   await ekranGoruntusu("ozel-06a-deney");
-  await page.waitForFunction(() => [...document.querySelectorAll(".d-panel button")].some((b) => b.textContent === "Şişe 3"), { timeout: 30000 }).catch(() => {});
+  await page.waitForFunction(() => [...document.querySelectorAll(".d-panel button")].some((b) => b.textContent === "Şişe 3"), { timeout: 60000 }).catch(() => {});
   await dugme(page, "CO₂; maya şekeri etil alkol", P);
   await dugme(page, "Şişe 3", P);
   kontrol(await gorevTamamMi(page), "6. adım: geçerli tasarım, deney ve analiz tamamlanıyor");
   await ekranGoruntusu("ozel-06-maya");
+  // iğne etiketleri görünen grafik panelinin üstüne binmesin (alıştırma görünümü ve grafiğe değinen anlatım karesi)
+  // yavaş makinede iğne konumu ve soluklaştırma gecikebilir: 10 sn içinde durulmasını bekle
+  const ustusteYok = () => page.waitForFunction(() => {
+    const p = [...document.querySelectorAll(".d-katman .d-grafikler, .d-katman .bio-yuzen")].filter((e) => +getComputedStyle(e).opacity > 0.5).map((e) => e.getBoundingClientRect());
+    return ![...document.querySelectorAll(".d-igne:not(.bio-ortuk)")].some((n) => {
+      const r = n.querySelector("span").getBoundingClientRect();
+      return r.width > 0 && p.some((q) => r.right > q.left && r.left < q.right && r.bottom > q.top && r.top < q.bottom);
+    });
+  }, { timeout: 10000 }).then(() => true, () => false);
+  kontrol(await ustusteYok(), "6. adım: alıştırmada iğne etiketleri grafik panelinin üstüne binmiyor");
+  await adimaGit(5);
+  await anlatKaresi(page, bekle, 14);
+  kontrol(await ustusteYok(), "6. adım: grafik karesinde iğne etiketleri grafik panelinin üstüne binmiyor");
+  await ekranGoruntusu("ozel-06b-panel");
 
   // 7. adım: mutfakta fermantasyon
   await adimaGit(6);
@@ -132,7 +149,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
   for (const [i, k] of [[0, 6], [2, 5], [4, 7], [5, 4], [7, 8], [8, 3]]) {
     await adimaGit(i);
     await anlatKaresi(page, bekle, k);
-    if (i === 4) kontrol(await page.evaluate(() => document.querySelector(".d-uygulama-blok").hidden && !!document.querySelector(".d-igne.bio-vurgu")), "5. adım: anlatımda alıştırma gizli, laktik asit iğnesi vurgulu");
+    if (i === 4) kontrol(await page.waitForFunction(() => document.querySelector(".d-uygulama-blok").hidden && !!document.querySelector(".d-igne.bio-vurgu"), { timeout: 10000 }).then(() => true, () => false), "5. adım: anlatımda alıştırma gizli, laktik asit iğnesi vurgulu");
     await ekranGoruntusu(`anlat-${String(i + 1).padStart(2, "0")}-${k}`);
   }
 

@@ -5,13 +5,13 @@ export const kaydir = (page, sira, deger) => page.evaluate((i, v) => {
   const r = document.querySelectorAll(".d-panel input[type=range]")[i];
   r.value = v; r.dispatchEvent(new Event("input"));
 }, sira, deger);
-/** Metni içeren ilk etkin düğmeye tıklar; yavaş makinede (CI) düğme belirene ya da etkinleşene kadar 15 sn bekler */
-export const dugme = async (page, metin, kok = ".d-uygulama") => {
+/** Metni içeren ilk etkin düğmeye tıklar; yavaş makinede (CI) düğme belirene ya da etkinleşene kadar bekler (varsayılan 15 sn) */
+export const dugme = async (page, metin, kok = ".d-uygulama", ms = 15000) => {
   const tiklandi = await page.waitForFunction((m, k) => {
     const b = [...document.querySelectorAll(`${k} button`)].find((x) => x.textContent.includes(m) && !x.disabled);
     b?.click();
     return !!b;
-  }, { timeout: 15000 }, metin, kok).then(() => true, () => false);
+  }, { timeout: ms }, metin, kok).then(() => true, () => false);
   if (!tiklandi) throw new Error(`Düğme yok: ${metin}`);
 };
 /** Sınıflandırma: [kart metninin başı, kutu adı] çiftlerini yerleştirip “Kontrol et”e basar */
@@ -64,3 +64,6 @@ export async function anlatKaresi(page, bekle, k, kareBekle = 1600) {
     if (durum === "ileri") { n++; await bekle(kareBekle); } else await bekle(120);
   }
 }
+/** Adım anlatımı bitip alıştırma bölümü (“Şimdi sen dene”) görünene kadar bekler */
+export const alistirmaBekle = (page, ms = 30000) => page.waitForFunction(() =>
+  !document.querySelector(".d-anlat:not(.bitti)") && !document.querySelector(".d-uygulama-blok[hidden]"), { timeout: ms }).catch(() => {});

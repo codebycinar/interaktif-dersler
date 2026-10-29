@@ -19,6 +19,22 @@ export function odakla(S, hedef, uzak = 6, sure = 1.2, dy = 0) {
 export function anlatApi(S, ctx, yer, ek = {}) {
   const [yerAd, anaBakis = "ana"] = [].concat(yer);
   const igneler = new Set();
+  // Yüzen şema panelleri (.bio-yuzen) de motorun grafik panelleri gibi anlatımda gizlidir; api.grafik() açar
+  const yuzenler = () => ctx.katman.querySelectorAll(".bio-yuzen");
+  const gosterim = (e) => { if (e.detail.adim === ctx.adimNo && e.detail.gosteriyor) yuzenler().forEach((p) => p.classList.remove("acik")); };
+  document.addEventListener("d-gosterim", gosterim);
+  ctx.temizlik(() => document.removeEventListener("d-gosterim", gosterim));
+  // Sahne üstünde yüzen panellerin (grafik, şema) altına düşen iğneler soluklaşır; etiket panelin üstüne binmez
+  let kare = 0;
+  S.adimKare(ctx, () => {
+    if (++kare % 4) return;
+    // görünmeyen (anlatımda gizli) paneller sayılmaz
+    const paneller = [...ctx.katman.querySelectorAll(".d-grafikler, .bio-yuzen")].filter((p) => +getComputedStyle(p).opacity > 0.5).map((p) => p.getBoundingClientRect());
+    for (const n of igneler) {
+      const r = n.el.querySelector("span").getBoundingClientRect();
+      n.el.classList.toggle("bio-ortuk", paneller.some((p) => r.right > p.left && r.left < p.right && r.bottom > p.top && r.top < p.bottom));
+    }
+  });
   const api = {
     /** S.adimIgne gibi; iğneyi vurgulanabilir listeye de ekler */
     igne(hedef, html, ayar) { const n = S.adimIgne(ctx, hedef, html, ayar); igneler.add(n); return n; },
@@ -33,6 +49,8 @@ export function anlatApi(S, ctx, yer, ek = {}) {
       }
     },
     don() { api.vurgula(); return api.bak(); },
+    /** Anlatımda yüzen şema panelini gösterir (grafiğe değinen kare) */
+    grafik() { yuzenler().forEach((p) => p.classList.add("acik")); },
     ...ek,
   };
   return api;
