@@ -1,4 +1,4 @@
-# main dalına her gönderimde: model testleri → derleme → tarayıcı (duman) testi → GitHub Pages'e yayın
+# main dalına her gönderimde: model testleri → derleme → tarayıcı (duman) testi (4 paralel iş) → GitHub Pages'e yayın
 # Yayın adresi: https://education.modernisler.com
 name: Yayın
 
@@ -38,8 +38,47 @@ jobs:
       - name: Dersleri derle
         run: npm run build
 
+      - name: Özel alan adı
+        run: echo "education.modernisler.com" > dist/CNAME
+
+      - name: Derlenmiş dersler (duman işleri için)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 1
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: dist
+
+  # 3B sahneler yazılımsal WebGL'de yavaş: dersler dört paralel işe bölünür
+  duman:
+    needs: derle
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        parca: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Bağımlılıklar
+        run: npm ci
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
       - name: Tarayıcı (duman) testi
-        run: node tools/duman.mjs
+        run: node tools/duman.mjs --parca ${{ matrix.parca }}/4
         env:
           DUMAN_CIKTI: ${{ runner.temp }}/duman
 
@@ -47,21 +86,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: duman-ekran-goruntuleri
+          name: duman-ekran-goruntuleri-${{ matrix.parca }}
           path: ${{ runner.temp }}/duman
           retention-days: 7
 
-      - name: Özel alan adı
-        run: echo "education.modernisler.com" > dist/CNAME
-
-      - uses: actions/upload-pages-artifact@v3
-        if: github.event_name != 'pull_request'
-        with:
-          path: dist
-
   yayinla:
     if: github.event_name != 'pull_request'
-    needs: derle
+    needs: [derle, duman]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

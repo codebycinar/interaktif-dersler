@@ -3,6 +3,7 @@
 //   node tools/duman.mjs                      → tüm dersler
 //   node tools/duman.mjs slug1 slug2          → yalnızca bu dersler
 //   node tools/duman.mjs slug --bekle 2500    → her adımda daha uzun bekle (ms)
+//   node tools/duman.mjs --parca 2/4          → dersleri 4'e böl, 2. parçayı çalıştır (CI'da paralel işler için)
 //
 // Ders klasöründe duman.mjs varsa genel gezintiden sonra çalıştırılır:
 //   export default async ({ page, adimaGit, bekle, tikla, kontrol }) => { ... }
@@ -27,6 +28,8 @@ const CHROME = [
 const arguman = process.argv.slice(2);
 const bekleIdx = arguman.indexOf("--bekle");
 const ADIM_BEKLE = bekleIdx >= 0 ? +arguman.splice(bekleIdx, 2)[1] : 900;
+const parcaIdx = arguman.indexOf("--parca");
+const [parca, parcaSayisi] = parcaIdx >= 0 ? arguman.splice(parcaIdx, 2)[1].split("/").map(Number) : [1, 1];
 const secilen = arguman;
 
 const dersler = readdirSync(join(KOK, "dersler"), { recursive: true })
@@ -41,8 +44,11 @@ const dersler = readdirSync(join(KOK, "dersler"), { recursive: true })
     } catch { return null; }
   })
   .filter(Boolean)
-  .filter((d) => !secilen.length || secilen.includes(d.slug));
+  .filter((d) => !secilen.length || secilen.includes(d.slug))
+  .sort((a, b) => a.slug.localeCompare(b.slug))
+  .filter((_, i) => i % parcaSayisi === parca - 1);
 
+if (!dersler.length && parcaSayisi > 1) { console.log(`Parça ${parca}/${parcaSayisi}: ders yok.`); process.exit(0); }
 if (!dersler.length) { console.error("Ders bulunamadı."); process.exit(1); }
 if (!CHROME) { console.error("Chrome/Edge bulunamadı."); process.exit(1); }
 
