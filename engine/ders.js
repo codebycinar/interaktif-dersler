@@ -77,8 +77,11 @@ const ses = {
  * Dersi başlatır.
  * @param {{ adimlar: Array<{baslik:string, cikti?:string, anlatim:string, gorev?:string, ogretmen?:string, kur:(ctx)=>void, kaldir?:(ctx)=>void}>, sahneKur?: (kap:HTMLElement)=>any }} tanim
  */
-export function dersBaslat({ adimlar, sahneKur }) {
+export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
   ses.hazirla();
+  // "tam": 3B sahne tüm ekranı kaplar, paneller üstünde yüzer (ders.json → "yerlesim": "tam")
+  const tam = yerlesim === "tam";
+  if (tam) document.body.classList.add("d-tam");
   const depo = depoOku();
   depo.tamam ||= [];
   depo.yazilar ||= {};
@@ -120,6 +123,44 @@ export function dersBaslat({ adimlar, sahneKur }) {
 
   const uygulama = el("div", { class: "d-uygulama" }, ust, adimNav, sahne, panel, alt);
   document.body.append(uygulama);
+
+  /* Tam ekran yerleşimde: panelleri daralt/gizle ve sahneye görünür alanı bildir */
+  if (tam) {
+    const durum = { solDar: !!depo.solDar, panelGizli: false };
+    const solBtn = el("button", { class: "d-kenar-btn sol", title: "Adım listesini daralt / genişlet", "aria-label": "Adım listesini daralt" }, "‹");
+    const panelBtn = el("button", { class: "d-kenar-btn sag", title: "Anlatım panelini gizle / göster (P)", "aria-label": "Anlatım panelini gizle" }, "›");
+    adimNav.append(solBtn);
+    uygulama.append(panelBtn);
+    const uygula = () => {
+      document.body.classList.toggle("d-sol-dar", durum.solDar);
+      document.body.classList.toggle("d-panel-gizli", durum.panelGizli);
+      solBtn.textContent = durum.solDar ? "›" : "‹";
+      panelBtn.textContent = durum.panelGizli ? "‹ Anlatım" : "›";
+      yerlesimGuncelle();
+    };
+    solBtn.onclick = () => { durum.solDar = !durum.solDar; depo.solDar = durum.solDar; depoYaz(depo); uygula(); };
+    panelBtn.onclick = () => { durum.panelGizli = !durum.panelGizli; uygula(); };
+    document.addEventListener("keydown", (e) => {
+      if (e.target.closest("input, textarea, select")) return;
+      if (e.key === "p" || e.key === "P") panelBtn.click();
+    });
+    function yerlesimGuncelle() {
+      const genis = window.innerWidth > 760;
+      const s = uygulama.style;
+      const gorunur = (e) => e.offsetParent !== null && getComputedStyle(e).visibility !== "hidden";
+      s.setProperty("--ust-bosluk", `${genis ? ust.offsetHeight + 12 : 0}px`);
+      s.setProperty("--alt-bosluk", `${genis ? alt.offsetHeight + 12 : 0}px`);
+      s.setProperty("--sol-bosluk", `${genis && gorunur(adimNav) ? adimNav.offsetWidth + 12 : 0}px`);
+      s.setProperty("--sag-bosluk", `${genis && !durum.panelGizli ? panel.offsetWidth + 12 : 0}px`);
+      window.dispatchEvent(new Event("d-yerlesim"));
+    }
+    const ro = new ResizeObserver(yerlesimGuncelle);
+    [ust, alt, adimNav, panel].forEach((e) => ro.observe(e));
+    window.addEventListener("resize", yerlesimGuncelle);
+    uygula();
+    // Panel geçişi (CSS) bittiğinde son konumu bir kez daha bildir
+    panel.addEventListener("transitionend", yerlesimGuncelle);
+  }
 
   const adimDugmeleri = adimlar.map((a, i) => {
     const li = el("li", {},

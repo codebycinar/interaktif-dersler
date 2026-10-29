@@ -55,7 +55,7 @@ dersler/<sınıf>/<ders-slug>/u<no>-<konu>/
 
 ## 4. Ders kabuğu (engine)
 
-`dersBaslat({ adimlar, sahneKur })`. `sahneKur(kap)` sahne alanını bir kez kurar. 3B için `engine/sahne3d.js`, 2B için kendi DOM/SVG/canvas çiziminizi kullanın. Her adım şu biçimdedir:
+`dersBaslat({ adimlar, sahneKur })`. `sahneKur(kap)` sahne alanını bir kez kurar ve `engine/sahne3d.js` ile 3B dünyayı oluşturur (bkz. 4a). Her adım şu biçimdedir:
 
 ```js
 { baslik, cikti, anlatim /* HTML, 2–4 kısa paragraf */, gorev /* HTML */, ogretmen /* HTML */,
@@ -70,6 +70,23 @@ Yabancı dil derslerinde `ders.json`'a `"dil": "en-GB"` (veya `en-US`) ekleyin. 
 - `ctx.gorevTamam()` yalnızca görev **gerçekten** yapıldığında çağrılmalı.
 - Son adım bir değerlendirme olmalı: `ctx.sinav(sorular, { gecmeOrani })`, 6–10 soru, her sorunun açıklaması olsun. Kabuktaki türler `coktan` ve `sayi`; `grafik: (kap) => …` ile soruya görsel eklenebilir.
 - Kabukta olmayan bir bileşen gerekirse (eşleştirme, sıralama, sürükle-bırak, harita, ses vb.) **kendi ders klasörünüzde** yazın. `engine/`'i değiştirmeyin; ortak motora alınmaya aday bileşenleri raporunuzda belirtin.
+
+## 4a. Görsel kalite: 3B dünya ve gerçekçilik
+
+Çıta: öğrenci ekrana baktığında bir **yer** görmeli (laboratuvar masası, çayır, sera, kale, sınıf), şema değil.
+
+- **Her dersin kalıcı bir 3B dünyası olur.** Adımlar aynı dünyada geçer; kamera `S.kameraGit({ konum, hedef, sure })` ile adımlar arasında yumuşakça kayar (yaprak → hücre → kloroplast gibi ölçek geçişleri dahil). 2B yalnızca doğası gereği düzlem olan şeyler için: grafik, nota, formül, metin, harita üstü çizim. Bunlar da 3B sahnenin üstünde yüzen panel olarak gelir.
+- **Tam ekran yerleşim:** `ders.json`'a `"yerlesim": "tam"` ekleyin. Sahne tüm ekranı kaplar, adım listesi, anlatım ve alt çubuk üstünde yüzer; öğretmen `P` ile paneli gizleyebilir. Kamera merkezi görünür alana kendiliğinden kaydırılır.
+- **Gerçek biçim ve malzeme.** Kusursuz küre/silindir/kutu ile doğal nesne yapılmaz:
+  - Biçim: `organiklestir(geo, { genlik, olcek })` ile yüzeye doğal düzensizlik verin; `LatheGeometry` ile kavanoz/beher/şişe, `TubeGeometry` ile boru/dal/damar, `ExtrudeGeometry` ile yaprak ve plaka. Gerçek oranlara uyun (nohut ≈ 3 mercimek çapı, pirinç tanesi boyu eninin ≈ 3 katı).
+  - Yüzey: `yuzeyDokusu({ taban, koyu, acik, olcek, benek, lif, uzama })` ile renk + pürüz dokusu (benekli tane, lifli ahşap, damarlı yaprak, toprak).
+  - Malzeme: `malzeme.cam()`, `sivi()`, `metal()`, `plastik()`, `mat()`, `isik()`. Sahnede stüdyo yansıması (PBR) ve gölge hazır; `MeshBasicMaterial` ile düz renk boyamayın.
+  - Çok sayıda aynı nesne (tane, çimen, kabarcık, molekül, asker): `coklu(geo, malz, sayi)` (InstancedMesh). Binlerce kopya sorun değil; yalnızca görünen kabuğu doldurun.
+  - Cam içindeki nesnelere `transmission` vermeyin (three.js cam arkasındaki saydam nesneyi çizmez); yarı saydamlık için `sheen`/`clearcoat` kullanın.
+- **Etiketler nesneye bağlı:** `S.igne(nesne, "Tilakoit<small>ışığa bağımlı</small>", { renk, no, tik })`. Ekranda sabit duran yazı yerine nesneyle birlikte hareket eder.
+- **Arka plan:** `arkaPlan: [üst, alt]` renk geçişi + `S.zemin()`; boşlukta yüzen nesne yerine bir zemin/masa/arazi olsun.
+- **Kalite ve hız:** Motor `?kalite=dusuk|orta|yuksek` ile ve kare hızı düştüğünde kendiliğinden kaliteyi azaltır. Sahneyi 1400×840'ta 30 fps'nin üstünde tutun: geometri ayrıntısını uzaktaki nesnelerde düşürün, gölgeyi yalnızca gereken nesnelere verin.
+- **Kendinize sorun:** Ekran görüntüsünü gerçek nesnenin fotoğrafıyla yan yana koysanız, öğrenci hangisinin ne olduğunu hemen tanır mı? Tanımıyorsa biçim, oran, renk ya da doku eksiktir.
 
 ## 5. İyi bir adımın ölçütü
 

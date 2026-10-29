@@ -250,3 +250,98 @@ body:not(.ogretmen-modu) .d-ogretmen { display: none; }
   .d-alt { position: sticky; bottom: 0; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- 3B iğne etiketleri (sahne3d.igne) ---------- */
+.d-igneler { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+.d-igne { position: absolute; left: 0; top: 0; width: 0; height: 0; will-change: transform; }
+.d-igne > i {
+  position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--renk); box-shadow: 0 0 0 3px rgba(255, 255, 255, .85), 0 2px 8px rgba(0, 0, 0, .4);
+}
+.d-igne > span {
+  position: absolute; left: 0; bottom: 18px; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  padding: 4px 10px 4px 6px; border-radius: 999px; font-size: 13.5px; font-weight: 600;
+  background: rgba(255, 255, 255, .94); color: #14202f; border: 1.5px solid var(--renk);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+}
+.d-igne > span::after {
+  content: ""; position: absolute; left: 50%; top: 100%; width: 1.5px; height: 12px; background: var(--renk); transform: translateX(-50%);
+}
+.d-igne > span b {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; border-radius: 50%;
+  background: var(--renk); color: #fff; font-size: 12px; padding: 0 4px;
+}
+.d-igne > span em { font-style: normal; }
+.d-igne > span em small { display: block; font-weight: 500; color: #4a5b70; font-size: 12px; }
+.d-igne.yon-alt > span { bottom: auto; top: 18px; }
+.d-igne.yon-alt > span::after { top: auto; bottom: 100%; }
+.d-igne.yon-sag > span { bottom: auto; top: 50%; left: 18px; transform: translateY(-50%); }
+.d-igne.yon-sag > span::after { left: auto; right: 100%; top: 50%; width: 12px; height: 1.5px; transform: none; }
+.d-igne.yon-sol > span { bottom: auto; top: 50%; left: auto; right: 18px; transform: translateY(-50%); }
+.d-igne.yon-sol > span::after { left: 100%; top: 50%; width: 12px; height: 1.5px; transform: none; }
+.d-igne.tiklanir > span { pointer-events: auto; cursor: pointer; }
+.d-igne.tiklanir > span:hover { filter: brightness(1.05); box-shadow: 0 0 0 3px var(--renk); }
+
+/* ---------- Tam ekran yerleşim: sahne arkada, paneller üstünde yüzer ---------- */
+@media (min-width: 761px) {
+  .d-tam {
+    --cam: rgba(16, 24, 38, .80);
+    --cam-cizgi: rgba(255, 255, 255, .10);
+  }
+  .d-tam .d-uygulama { display: block; position: relative; overflow: hidden; }
+  .d-tam .d-sahne { position: absolute; inset: 0; background: #0b111b; }
+  .d-tam .d-ust, .d-tam .d-adimlar, .d-tam .d-panel, .d-tam .d-alt {
+    position: absolute; z-index: 4;
+    background: var(--cam); border: 1px solid var(--cam-cizgi); border-radius: 16px;
+    backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    box-shadow: 0 10px 34px rgba(0, 0, 0, .28);
+  }
+  .d-tam .d-ust { top: 12px; left: 12px; right: 12px; padding: 8px 16px; }
+  .d-tam .d-alt { left: 12px; right: 12px; bottom: 12px; padding: 8px 14px; }
+  .d-tam .d-adimlar {
+    left: 12px; top: var(--ust-bosluk, 76px); bottom: var(--alt-bosluk, 70px); width: 230px;
+    display: block; padding: 10px 8px 44px; transition: width .25s ease;
+  }
+  .d-tam .d-panel {
+    right: 12px; top: var(--ust-bosluk, 76px); bottom: var(--alt-bosluk, 70px); width: 390px;
+    transition: transform .3s ease, opacity .3s ease;
+  }
+  .d-tam.d-panel-gizli .d-panel { transform: translateX(calc(100% + 24px)); opacity: 0; pointer-events: none; }
+  .d-tam .d-katman {
+    left: var(--sol-bosluk, 0); right: var(--sag-bosluk, 0); top: var(--ust-bosluk, 0); bottom: var(--alt-bosluk, 0);
+    transition: right .3s ease, left .25s ease;
+  }
+  .d-tam .d-katman > .d-ortu { border-radius: 16px; }
+  .d-tam .d-sahne > .d-ortu { z-index: 10; }
+  .d-tam .d-grafik { background: rgba(16, 24, 38, .84); border-color: var(--cam-cizgi); }
+
+  /* Daraltılmış adım listesi: yalnızca numaralar */
+  .d-tam.d-sol-dar .d-adimlar { width: 58px; }
+  .d-tam.d-sol-dar .d-adimlar li button { padding: 7px; justify-content: center; }
+  .d-tam.d-sol-dar .d-adimlar li button > span:last-child { display: none; }
+
+  .d-kenar-btn {
+    cursor: pointer; border: 1px solid var(--cam-cizgi); background: var(--cam); color: var(--metin);
+    border-radius: 10px; font-weight: 700; padding: 4px 10px; font-size: 14px;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+  .d-kenar-btn:hover { border-color: var(--metin-2); }
+  .d-kenar-btn.sol { position: absolute; bottom: 8px; right: 8px; }
+  .d-kenar-btn.sag {
+    position: absolute; z-index: 5; right: 12px; top: calc(var(--ust-bosluk, 76px) + 8px);
+    transform: translateX(calc(-1 * (var(--sag-bosluk, 0px) - 12px) - 8px));
+    transition: transform .3s ease;
+  }
+  .d-tam.d-panel-gizli .d-kenar-btn.sag { transform: none; }
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  .d-tam .d-adimlar { width: 58px; }
+  .d-tam .d-adimlar li button { padding: 7px; justify-content: center; }
+  .d-tam .d-adimlar li button > span:last-child { display: none; }
+  .d-tam .d-adimlar .d-kenar-btn { display: none; }
+  .d-tam .d-panel { width: 340px; }
+}
+@media (max-width: 760px) {
+  .d-kenar-btn { display: none; }
+}
