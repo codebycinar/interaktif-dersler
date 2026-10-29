@@ -1,5 +1,6 @@
 // Ortak ders kabuğu: giriş ekranı, adımlar, anlatım + sesli okuma, görevler, kontroller, sınav, ilerleme
 import { Grafik } from "./grafik.js";
+import { anlatimAkisi } from "./anlatim.js";
 
 export { Grafik };
 
@@ -101,7 +102,18 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
     },
   }, "Öğretmen modu");
 
+  /* ---------- Dersler arası gezinme ---------- */
+  const GEZ = META.gezinti || { ana: null, dersler: [] };
+  const ayniDers = GEZ.dersler.filter((d) => d.ders === META.ders);
+  const dersSira = ayniDers.findIndex((d) => d.slug === META.slug);
+  const sonrakiDers = dersSira >= 0 ? ayniDers[dersSira + 1] : null;
+  const oncekiDers = dersSira > 0 ? ayniDers[dersSira - 1] : null;
+  try { localStorage.setItem("edu:son", JSON.stringify({ slug: META.slug, zaman: Date.now() })); } catch { /* depolama kapalı */ }
+  const menuBtn = el("button", { class: "d-btn kucuk d-menu-btn", title: "Tüm dersler (M)", "aria-haspopup": "dialog", onclick: () => menuAc() }, "☰ Dersler");
+  const evBtn = GEZ.ana ? el("a", { class: "d-btn kucuk d-ev", href: GEZ.ana, title: "Ana sayfa", "aria-label": "Ana sayfa" }, "⌂") : null;
+
   const ust = el("header", { class: "d-ust" },
+    evBtn, menuBtn,
     el("div", { style: "min-width:0" },
       el("div", { class: "d-yol" }, [META.sinif && `${META.sinif}. Sınıf`, META.ders, META.unite].filter(Boolean).join(" › ")),
       el("h1", {}, META.baslik)),
@@ -118,7 +130,10 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
   const ilerleme = el("i");
   const sayac = el("span", { class: "d-sayac" });
   const geriBtn = el("button", { class: "d-btn", onclick: () => git(simdiki - 1) }, "‹ Geri");
-  const ileriBtn = el("button", { class: "d-btn ana", onclick: () => git(simdiki + 1) }, "İleri ›");
+  const ileriBtn = el("button", { class: "d-btn ana", onclick: () => {
+    if (simdiki === adimlar.length - 1 && sonrakiDers) location.href = sonrakiDers.href;
+    else git(simdiki + 1);
+  } }, "İleri ›");
   const alt = el("footer", { class: "d-alt" }, geriBtn, el("div", { class: "d-ilerleme" }, ilerleme), sayac, ileriBtn);
 
   const uygulama = el("div", { class: "d-uygulama" }, ust, adimNav, sahne, panel, alt);
@@ -182,7 +197,66 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
     const biten = depo.tamam.filter((i) => adimlar[i]?.gorev).length;
     ilerleme.style.width = `${(biten / gorevli) * 100}%`;
     sayac.textContent = `Adım ${simdiki + 1}/${adimlar.length} · ${biten}/${gorevli} görev`;
+    // Ana sayfa ve ders menüsü ilerlemeyi buradan okur
+    depo.ozet = { biten, toplam: gorevli };
+    depoYaz(depo);
   }
+
+  /* Ders menüsü: aynı sınıfın dersleri, derse göre gruplu, ilerlemeyle */
+  function ilerlemeOku(slug) {
+    try { return JSON.parse(localStorage.getItem(`edu:${slug}`))?.ozet || null; } catch { return null; }
+  }
+  function menuAc() {
+    if (document.querySelector(".d-menu-ortu")) return;
+    const kapat = () => { ortu.remove(); document.removeEventListener("keydown", esc); menuBtn.focus(); };
+    const esc = (e) => { if (e.key === "Escape") kapat(); };
+    const ara = el("input", { type: "search", placeholder: "Ders ara…", "aria-label": "Ders ara" });
+    const liste = el("div", { class: "d-menu-liste" });
+    const ciz = () => {
+      const q = ara.value.trim().toLocaleLowerCase("tr");
+      const gruplar = new Map();
+      for (const d of GEZ.dersler) {
+        if (q && !`${d.ders} ${d.unite} ${d.baslik}`.toLocaleLowerCase("tr").includes(q)) continue;
+        if (!gruplar.has(d.ders)) gruplar.set(d.ders, []);
+        gruplar.get(d.ders).push(d);
+      }
+      liste.replaceChildren(...[...gruplar].map(([ders, ds]) => el("section", {},
+        el("h4", {}, ders),
+        ds.map((d) => {
+          const o = ilerlemeOku(d.slug);
+          const yuzde = o ? Math.round((o.biten / o.toplam) * 100) : 0;
+          const buDers = d.slug === META.slug;
+          return el("a", { class: `d-menu-ders${buDers ? " simdi" : ""}`, href: buDers ? "#" : d.href, onclick: buDers ? (e) => { e.preventDefault(); kapat(); } : null },
+            el("span", { class: "d-menu-unite" }, d.unite),
+            el("b", {}, d.baslik),
+            el("span", { class: "d-menu-ilerleme", title: o ? `${o.biten}/${o.toplam} görev` : "Başlanmadı" },
+              el("i", { style: `width:${yuzde}%` }), el("em", {}, buDers ? "Şu an buradasın" : o ? (yuzde === 100 ? "Tamamlandı ✓" : `%${yuzde}`) : "Başlanmadı")));
+        }))));
+      if (!gruplar.size) liste.append(el("p", { class: "d-menu-bos" }, "Eşleşen ders yok."));
+    };
+    ara.addEventListener("input", ciz);
+    const ortu = el("div", { class: "d-ortu d-menu-ortu", role: "dialog", "aria-label": "Dersler", onclick: (e) => e.target === ortu && kapat() },
+      el("div", { class: "d-kart d-menu" },
+        el("div", { class: "d-menu-ust" },
+          el("h3", {}, `${META.sinif ? META.sinif + ". Sınıf " : ""}Dersler`),
+          el("div", { class: "d-bosluk" }),
+          GEZ.ana ? el("a", { class: "d-btn kucuk", href: GEZ.ana }, "⌂ Ana sayfa") : null,
+          el("button", { class: "d-btn kucuk", onclick: kapat, "aria-label": "Kapat" }, "✕")),
+        el("div", { class: "d-satir d-menu-komsu" },
+          oncekiDers ? el("a", { class: "d-btn", href: oncekiDers.href }, `‹ ${oncekiDers.baslik}`) : null,
+          el("div", { class: "d-bosluk" }),
+          sonrakiDers ? el("a", { class: "d-btn ana", href: sonrakiDers.href }, `${sonrakiDers.baslik} ›`) : null),
+        ara, liste));
+    ciz();
+    document.body.append(ortu);
+    document.addEventListener("keydown", esc);
+    ara.focus();
+    liste.querySelector(".simdi")?.scrollIntoView({ block: "center" });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.target.closest("input, textarea, select") || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === "m" || e.key === "M") { e.preventDefault(); menuAc(); }
+  });
 
   function baglamOlustur(i, kontroller) {
     const ctx = {
@@ -336,27 +410,53 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
 
     const kontroller = el("div", { class: "d-kontroller" });
     gorevKutusu = a.gorev ? el("div", { class: `d-gorev${depo.tamam.includes(i) ? " tamam" : ""}`, html: a.gorev }) : null;
+    // Adım adım anlatım varsa: önce kareler, bitince "Şimdi sen dene" bölümü açılır
+    const adimAdim = Array.isArray(a.anlat) && a.anlat.length > 0;
+    const uygulamaBlok = el("div", { class: "d-uygulama-blok" },
+      adimAdim ? el("div", { class: "d-sen-dene" }, "Şimdi sen dene") : null, gorevKutusu, kontroller);
+    const anlatimKap = el("div");
     panel.replaceChildren(
       el("div", {},
         a.cikti ? el("div", { class: "d-adim-cikti", title: ciktiIfadesi(a.cikti) }, a.cikti) : null,
         el("h2", {}, `${i + 1}. ${a.baslik}`)),
-      el("div", { class: "d-sesli" }, dinleBtn),
-      el("div", { class: "d-anlatim", html: a.anlatim }),
-      gorevKutusu,
-      kontroller,
+      adimAdim ? null : el("div", { class: "d-sesli" }, dinleBtn),
+      adimAdim ? anlatimKap : el("div", { class: "d-anlatim", html: a.anlatim }),
+      uygulamaBlok,
       a.ogretmen ? el("div", { class: "d-ogretmen", html: a.ogretmen }) : null,
     );
     panel.scrollTop = 0;
 
     geriBtn.disabled = i === 0;
-    ileriBtn.disabled = i === adimlar.length - 1;
+    // Son adımda İleri düğmesi aynı dersin bir sonraki konusuna götürür
+    const son = i === adimlar.length - 1;
+    ileriBtn.disabled = son && !sonrakiDers;
+    ileriBtn.textContent = son && sonrakiDers ? "Sonraki ders ›" : "İleri ›";
+    ileriBtn.title = son && sonrakiDers ? sonrakiDers.baslik : "";
     depo.sonAdim = i; depoYaz(depo);
 
     sonCtx = baglamOlustur(i, kontroller);
-    try { a.kur(sonCtx); } catch (e) { console.error(e); kontroller.append(el("div", { class: "d-geri-bildirim yanlis" }, "Bu adım yüklenirken hata oluştu: " + e.message)); }
+    let api = null;
+    try { api = a.kur(sonCtx); } catch (e) { console.error(e); kontroller.append(el("div", { class: "d-geri-bildirim yanlis" }, "Bu adım yüklenirken hata oluştu: " + e.message)); }
+    aktifAkis = null;
+    if (adimAdim) {
+      depo.anlatildi ||= [];
+      const izlendi = depo.anlatildi.includes(i);
+      aktifAkis = anlatimAkisi({
+        kareler: a.anlat, api, ctx: sonCtx, ses, ozetHtml: a.anlatim,
+        bitince: () => {
+          uygulamaBlok.hidden = false;
+          if (!depo.anlatildi.includes(i)) { depo.anlatildi.push(i); depoYaz(depo); }
+          requestAnimationFrame(() => uygulamaBlok.scrollIntoView({ block: "start", behavior: "smooth" }));
+        },
+      });
+      anlatimKap.replaceWith(aktifAkis.el);
+      if (izlendi) aktifAkis.izlendi();
+      else { uygulamaBlok.hidden = true; aktifAkis.baslat(); }
+    }
     ilerlemeGuncelle();
   }
   let sonCtx = null;
+  let aktifAkis = null;
 
   function ciktiIfadesi(kod) {
     const ana = (META.ciktilar || []).find((c) => kod.startsWith(c.kod));
@@ -364,8 +464,12 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
   }
 
   document.addEventListener("keydown", (e) => {
-    if (e.target.closest("input, textarea, select")) return;
-    if (e.key === "ArrowRight" || e.key === "PageDown") git(simdiki + 1);
+    if (e.target.closest("input, textarea, select") || document.querySelector(".d-menu-ortu")) return;
+    // Sağ ok / sunum kumandası: önce anlatımın bir sonraki karesi, anlatım bitince sonraki adım
+    if (e.key === "ArrowRight" || e.key === "PageDown") {
+      if (aktifAkis && !aktifAkis.bitti()) aktifAkis.ileri();
+      else git(simdiki + 1);
+    }
     if (e.key === "ArrowLeft" || e.key === "PageUp") git(simdiki - 1);
   });
 

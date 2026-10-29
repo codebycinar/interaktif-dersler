@@ -100,3 +100,4 @@ Yeni ders yazmadan önce [docs/ders-yazim-rehberi.md](docs/ders-yazim-rehberi.md
 - **Özgünlük:** İçerikler özgün olarak yazılmıştır. İlham alınan [Tongjiang Lab](https://github.com/smithjohn78390/tongjiang-lab) CC BY-NC 4.0 lisanslıdır; oradan kod veya içerik kopyalanmamıştır.
 - **Sesli anlatım** şu an tarayıcının Türkçe sesini (Web Speech API) kullanır; ses kalitesi cihaza göre değişir. Yayın öncesi kaliteli TTS ile üretilmiş ses dosyaları gömülebilir.
 - **İlerleme** öğrencinin tarayıcısında saklanır (localStorage); sunucu gerekmez.
+- **Gezinme:** Ana sayfada arama, derse göre süzme ve "kaldığın yerden devam et" var. Ders içinde `M` ders menüsünü açar (aynı sınıfın tüm dersleri, ilerlemeleriyle), `←`/`→` adımlar arasında geçer, `P` tam ekran derslerde anlatım panelini gizler. Son adımda "Sonraki ders" aynı dersin bir sonraki konusuna götürür.
