@@ -415,7 +415,8 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
     const uygulamaBlok = el("div", { class: "d-uygulama-blok" },
       adimAdim ? el("div", { class: "d-sen-dene" }, "Şimdi sen dene") : null, gorevKutusu, kontroller);
     const anlatimKap = el("div");
-    panel.replaceChildren(
+    // replaceChildren null'u "null" metni olarak ekler; boş parçalar ayıklanır
+    panel.replaceChildren(...[
       el("div", {},
         a.cikti ? el("div", { class: "d-adim-cikti", title: ciktiIfadesi(a.cikti) }, a.cikti) : null,
         el("h2", {}, `${i + 1}. ${a.baslik}`)),
@@ -423,7 +424,7 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
       adimAdim ? anlatimKap : el("div", { class: "d-anlatim", html: a.anlatim }),
       uygulamaBlok,
       a.ogretmen ? el("div", { class: "d-ogretmen", html: a.ogretmen }) : null,
-    );
+    ].filter(Boolean));
     panel.scrollTop = 0;
 
     geriBtn.disabled = i === 0;
@@ -444,6 +445,8 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
       aktifAkis = anlatimAkisi({
         kareler: a.anlat, api, ctx: sonCtx, ses, ozetHtml: a.anlatim,
         bitince: () => {
+          // Adım, anlatımdaki gösterimin bıraktığı durumu alıştırma için sıfırlayabilir
+          try { a.anlatBitti?.(api, sonCtx); } catch (e) { console.error(e); }
           uygulamaBlok.hidden = false;
           if (!depo.anlatildi.includes(i)) { depo.anlatildi.push(i); depoYaz(depo); }
           requestAnimationFrame(() => uygulamaBlok.scrollIntoView({ block: "start", behavior: "smooth" }));

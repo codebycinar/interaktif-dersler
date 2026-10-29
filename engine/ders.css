@@ -383,6 +383,7 @@ a.d-btn { text-decoration: none; }
 .d-anlat { display: flex; flex-direction: column; gap: 10px; }
 .d-anlat-ust { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .d-akis { display: flex; flex-direction: column; gap: 8px; }
+.d-akis .d-kare { scroll-margin-bottom: 84px; scroll-margin-top: 12px; }
 .d-kare {
   font-size: 16.5px; line-height: 1.5; padding: 10px 12px; border-radius: 12px;
   border: 1px solid transparent; color: var(--metin-2);

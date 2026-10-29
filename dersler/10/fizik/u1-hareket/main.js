@@ -53,31 +53,58 @@ const adimlar = [
       };
       const hedef = ctx.kaydirici({ etiket: "Hedef konum", min: -40, max: 120, adim: 5, deger: 70, birim: "m" });
       ctx.dugmeler([
-        { metin: "▶ Hedefe sür", ana: true, tik: sur },
+        { metin: "▶ Hedefe sür", ana: true, tik: () => sur(hedef.deger) },
         { metin: "↺ İlk konumu buraya al", tik: () => { bas = x; yol = 0; yaz(); } },
       ]);
       ctx.not("<p>İpucu: Önce 70 m'ye, sonra 40 m'ye sür. Yer değiştirme ve alınan yol neden farklı çıktı?</p>");
       yaz();
 
-      function sur() {
+      // gosterim: anlatımdaki örnek sürüş görevi tamamlatmaz
+      function sur(h, { gosterim = false } = {}) {
         k?.durdur();
-        const x0 = x, h = hedef.deger, yon = Math.sign(h - x0), V = 12;
-        if (!yon) return;
-        k = kosu(S, {
-          sure: Math.abs(h - x0) / V,
-          kare: (t) => {
-            const yeni = x0 + yon * V * t;
-            yol += Math.abs(yeni - x); x = yeni;
-            S.A.yerlestir(x); S.A.oklar({ v: yon * V }); S.takip(x); yaz();
-          },
-          bitti: () => {
-            x = h; S.A.yerlestir(x); S.A.oklar(); yaz();
-            if (yol - Math.abs(x - bas) > 1) ctx.gorevTamam();
-          },
+        const x0 = x, yon = Math.sign(h - x0), V = 12;
+        if (!yon) return Promise.resolve();
+        return new Promise((coz) => {
+          k = kosu(S, {
+            sure: Math.abs(h - x0) / V,
+            kare: (t) => {
+              const yeni = x0 + yon * V * t;
+              yol += Math.abs(yeni - x); x = yeni;
+              S.A.yerlestir(x); S.A.oklar({ v: yon * V }); S.takip(x); yaz();
+            },
+            bitti: () => {
+              x = h; S.A.yerlestir(x); S.A.oklar(); yaz();
+              if (!gosterim && yol - Math.abs(x - bas) > 1) ctx.gorevTamam();
+              coz();
+            },
+          });
         });
       }
       ctx.temizlik(() => k?.durdur());
+      return {
+        sur: (h) => sur(h, { gosterim: true }),
+        yerlestir(v) { k?.durdur(); bas = x = v; yol = 0; S.A.yerlestir(v); S.A.oklar(); S.kameraya(v + 10, { uzaklik: 42 }); yaz(); },
+      };
     },
+    anlat: [
+      { s: "Yolun kenarındaki işaretler bir <b>sayı doğrusu</b> gibidir. Başlangıç noktası <b>0 m</b>.", yap: (api) => api.yerlestir(0) },
+      { s: "Sağa (doğuya) gidiş <b>+</b>, sola (batıya) gidiş <b>−</b> sayılır." },
+      { s: "Şimdi araç <b>20 m</b> işaretinde. Bu, aracın <b>konumudur</b>: <b>x = 20 m</b>.", yap: (api) => api.yerlestir(20) },
+      { soru: "Araç 50 m işaretine gelirse konumu ne olur?", secenekler: ["30 m", "50 m", "70 m"], dogru: 1,
+        aciklama: "Konum, aracın 0 noktasına göre nerede olduğudur: x = 50 m.", ipucu: "Konum, işarette yazan sayıdır." },
+      { s: "Aracı 20 m'den <b>70 m</b>'ye sürelim. İzle…", yap: (api) => api.sur(70) },
+      { s: "Mavi ok <b>ilk konumdan son konuma</b> çizildi. Buna <b>yer değiştirme</b> denir." },
+      { formul: [["Δx", "yer değiştirme"], ["="], ["x<sub>son</sub>", "son konum"], ["−"], ["x<sub>ilk</sub>", "ilk konum"]],
+        s: "Δ (delta) “değişim” demektir.", oku: "Delta x eşittir son konum eksi ilk konum. Delta, değişim demektir." },
+      { cozum: ["İlk konum: x<sub>ilk</sub> = 20 m", "Son konum: x<sub>son</sub> = 70 m", "Δx = 70 − 20", "Δx = 50 m (doğuya)"] },
+      { s: "Şimdi araç geri dönüp <b>40 m</b>'ye gitsin.", yap: (api) => api.sur(40) },
+      { soru: "Araç 20 → 70 → 40 gitti. Toplam kaç metre yol aldı?", secenekler: ["20 m", "50 m", "80 m"], dogru: 2,
+        aciklama: "50 m gitti, 30 m geri döndü: 50 + 30 = 80 m. Buna <b>alınan yol</b> denir.", ipucu: "Gidişi ve dönüşü ayrı ayrı topla." },
+      { soru: "Peki yer değiştirme kaç metre?", secenekler: ["20 m", "50 m", "80 m"], dogru: 0,
+        aciklama: "Δx = 40 − 20 = 20 m. Yer değiştirme yalnızca başlangıca ve sona bakar.", ipucu: "Sadece ilk ve son konumu kullan." },
+      { s: "Kısacası: <b>alınan yol</b> gidilen her metreyi sayar. <b>Yer değiştirme</b> yalnızca nereden nereye gittiğine bakar." },
+    ],
+    anlatBitti: (api) => api.yerlestir(20),
   },
 
   /* 2 ------------------------------------------------------------------ */
@@ -106,12 +133,15 @@ const adimlar = [
       const simdi = gxt.seri("simdi", { renk: RENK_A, nokta: true });
 
       const vK = ctx.kaydirici({ etiket: "Hız (v)", min: -10, max: 20, adim: 1, deger: 8, birim: "m/s" });
-      const [baslatBtn] = ctx.dugmeler([{ metin: "▶ Başlat", ana: true, tik: baslat }]);
+      const [baslatBtn] = ctx.dugmeler([{ metin: "▶ Başlat", ana: true, tik: () => baslat() }]);
       const tablo = ctx.tablo(["t (s)", "x (m)", "1 s'de alınan yol (m)"]);
 
-      function baslat() {
+      // Anlatımdaki gösterim sürüşleri görev sayılmaz
+      let gosterim = false;
+      function baslat(hiz) {
         k?.durdur();
-        const v = vK.deger;
+        gosterim = hiz != null;
+        const v = hiz ?? vK.deger;
         if (simdi.noktalar.length) onceki.ayarla(simdi.noktalar);
         simdi.temizle(); tablo.temizle(); S.izleriTemizle();
         baslatBtn.disabled = true; vK.etkin(false);
@@ -132,13 +162,30 @@ const adimlar = [
           },
           bitti: () => {
             baslatBtn.disabled = false; vK.etkin(true); S.A.oklar();
+            if (gosterim) return;
             if (v !== 0) denenen.add(v);
             if (denenen.size >= 2) ctx.gorevTamam();
           },
         });
       }
       ctx.temizlik(() => k?.durdur());
+      return {
+        sur: (v) => baslat(v),
+        sifirla() { k?.durdur(); simdi.temizle(); onceki.temizle(); tablo.temizle(); S.izleriTemizle(); S.A.yerlestir(0); S.A.oklar(); baslatBtn.disabled = false; vK.etkin(true); },
+      };
     },
+    anlat: [
+      { s: "Bu araç <b>sabit hızla</b> gidecek: hızı hiç değişmeyecek." },
+      { s: "Her saniyenin sonunda yola bir <b>zaman izi</b> bırakacak. İzle…", yap: (api) => api.sur(5) },
+      { soru: "İzlerin arası nasıl?", secenekler: ["Gittikçe açılıyor", "Hep aynı", "Gittikçe daralıyor"], dogru: 1,
+        aciklama: "Araç her saniye <b>5 m</b> gitti. Sabit hızda, eşit sürelerde eşit yol alınır.", ipucu: "Tablodaki son sütuna bak." },
+      { s: "Bir saniyede alınan yola <b>hız</b> diyoruz. Bu aracın hızı <b>5 m/s</b> (“metre bölü saniye”)." },
+      { s: "Şimdi hızı iki katına çıkaralım: <b>10 m/s</b>.", yap: (api) => api.sur(10) },
+      { soru: "İzlerin arası şimdi kaç metre?", secenekler: ["5 m", "10 m", "20 m"], dogru: 1,
+        aciklama: "Hız 10 m/s ise araç her saniye 10 m gider. İzler iki kat seyrekleşti." },
+      { s: "Grafiğe bak: kesikli çizgi 5 m/s, yeni çizgi 10 m/s. <b>Hız arttıkça çizgi dikleşir.</b>" },
+    ],
+    anlatBitti: (api) => api.sifirla(),
   },
 
   /* 3 ------------------------------------------------------------------ */
@@ -152,6 +199,17 @@ const adimlar = [
       <p>Hızı bulduğunda hız–zaman grafiği açılacak. Orada da <b>grafiğin altında kalan alanın</b> neyi verdiğini keşfet.</p>`,
     gorev: "Konum–zaman grafiğinden aracın <b>hızını</b> bul.",
     ogretmen: "Programın öğrenme-öğretme uygulamasında grafiklerin altında kalan alan ve eğim hesaplamalarına soru-cevap ile odaklanılması öneriliyor. Öğrencilere bulduklarını x = x₀ + v·t modeline taşıtın.",
+    anlat: [
+      { s: "Geçen adımda hızı biliyorduk. Şimdi <b>bilmiyoruz</b>; elimizde yalnızca konum–zaman grafiği var." },
+      { s: "Grafikten iki an seçelim. Aradaki süreye <b>Δt</b>, konumdaki farka <b>Δx</b> diyelim." },
+      { formul: [["v", "hız"], ["="], ["Δx", "ne kadar gitti"], ["/"], ["Δt", "ne kadar sürede"]],
+        s: "Hız = gidilen yol ÷ geçen süre.", oku: "v eşittir delta x bölü delta t. Hız, gidilen yolun geçen süreye bölümüdür." },
+      { cozum: ["2. saniyede x = 20 m, 6. saniyede x = 60 m olsun.", "Δx = 60 − 20 = 40 m", "Δt = 6 − 2 = 4 s", "v = 40 ÷ 4 = 10 m/s"] },
+      { soru: "Bir araç 3 saniyede 45 m gittiyse hızı kaçtır?", secenekler: ["5 m/s", "15 m/s", "135 m/s"], dogru: 1,
+        aciklama: "v = 45 ÷ 3 = 15 m/s.", ipucu: "Yolu süreye böl." },
+      { s: "Grafikte bu oran çizginin <b>eğimidir</b>. Çizgi ne kadar dikse araç o kadar hızlıdır." },
+      { s: "Şimdi sıra sende: grafik üzerinde sürükleyerek Δx ve Δt'yi oku, hızı bul." },
+    ],
     kur(ctx) {
       const S = ctx.sahne;
       S.sifirla();
@@ -243,6 +301,17 @@ const adimlar = [
       <p>Mavi araç batıya giderse <b>hızı negatif</b>, <b>sürati</b> ise pozitiftir. Sürat yön içermez.</p>`,
     gorev: "Hızları öyle ayarla ki iki araç tam <b>6. saniyede</b> yan yana gelsin (±0,2 s).",
     ogretmen: "Öğrencilerden önce kâğıt üzerinde v_A − v_B = 25 m/s ilişkisini bulmalarını isteyin. Farklı grupların farklı (v_A, v_B) çiftleri bulması, modelin genellenmesi için iyi bir tartışma zemini oluşturur.",
+    anlat: [
+      { s: "Aynı yolda iki araç var. Turuncu <b>0 m</b>'de, mavi <b>150 m</b>'de." },
+      { s: "Sabit hızda bir aracın nerede olacağını bulmanın kuralı: <b>başladığın yer + hız × süre</b>." },
+      { formul: [["x", "t anındaki konum"], ["="], ["x₀", "başlangıç konumu"], ["+"], ["v·t", "hız × süre"]],
+        oku: "x eşittir x sıfır artı v çarpı t. Şimdiki konum, başlangıç konumu artı hız çarpı süredir." },
+      { cozum: ["Turuncu araç: x₀ = 0 m, v = 10 m/s", "3. saniyede: x = 0 + 10 · 3", "x = 30 m"] },
+      { soru: "Mavi araç 150 m'den batıya −5 m/s ile gidiyor. 2. saniyede nerede olur?", secenekler: ["140 m", "150 m", "160 m"], dogru: 0,
+        aciklama: "x = 150 + (−5) · 2 = 150 − 10 = 140 m. Batıya gittiği için konumu azalır.", ipucu: "Hız negatif: konum azalır." },
+      { s: "Batıya giden aracın <b>hızı negatiftir</b>, ama <b>sürati</b> (hızın büyüklüğü) pozitiftir: 5 m/s." },
+      { s: "İki araç yan yana geldiğinde <b>konumları eşittir</b>. Şimdi hızları ayarlayıp bunu 6. saniyede yakala." },
+    ],
     kur(ctx) {
       const S = ctx.sahne;
       S.sifirla();
@@ -310,6 +379,17 @@ const adimlar = [
       <p>Sonra yeşil hız okunu ve turuncu ivme okunu izle, tablodaki <b>Δv</b> değerlerini incele. Hız ve ivme <b>aynı yönde</b> olduğunda ne oluyor? <b>Zıt yönde</b> olduğunda?</p>`,
     gorev: "Dört senaryonun hepsinde ivmenin yönünü <b>doğru tahmin et</b>.",
     ogretmen: "Program bu çıktı için hazır veri seti verilmesini, öğrencilerin ivmenin yönü ve büyüklüğü hakkında iddia ortaya koyup veriye dayalı tartışmasını öneriyor. İddiaları önce sınıfta oylatıp sonra simülasyonla sınayabilirsiniz.",
+    anlat: [
+      { s: "Şimdiye kadar hız hiç değişmedi. Gerçek hayatta ise araçlar <b>hızlanır</b> ve <b>yavaşlar</b>." },
+      { s: "Hızdaki değişime <b>Δv</b> diyelim. Araç 0'dan 12 m/s'ye çıktıysa Δv = 12 m/s." },
+      { formul: [["a", "ivme"], ["="], ["Δv", "hızdaki değişim"], ["/"], ["Δt", "geçen süre"]],
+        s: "İvme şunu söyler: hız <b>her saniye</b> ne kadar değişiyor?", oku: "a eşittir delta v bölü delta t. İvme, hızın her saniye ne kadar değiştiğini söyler." },
+      { cozum: ["Yeşil yandı; araç 4 saniyede 0'dan 12 m/s'ye çıktı.", "Δv = 12 − 0 = 12 m/s", "Δt = 4 s", "a = 12 ÷ 4 = 3 m/s² → hız her saniye 3 m/s artıyor"] },
+      { soru: "Fren: hız 2 saniyede 10 m/s'den 4 m/s'ye düştü. Δv kaçtır?", secenekler: ["+6 m/s", "−6 m/s", "−14 m/s"], dogru: 1,
+        aciklama: "Δv = son − ilk = 4 − 10 = −6 m/s. Eksi işaret, hızın azaldığını gösterir.", ipucu: "Δv = son hız − ilk hız." },
+      { s: "Kural: hız ve ivme <b>aynı yöndeyse</b> araç hızlanır; <b>zıt yöndeyse</b> yavaşlar." },
+      { s: "Şimdi dört günlük durumda ivmenin yönünü tahmin et. Yeşil ok hızı, turuncu ok ivmeyi gösterecek." },
+    ],
     kur(ctx) {
       const S = ctx.sahne;
       S.sifirla();
@@ -403,6 +483,17 @@ const adimlar = [
       <p>Yoldaki zaman izlerine bak: hızlanırken aralar açılıyor, yavaşlarken daralıyor.</p>`,
     gorev: "Konum–zaman grafiği <b>tepe yapan</b> (önce artıp sonra azalan) bir hareket oluştur.",
     ogretmen: "Konum–zaman grafiğinin tepe noktasında hızın sıfır olduğunu, hız–zaman grafiğinin zaman eksenini kestiği anla eşleştirmelerini isteyin.",
+    anlat: [
+      { s: "Sabit ivmeyle hızlanan bir aracın üç grafiği vardır: <b>ivme</b>, <b>hız</b> ve <b>konum</b>." },
+      { s: "<b>İvme–zaman:</b> ivme değişmiyorsa yatay bir çizgidir." },
+      { s: "<b>Hız–zaman:</b> hız her saniye aynı miktar artar. Bu yüzden eğik bir doğrudur." },
+      { formul: [["v", "şimdiki hız"], ["="], ["v₀", "ilk hız"], ["+"], ["a·t", "ivme × süre"]],
+        oku: "v eşittir v sıfır artı a çarpı t." },
+      { soru: "İlk hız 2 m/s, ivme 3 m/s². 4. saniyede hız kaçtır?", secenekler: ["9 m/s", "12 m/s", "14 m/s"], dogru: 2,
+        aciklama: "v = 2 + 3 · 4 = 2 + 12 = 14 m/s.", ipucu: "Önce 3 · 4'ü hesapla, sonra ilk hızı ekle." },
+      { s: "<b>Konum–zaman:</b> araç hızlandıkça her saniye daha çok yol alır. Çizgi düz değil, <b>bükülür</b>." },
+      { s: "Yoldaki zaman izlerine dikkat et: hızlanırken izlerin arası açılır, yavaşlarken daralır." },
+    ],
     kur(ctx) {
       const S = ctx.sahne;
       S.sifirla();
@@ -466,6 +557,15 @@ const adimlar = [
       <p>Dikkat: Seçeneklerin üçü de aynı noktada bitebilir. Bitiş noktasına değil, <b>eğrinin şekline</b> bak.</p>`,
     gorev: "<b>İki</b> bulmacayı çöz: doğru konum–zaman grafiğini seç ve yer değiştirmeyi hesapla.",
     ogretmen: "Program, konum-zaman, hız-zaman ve ivme-zaman grafiklerinin birbirine dönüştürülmesini ve öğrencilerin bunu bir bilgi görseliyle sunmasını öneriyor. Bu adım bilgi görseli hazırlığı için ısınma olarak kullanılabilir.",
+    anlat: [
+      { s: "Bir hız–zaman grafiğinden iki önemli şey okunur." },
+      { s: "<b>1)</b> Hız büyükse konum hızlı artar: konum–zaman çizgisi <b>dikleşir</b>." },
+      { s: "<b>2)</b> Hız–zaman grafiğinin <b>altındaki alan</b>, yer değiştirmeye eşittir." },
+      { cozum: ["Araç 5 saniye boyunca 4 m/s ile gitti.", "Grafikte bu bir dikdörtgen: eni 5 s, boyu 4 m/s.", "Alan = 5 × 4 = 20", "Yer değiştirme = 20 m"] },
+      { soru: "Hız–zaman grafiğinde eksenin <b>altında</b> kalan alan ne anlama gelir?", secenekler: ["Araç durdu", "Araç geri (− yönde) gitti", "Araç hızlandı"], dogru: 1,
+        aciklama: "Eksenin altı negatif hız demektir: araç geri gitmiştir. Bu alan eksi sayılır." },
+      { s: "Şimdi iki bulmaca çöz: önce doğru konum grafiğini seç, sonra alanı kullanarak yer değiştirmeyi hesapla." },
+    ],
     kur(ctx) {
       const S = ctx.sahne;
       S.sifirla();
@@ -580,6 +680,14 @@ const adimlar = [
       <p>Frende aracın hareket enerjisi (<span class="formul">½·m·v²</span>, m = 1200 kg) ısıya dönüşüp boşa gider. Araç sonra o enerjiyi yakıtla yeniden kazanmak zorunda kalır.</p>`,
     gorev: "Turuncu aracı ışıktan <b>30–34. saniyeler arasında</b> ve <b>hiç durmadan</b> geçir.",
     ogretmen: "Program, ani hızlanıp yavaşlamanın yakıt sarfiyatına etkisinin tartışılmasını öneriyor (D5 Duyarlılık, D17 Tasarruf). Hız sınırı vurgusu yapın: simülasyonda en yüksek hız 50 km/h ile sınırlıdır. Kendi cümleleriyle yazılan açıklamalar çıkış kartı olarak kullanılabilir.",
+    anlat: [
+      { s: "Gerçek bir sorun: 192 m ileride bir trafik ışığı var. <b>30. saniyede</b> yeşile dönecek." },
+      { s: "<b>Mavi araç</b> sert bir sürücü: hızla gaza basar, ışığa gelince sert fren yapıp bekler." },
+      { s: "Frende aracın <b>hareket enerjisi</b> ısıya dönüşüp boşa gider. Araç sonra bu enerjiyi yakıtla yeniden kazanır." },
+      { soru: "Hangisi daha az yakıt harcar?", secenekler: ["Hızlanıp sert fren yapmak", "Sakin hızlanıp ışığa tam yeşilde varmak"], dogru: 1,
+        aciklama: "Durmadan geçen araç fren yapmaz; hareket enerjisini boşa harcamaz. Buna “yeşil dalga” denir." },
+      { s: "<b>Turuncu araç sensin.</b> İvmeni ve en yüksek hızını seç; ışıktan hiç durmadan, 30–34. saniyeler arasında geç." },
+    ],
     kur(ctx) {
       const S = ctx.sahne;
       S.sifirla();
@@ -673,6 +781,10 @@ const adimlar = [
       <p>En az <b>6 doğru</b> yaparsan dersi tamamlamış olursun. Yanlış yaptığın konular için ilgili adıma dönebilirsin.</p>`,
     gorev: "Değerlendirmede en az <b>6/8</b> doğru yap.",
     ogretmen: "Sorular programdaki öğrenme kanıtlarıyla (çalışma yaprağı, çıkış kartı) uyumludur. Sınıfta akıllı tahtada birlikte çözülüp her şıkkın neden doğru/yanlış olduğu tartışılabilir.",
+    anlat: [
+      { s: "Sekiz soruluk kısa bir değerlendirme." },
+      { s: "En az <b>6 doğru</b> yaparsan dersi bitirirsin. Her sorudan sonra açıklamayı oku; yanlış yaptığın konunun adımına dönebilirsin." },
+    ],
     kur(ctx) {
       const S = ctx.sahne;
       S.sifirla();

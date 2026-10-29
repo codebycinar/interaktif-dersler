@@ -97,9 +97,28 @@ for (const d of dersler) {
     await bekle(300);
 
     const adimSayisi = await page.evaluate(() => document.querySelectorAll(".d-adimlar li").length);
-    const adimaGit = async (i) => {
+    /** Adım adım anlatımı sonuna kadar oynatır: Devam'a basar, mini sorularda doğru şıkkı bulana dek dener */
+    const anlatimiBitir = () => page.evaluate(async () => {
+      const dur = (ms) => new Promise((r) => setTimeout(r, ms));
+      let kare = 0, takili = 0;
+      while (document.querySelector(".d-anlat:not(.bitti)")) {
+        const devam = document.querySelector(".d-anlat .d-devam");
+        if (devam && !devam.disabled && !devam.hidden) { devam.click(); kare++; takili = 0; await dur(120); continue; }
+        const sik = document.querySelector(".d-kare.simdi .d-kare-siklar button:not([disabled])");
+        if (sik) { sik.click(); await dur(80); continue; }
+        if (++takili > 40) return { kare, takildi: document.querySelector(".d-kare.simdi")?.textContent.slice(0, 80) || "?" };
+        await dur(100);
+      }
+      return { kare, gizliUygulama: !!document.querySelector(".d-uygulama-blok[hidden]") };
+    });
+    const adimaGit = async (i, { anlatimiGec = true } = {}) => {
       await page.evaluate((n) => document.querySelectorAll(".d-adimlar li button")[n].click(), i);
       await bekle(ADIM_BEKLE);
+      if (!anlatimiGec) return;
+      const a = await anlatimiBitir();
+      if (a.takildi) rapor.hatalar.push(`Adım ${i + 1}: anlatım "${a.takildi}" karesinde takıldı`);
+      if (a.gizliUygulama) rapor.hatalar.push(`Adım ${i + 1}: anlatım bitti ama "Şimdi sen dene" bölümü açılmadı`);
+      if (a.kare) await bekle(300);
     };
     for (let i = 0; i < adimSayisi; i++) {
       await adimaGit(i);
@@ -110,7 +129,17 @@ for (const d of dersler) {
         yuklemeHatasi: [...document.querySelectorAll(".d-panel .d-geri-bildirim.yanlis")].map((e) => e.textContent).find((t) => t.includes("yüklenirken hata")) || null,
         bosPanel: (document.querySelector(".d-anlatim")?.textContent.trim().length || 0) < 40,
         tasma: document.documentElement.scrollWidth > window.innerWidth + 1,
+        // DOM'a yanlışlıkla eklenmiş null/undefined/NaN metinleri
+        bozukMetin: (() => {
+          const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          for (let n; (n = w.nextNode());) {
+            const t = n.textContent.trim();
+            if (/^(null|undefined|NaN|\[object Object\])$/.test(t) && !n.parentElement.closest("script, style")) return t;
+          }
+          return null;
+        })(),
       }));
+      if (bilgi.bozukMetin) rapor.hatalar.push(`Adım ${i + 1}: ekranda "${bilgi.bozukMetin}" metni var`);
       if (bilgi.yuklemeHatasi) rapor.hatalar.push(`Adım ${i + 1}: ${bilgi.yuklemeHatasi}`);
       if (bilgi.bosPanel) rapor.hatalar.push(`Adım ${i + 1}: anlatım metni boş ya da çok kısa`);
       if (bilgi.tasma) rapor.uyarilar.push(`Adım ${i + 1}: yatay taşma var`);

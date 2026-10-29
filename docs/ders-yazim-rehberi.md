@@ -71,6 +71,38 @@ Yabancı dil derslerinde `ders.json`'a `"dil": "en-GB"` (veya `en-US`) ekleyin. 
 - Son adım bir değerlendirme olmalı: `ctx.sinav(sorular, { gecmeOrani })`, 6–10 soru, her sorunun açıklaması olsun. Kabuktaki türler `coktan` ve `sayi`; `grafik: (kap) => …` ile soruya görsel eklenebilir.
 - Kabukta olmayan bir bileşen gerekirse (eşleştirme, sıralama, sürükle-bırak, harita, ses vb.) **kendi ders klasörünüzde** yazın. `engine/`'i değiştirmeyin; ortak motora alınmaya aday bileşenleri raporunuzda belirtin.
 
+## 4·0. Önce anlat, sonra uygulat (adım adım anlatım)
+
+Öğrenci geri bildirimi: “Anlatmıyor, daha çok pratik bunlar.” Uzun paragraf + hemen alıştırma **olmaz**. Her adım üç bölümdür:
+
+1. **Gösteriyorum** — `anlat` kareleri. Kısa cümleler tek tek gelir; her kare sahnede bir şey yapar (`yap(api, ctx)`: araç hareket eder, parça parlar, kamera yaklaşır).
+2. **Birlikte yapalım** — çözümlü örnek (`cozum: [...]`, satır satır açılır) ve araya serpiştirilmiş mini sorular (`soru`, yanlışta ipucu verir, doğruyu bulmadan geçilmez).
+3. **Şimdi sen dene** — adımın görevi ve kontrolleri. Kabuk bunları anlatım bitince açar.
+
+```js
+{
+  baslik, cikti, gorev, ogretmen,
+  anlatim: "<p>Kısa özet (📄 Özet düğmesinde ve tekrar ziyarette görünür)</p>",
+  kur(ctx) { …; return { sur, yerlestir } },     // dönen nesne kareler için "api" olur
+  anlat: [
+    { s: "Araç şimdi <b>20 m</b> işaretinde. Bu, aracın <b>konumudur</b>.", yap: (api) => api.yerlestir(20) },
+    { formul: [["Δx", "yer değiştirme"], ["="], ["x<sub>son</sub>", "son konum"], ["−"], ["x<sub>ilk</sub>", "ilk konum"]], oku: "…" },
+    { cozum: ["İlk konum: 20 m", "Son konum: 70 m", "Δx = 70 − 20", "Δx = 50 m"] },
+    { soru: "Toplam kaç metre yol aldı?", secenekler: ["20 m", "50 m", "80 m"], dogru: 2, aciklama: "…", ipucu: "…" },
+    { s: "…", etkilesim(api, ctx, tamam, kap) { /* öğrenci sahnede bir şey yapınca tamam() */ } },
+  ],
+  anlatBitti(api) { /* gösterimin bıraktığı durumu alıştırma için sıfırla */ },
+}
+```
+
+Kurallar:
+- **Bir kare = bir fikir.** En fazla iki kısa cümle (≈ 20 kelime). Terimi önce gündelik dille, sonra adıyla verin: “Bir saniyede alınan yola **hız** diyoruz.”
+- **Önce sezgi ve somut sayı, sonra formül.** Formül hiçbir zaman ilk karede gelmez. `formul` ile sembol sembol kurun; her sembolün altında Türkçe anlamı yazsın. Hemen ardından sayılarla bir `cozum` gelsin.
+- **Her 3–4 karede bir mini soru.** Kavram yanılgısını hedefleyen çeldirici, yanlışta yol gösteren `ipucu`, doğruda “neden” açıklaması.
+- **Gösterim görevi tamamlatmaz.** Anlatımda yapılan örnek sürüş/deney, `ctx.gorevTamam()` çağırmamalı; `anlatBitti` ile sahneyi alıştırmaya hazırlayın.
+- Bir adımda 6–12 kare. Sağ ok tuşu ve sunum kumandası önce kareleri ilerletir.
+- Sesli anlatım her kareyi okur (kare `oku` alanıyla özel okunuş verebilir: “delta x eşittir…”).
+
 ## 4a. Görsel kalite: 3B dünya ve gerçekçilik
 
 Çıta: öğrenci ekrana baktığında bir **yer** görmeli (laboratuvar masası, çayır, sera, kale, sınıf), şema değil.
