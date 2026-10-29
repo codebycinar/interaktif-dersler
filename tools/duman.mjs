@@ -51,7 +51,7 @@ const tarayici = await puppeteer.launch({
   executablePath: CHROME,
   headless: true,
   args: [
-    "--enable-unsafe-swiftshader", "--use-angle=swiftshader", "--autoplay-policy=no-user-gesture-required", "--allow-file-access-from-files",
+    "--enable-unsafe-swiftshader", "--use-angle=swiftshader", "--autoplay-policy=no-user-gesture-required", "--allow-file-access-from-files", "--mute-audio",
     // GitHub Actions (Ubuntu) kullanıcı ad alanı kısıtı nedeniyle sandbox'sız çalışmalı
     ...(process.platform === "linux" ? ["--no-sandbox", "--disable-dev-shm-usage"] : []),
   ],
@@ -69,6 +69,20 @@ for (const d of dersler) {
     const ekran = page.screenshot.bind(page);
     page.screenshot = async (o) => { try { return await ekran(o); } catch { await bekle(500); return ekran(o); } };
     await page.setViewport({ width: 1408, height: 840 });
+    // Görünmez tarayıcıda da Windows konuşma motoru hoparlörden çalar: sesli okumayı sessiz bir taklitle değiştir
+    await page.evaluateOnNewDocument(() => {
+      if (!("speechSynthesis" in window)) return;
+      let zamanlayici = null, aktif = null;
+      const bitir = (tur) => { clearTimeout(zamanlayici); const u = aktif; aktif = null; u?.dispatchEvent(new Event(tur)); };
+      speechSynthesis.speak = (u) => {
+        if (aktif) bitir("error");
+        aktif = u;
+        setTimeout(() => u.dispatchEvent(new Event("start")), 0);
+        zamanlayici = setTimeout(() => bitir("end"), Math.min(2000, 15 * (u.text || "").length + 100));
+      };
+      speechSynthesis.cancel = () => { if (aktif) bitir("error"); };
+      Object.defineProperty(speechSynthesis, "speaking", { get: () => !!aktif });
+    });
     page.on("console", (m) => {
       if (m.type() === "error") rapor.hatalar.push(`console: ${m.text()}`);
       else if (m.type() === "warning") rapor.uyarilar.push(m.text());
