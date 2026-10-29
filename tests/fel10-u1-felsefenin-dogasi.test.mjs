@@ -1,6 +1,7 @@
 // Felsefe zaman çizelgesi verisinin kronolojik tutarlılığı
 import test from "node:test";
 import assert from "node:assert/strict";
+import { TAHTA, SIRA_DEGISIM } from "../dersler/10/felsefe/u1-felsefenin-dogasi/gemi.js";
 import { GELENEKLER, DUSUNURLER, HOCA_TALEBE, SIRALAR, KENTLER } from "../dersler/10/felsefe/u1-felsefenin-dogasi/veri.js";
 
 const bul = (id) => DUSUNURLER.find((d) => d.id === id);
@@ -49,4 +50,11 @@ test("felsefe tarihindeki yaygın sıralar korunur", () => {
 
 test("harita kentleri Ege çevresinde", () => {
   for (const k of KENTLER) assert.ok(k.lon > 22 && k.lon < 30 && k.lat > 36 && k.lat < 42, k.id);
+});
+
+test("Theseus'un gemisi: 12 tahtanın her biri bir kez değişir, iki yan dengeli", () => {
+  assert.equal(SIRA_DEGISIM.length, TAHTA);
+  assert.equal(new Set(SIRA_DEGISIM.map(([y, s]) => `${y}:${s}`)).size, TAHTA);
+  for (const y of [1, -1]) assert.equal(SIRA_DEGISIM.filter(([yy]) => yy === y).length, TAHTA / 2);
+  assert.deepEqual(SIRA_DEGISIM[0], [1, 5], "ilk değişen tahta kameraya bakan yandaki en üst sıra");
 });

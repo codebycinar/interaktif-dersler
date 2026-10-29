@@ -8,5 +8,8 @@
   "tur": "Sınıflandırma oyunları + düşünce deneyi + zaman çizelgesi + soru atölyesi",
   "mufredat": "mufredat/10-sinif.json",
   "uniteId": 30,
-  "ciktiKodlari": ["FEL.10.1.1"]
+  "ciktiKodlari": [
+    "FEL.10.1.1"
+  ],
+  "yerlesim": "tam"
 }

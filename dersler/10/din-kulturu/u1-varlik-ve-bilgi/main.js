@@ -3,6 +3,7 @@
 import { dersBaslat, el } from "../../../../engine/ders.js";
 import { sahneKap, sekmeler, siniflandirma, siralama, iliskiAgi, geriBildirim, karistir } from "../../felsefe/_ortak/etkilesim.js";
 import { AYETLER, HADISLER, kunye, yalanUzlasmaOlasiligi, olasilikYaz, MUTEVATIR_ESIK } from "./veri.js";
+import { tefekkurDunyasi, igneler } from "./tefekkur.js";
 
 const A = (id) => `<span class="dk-kunye">${kunye(AYETLER[id])}</span>`;
 const ayetKart = (id) => `<span class="dk-ayet">${AYETLER[id].anlam}</span> ${A(id)}`;
@@ -17,6 +18,20 @@ const KONULAR = [
   { id: "insan", ad: "İnsanın yeri", renk: "#5ad38b" },
   { id: "gayb", ad: "Gayb", renk: "#b89cff" },
 ];
+
+/* ---------- Anlatım kareleri için sahne tutamacı ----------
+   Kareler kamerayı, günün saatini ve geçici iğneleri yönetir; sifirla() alıştırmanın beklediği görünüme döner. */
+function sahneApi(ctx, { saat, bak }) {
+  const S = ctx.sahne, ek = new Map();
+  const igneKaldir = () => { ek.forEach((i) => i.kaldir()); ek.clear(); };
+  ctx.temizlik(igneKaldir);
+  return {
+    bak: (ad) => S.bak(ad),
+    saat: (ad) => S.saat(ad),
+    igne(anahtar, yer, html, ayar = {}) { ek.get(anahtar)?.kaldir(); ek.set(anahtar, S.igne(typeof yer === "string" ? S.yerler[yer] : yer, html, ayar)); },
+    sifirla() { igneKaldir(); S.saat(saat); S.bak(bak); },
+  };
+}
 
 /* ---------- 2. adım: Müller-Lyer yanılsaması ---------- */
 function okluCizgi(x, y, L, disa) {
@@ -62,13 +77,30 @@ const adimlar = [
     baslik: "Bunu nereden biliyorsun?",
     cikti: "DKAB.10.1.1-a",
     anlatim: `
-      <p>Çorbanın tuzlu olduğunu, Çanakkale Savaşı'nın yapıldığını, bir bütünün parçasından büyük olduğunu biliyoruz. Ama bunları <b>aynı yoldan</b> mı biliyoruz?</p>
-      <p>İslam düşüncesinde <b>nesnel</b> (herkes için geçerli) bilgi kaynakları üçtür: <b>salim duyular</b>, <b>selim akıl</b> ve <b>sadık haber</b>. Sadık haber; çok sayıda kişinin aktardığı <b>mütevatir haber</b> ile Peygamber'in bildirdiği <b>vahiy</b>dir. Sezgi, ilham ve rüya ise kişiye özgü, <b>öznel</b> kaynaklardır; başkası için delil olmaz.</p>
-      <p>İlk inen ayetlerin “Oku!” emriyle başlaması (${kunye(AYETLER.alak)}) İslam'da bilginin değerini gösterir: “Hiç bilenlerle bilmeyenler bir olur mu?” (${kunye(AYETLER.zumer9)})</p>`,
+      <p>Bilgiyi farklı yollardan ediniriz. İslam düşüncesinde herkes için geçerli (<b>nesnel</b>) kaynaklar üçtür: <b>salim duyular</b>, <b>selim akıl</b> ve <b>sadık haber</b> (mütevatir haber ve vahiy).</p>
+      <p>Sezgi, ilham ve rüya kişiye özgü, <b>öznel</b> kaynaklardır; başkasına delil olmaz. İlk inen ayetler “Oku!” emriyle başlar (${kunye(AYETLER.alak)}).</p>`,
     gorev: "On bilginin her birini <b>kaynağına</b> göre doğru kutuya yerleştir.",
     ogretmen: "Program, öğrencilere varlık, nesne, olay ve olgular hakkındaki bilgileri nasıl elde ettiklerinin sorulmasını ve cevaplardan yola çıkılarak bilgi kaynaklarının incelenmesini öneriyor (SDB2.1). Bilgi kaynaklarının öznel–nesnel sınıflandırması ele alınır; İslam'da nesnel kaynaklar sadık haber, selim akıl ve salim duyulardır. Sınıflandırmadan önce öğrencilere kendi örneklerini söyletip tahtaya zihin haritası olarak yazabilirsiniz.",
+    anlat: [
+      { s: "Ayşe çorbayı tadıyor: “Tuzlu olmuş!” Bunu nasıl bildi? <b>Diliyle</b>, yani bir duyusuyla.", yap: (api) => { api.saat("gun"); api.bak("genel"); } },
+      { s: "Gözle, kulakla, dille, elle edindiğimiz bilgiye <b>duyu bilgisi</b> diyoruz. Terastaki akasyayı da gözünle görüyorsun." },
+      { s: "Şimdi uzağa bak: duman yükseliyor. Ateşi görmüyoruz ama “orada ateş var” diyoruz.", yap: (api) => api.bak("duman") },
+      { s: "Dumandan ateşe <b>akıl</b> ulaştı. Görmediğimiz bir şeyi akıl yürüterek bilebiliriz." },
+      { soru: "“Bir bütün, kendi parçasından büyüktür.” Bunu nasıl biliriz?", secenekler: ["Her şeyi tek tek ölçerek", "Akıl yürüterek", "Birinden duyarak"], dogru: 1,
+        aciklama: "Bunun için deney gerekmez; akıl kesin olarak kavrar.", ipucu: "Dünyadaki bütün nesneleri ölçmen gerekir mi?" },
+      { s: "Çanakkale Savaşı'nı görmedin. Ama birbirinden bağımsız pek çok tanık ve belge anlatıyor. Buna <b>mütevatir haber</b> denir.", yap: (api) => api.bak("kitap") },
+      { s: "Bir de Peygamber'in Allah'tan getirdiği bilgi var: <b>vahiy</b>. Mütevatir haber ve vahye birlikte <b>sadık haber</b> denir." },
+      { soru: "Ahiret gününün geleceğini hangi yolla biliriz?", secenekler: ["Duyularla", "Vahiyle", "Rüyayla"], dogru: 1,
+        aciklama: "Duyular da akıl da tek başına buna ulaşamaz; bu bilgiyi vahiy bildirir.", ipucu: "Ahireti görebilir ya da ölçebilir miyiz?" },
+      { s: "Rüya, sezgi ve ilham <b>kişiye özgüdür</b>; başkasına delil olmaz. Bunlara <b>öznel</b> kaynak denir." },
+      { baslik: "Birlikte yapalım: “Mısır'da piramitler var.”", cozum: ["Piramitleri gördün mü? Hayır: duyu bilgisi değil.", "Akılla çıkarabilir misin? Hayır: akıl tek başına bilemez.", "Sayısız bağımsız kişi ve kaynak anlatıyor.", "Kaynak: <b>mütevatir haber</b>."] },
+      { s: "Şimdi sen dene: on bilginin her birini <b>kaynağına</b> göre doğru kutuya yerleştir." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Bilginin kaynağını bul" });
+      ctx.sahne.saat("gun"); ctx.sahne.bak("genel");
+      igneler(ctx, [["agac", "Akasya<small>Gözle görülür: duyu</small>", { renk: "#5ad38b" }], ["kitap", "Kitap<small>Aktarılan bilgi: haber</small>", { renk: "#ffb547", yon: "alt" }], ["dumanUst", "Duman<small>Ateşe işaret eder: akıl</small>", { renk: "#4fc3f7" }]]);
       const D = "duyu", K = "akil", M = "mutevatir", V = "vahiy", O = "oznel";
       siniflandirma({
         kap, deste: 1, sutun: 3,
@@ -93,6 +125,7 @@ const adimlar = [
         ],
         bitti: () => ctx.gorevTamam(),
       });
+      return sahneApi(ctx, { saat: "gun", bak: "genel" });
     },
   },
 
@@ -101,13 +134,31 @@ const adimlar = [
     baslik: "Kaynakları sına: duyu, akıl, haber",
     cikti: "DKAB.10.1.1-a",
     anlatim: `
-      <p>Nesnel kaynakların adlarındaki sıfatlara dikkat et: <b>salim</b> (sağlıklı) duyu, <b>selim</b> (sağlam) akıl, <b>sadık</b> (doğru) haber. Her kaynak doğru kullanıldığında bilgi verir.</p>
-      <p><b>1. sekme:</b> Duyular bazen yanılır. İki çizgiyi gözünle eşitle, sonra ölç.</p>
-      <p><b>2. sekme:</b> Bir haberi kaç kişi, nasıl aktarırsa kesin bilgi olur? <b>Mütevatir haber</b>, yalan üzerinde birleşmeleri aklen mümkün olmayan, birbirinden bağımsız kalabalık bir topluluğun aktardığı haberdir. “Size güvenilmez biri bir haber getirirse onu araştırın.” (${kunye(AYETLER.hucurat6)})</p>`,
+      <p>Nesnel kaynaklar sıfatlarıyla anılır: <b>salim</b> (sağlıklı) duyu, <b>selim</b> (sağlam) akıl, <b>sadık</b> (doğru) haber. Duyular yanılabilir; akıl ve ölçme onları denetler.</p>
+      <p><b>Mütevatir haber</b>, yalan üzerinde birleşmeleri aklen mümkün olmayan, birbirinden bağımsız kalabalık bir topluluğun aktardığı haberdir (bk. ${kunye(AYETLER.hucurat6)}).</p>`,
     gorev: "Yanılsama deneyini yapıp doğru sonucu seç; haber modelinde <b>mütevatir</b> düzeye ulaş ve tek kaynaklı kalabalığı dene.",
     ogretmen: "Program bilgi kaynaklarının ve değerinin farklı disiplinler dikkate alınarak açıklanmasını öneriyor (OB1). Haber modeli temsilîdir: her aktarıcının aynı yanlışı uydurma payı %30 kabul edilmiş, bağımsız aktarıcılar için olasılık çarpılmıştır. Asıl vurgu sayının değil, aktarıcıların bağımsızlığının önemidir: aynı paylaşımı tekrarlayan bin kişi tek bir kaynaktır. Sosyal medyada haber doğrulama ile ilişkilendirin.",
+    anlat: [
+      { s: "Kasedeki suya bir kalem batırılmış. Kalem <b>kırık</b> görünüyor. Gerçekten kırık mı?", yap: (api) => { api.saat("gun"); api.bak("kase"); } },
+      { s: "Kalemi sudan çıkarsak dümdüz! Gözümüz bir an <b>yanıldı</b>. Buna <b>yanılsama</b> denir." },
+      { s: "Yanıldığımızı nasıl anladık? <b>Akıl</b> şüphelendi; dokunarak ve ölçerek kontrol ettik." },
+      { soru: "Kalemin kırık görünmesinde hangi kaynak yanıldı?", secenekler: ["Akıl", "Göz, yani duyu", "Haber"], dogru: 1,
+        aciklama: "Göz yanıldı; akıl ve ölçme yanılgıyı düzeltti.", ipucu: "Kalemin kırık olduğunu sana ne söyledi?" },
+      { s: "Bu yüzden kaynaklar sıfatıyla anılır: <b>salim</b> (sağlıklı) duyu, <b>selim</b> (sağlam) akıl, <b>sadık</b> (doğru) haber." },
+      { s: "Şimdi haberlere geçelim. Bir arkadaşın “Erzurum'a kar yağmış” dedi. Tek kişi yanılmış olabilir.", yap: (api) => api.bak("genel") },
+      { s: "Peki birbirini tanımayan on kişi Erzurum'dan aynı şeyi söylese? Hepsinin aynı yanlışı uydurması neredeyse imkânsız." },
+      { baslik: "Birlikte hesaplayalım", cozum: ["Bir kişinin yanılma payı %30 olsun (temsilî).", "İki bağımsız kişinin aynı yanlışta birleşmesi: 0,3 × 0,3 = %9", "Üç kişi: 0,3 × 0,3 × 0,3 ≈ %2,7", "Kişi arttıkça bu olasılık hızla sıfıra yaklaşır."] },
+      { s: "Böyle kalabalık ve <b>bağımsız</b> bir topluluğun aktardığı habere <b>mütevatir haber</b> denir; kesin bilgi verir." },
+      { soru: "Bin kişi aynı paylaşımı tekrar paylaşıyor. Bu haber mütevatir mi?", secenekler: ["Evet, bin kişi çok fazla", "Hayır, hepsi tek bir kaynağa dayanıyor", "Evet, çok paylaşılan doğrudur"], dogru: 1,
+        aciklama: "Aynı paylaşımı tekrarlayan kalabalık <b>tek bir kaynaktır</b>. Önemli olan sayı değil, bağımsızlıktır.", ipucu: "Bu bin kişiden kaçı olayı kendi gözüyle gördü?" },
+      { s: `Kur'an da uyarır: Güvenilmez biri bir haber getirirse onu <b>araştırın</b> (${kunye(AYETLER.hucurat6)}).` },
+      { s: "Şimdi sen dene: 1. sekmede çizgileri gözünle eşitleyip ölç; 2. sekmede haber modelini iki türlü dene." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Bilgi kaynaklarını sına" });
+      ctx.sahne.saat("gun"); ctx.sahne.bak("kase");
+      igneler(ctx, [["kase", "Suya batırılmış kalem<small>Kırık görünür ama düzdür</small>", { renk: "#4fc3f7" }]]);
       let gozBitti = false, haberBitti = false;
       const bak = () => gozBitti && haberBitti && ctx.gorevTamam();
       const sek = sekmeler(kap, [
@@ -188,6 +239,7 @@ const adimlar = [
           guncelle();
         } },
       ]);
+      return sahneApi(ctx, { saat: "gun", bak: "kase" });
     },
   },
 
@@ -196,13 +248,29 @@ const adimlar = [
     baslik: "Bilgi kaynakları arasındaki ilişki",
     cikti: "DKAB.10.1.1-b",
     anlatim: `
-      <p>Bilgi kaynakları birbirinden kopuk değildir; birbirini <b>destekler ve denetler</b>. Duyular akla veri getirir, akıl haberi sınar, vahiy aklın tek başına ulaşamayacağı konularda yol gösterir, akıl da vahyi anlamayı sağlar.</p>
-      <p>Kur'an'a göre Allah insanı hiçbir şey bilmezken dünyaya getirmiş, ona <b>işitme, görme ve gönül</b> vermiştir (${kunye(AYETLER.nahl78)}).</p>
-      <p>Doğru bilgi <b>doğru inanca</b>, doğru inanç da <b>doğru davranışa</b> yol açar. Kaynaklar arasındaki sekiz bağı kur.</p>`,
+      <p>Bilgi kaynakları birbirini <b>destekler ve denetler</b>: duyular akla veri getirir, akıl haberi sınar, akıl vahyi anlar, vahiy akla yol gösterir. Allah insana işitme, görme ve gönül vermiştir (${kunye(AYETLER.nahl78)}).</p>
+      <p>Doğru bilgi <b>doğru inanca</b>, doğru inanç <b>doğru davranışa</b> yol açar.</p>`,
     gorev: "Kavram haritasında <b>sekiz bağın</b> hepsini doğru yönde kur.",
     ogretmen: "Program, öğrencilerin bilgi kaynakları arasındaki ilişkileri öğretmen rehberliğinde belirlemesini, bu süreçte zihin haritası kullanılmasını ve doğru bilgi–doğru inanç–doğru davranış ilişkisinden doğru bilginin önemine değinilmesini öneriyor (E3.4, D16.1, SDB1.2). Akıl ile vahiy arasındaki ilişkinin iki yönlü olduğuna (akıl vahyi anlar; vahiy akla yön verir) özellikle dikkat çekin.",
+    anlat: [
+      { s: "Bir doktor düşün. Hastayı <b>dinler</b>, ateşini <b>ölçer</b>, sonra <b>düşünüp</b> karar verir.", yap: (api) => { api.saat("aksam"); api.bak("genel"); } },
+      { s: "Doktor tek bir kaynağa değil, hepsine birden başvurdu. Bilgi kaynakları da <b>birlikte çalışır</b>." },
+      { s: "<b>Duyular</b> akla veri getirir. Akıl bu verileri düşünür, karşılaştırır, birleştirir." },
+      { s: "<b>Akıl</b> haberi sınar: Kaç kişi söylüyor? Birbirinden bağımsızlar mı? Söyledikleri tutarlı mı?" },
+      { s: "<b>Vahiy</b>, aklın tek başına ulaşamadığı konularda yol gösterir. Akıl da vahyi <b>anlamayı</b> sağlar.", yap: (api) => api.bak("kitap") },
+      { soru: "Akıl ile vahiy arasındaki bağ hangi yöndedir?", secenekler: ["Yalnızca akıldan vahye", "Yalnızca vahiyden akla", "İki yönlü: akıl vahyi anlar, vahiy akla yol gösterir"], dogru: 2,
+        aciklama: "Vahyi anlamak için akıl gerekir; akıl da gayb gibi konularda vahiyle yol bulur.", ipucu: "Aklı olmayan biri dinî bir emirden sorumlu tutulur mu?" },
+      { s: `Kur'an'a göre Allah insana <b>işitme, görme ve gönül</b> vermiştir; bunlar bilginin araçlarıdır (${kunye(AYETLER.nahl78)}).` },
+      { baslik: "Birlikte yapalım: bilgiden davranışa", cozum: ["Duyduk: “Bu içecek sağlığa zararlı.”", "Akılla sınadık: kaynak güvenilir, uzmanlar aynı şeyi söylüyor.", "<b>Doğru bilgi</b>: Bu içecek zararlı.", "<b>Doğru inanç</b>: Sağlığım bana verilmiş bir emanettir.", "<b>Doğru davranış</b>: Bu içeceği içmem."] },
+      { soru: "Doğru davranışın temelinde ne vardır?", secenekler: ["Doğru inanç ve doğru bilgi", "Çoğunluğun yaptığı", "Tahmin"], dogru: 0,
+        aciklama: "Doğru bilgi doğru inanca, doğru inanç doğru davranışa yol açar.", ipucu: "Zincirin başına dön." },
+      { s: "Şimdi sen dene: haritada önce kaynağa, sonra onun etkilediğine dokunarak <b>sekiz bağı</b> doğru yönde kur." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Kaynaklar birbirini nasıl etkiler?" });
+      ctx.sahne.saat("aksam"); ctx.sahne.bak("kitap");
+      igneler(ctx, [["kitap", "Kitap", { renk: "#ffb547" }], ["kandil", "Kandil", { renk: "#ffd166", yon: "sag" }]]);
       iliskiAgi({
         kap, yukseklik: 440, temizlik: ctx.temizlik,
         dugumler: [
@@ -227,6 +295,7 @@ const adimlar = [
         tersMesaj: "Bağ var ama yönü ters. Hangisi diğerine bir şey sağlıyor ya da onu denetliyor?",
         bitti: () => ctx.gorevTamam(),
       });
+      return sahneApi(ctx, { saat: "aksam", bak: "kitap" });
     },
   },
 
@@ -235,13 +304,29 @@ const adimlar = [
     baslik: "Görülen ve görülmeyen âlem",
     cikti: "DKAB.10.1.2-a",
     anlatim: `
-      <p><b>Varlık</b>, var olan her şeydir. İslam düşüncesinde âlem ikiye ayrılır: duyularla ya da araçlarla algılanabilen <b>şehadet âlemi</b> (görülen âlem) ve duyularla algılanamayan, bilgisine ancak vahiyle ulaşılan <b>gayb âlemi</b> (görülmeyen âlem).</p>
-      <p>Dikkat: Çıplak gözle görülmeyen her şey gayb değildir! Mikroskopla görülen bir bakteri ya da ölçü aletiyle ölçülen elektrik şehadet âlemine aittir.</p>
-      <p>Varlıkları sınıflandır, sonra Allah-âlem ilişkisiyle ilgili <b>en çok neyi merak ettiğini</b> seç.</p>`,
+      <p><b>Varlık</b>, var olan her şeydir. Duyularla ya da araçlarla algılanabilen <b>şehadet âlemi</b>, bilgisine ancak vahiyle ulaşılan ise <b>gayb âlemi</b>dir.</p>
+      <p>Dikkat: Çıplak gözle görülmeyen her şey gayb değildir. Bakteri ve elektrik araçlarla gözlenir.</p>`,
     gorev: "On üç varlığı doğru âleme yerleştir ve en az bir <b>merak konusu</b> seç.",
     ogretmen: "Program, zihin haritaları oluşturularak görülen (şehadet) ve görülemeyen (gayb) âlem ile varlık türleri (insan, hayvan, bitki, melek, cin, şeytan) hakkında öğrencilerin görüşlerini paylaşmalarını ve Allah-âlem ilişkisiyle ilgili merak ettiklerini tanımlamalarını öneriyor. Temel kabul: öğrenciler görülen ve görülemeyen varlıklar hakkında bilgi sahibidir. “Görünmeyen = gayb” kavram yanılgısını özellikle tartışın.",
+    anlat: [
+      { s: "Gece gökyüzüne bak. Yıldızları gözünle görüyorsun.", yap: (api) => { api.saat("gece"); api.bak("gok"); } },
+      { s: "Gözle göremediğin uzak galaksileri <b>teleskop</b> gösterir. Onlar da gözlenebilen varlıklardır." },
+      { s: "Var olan her şeye <b>varlık</b> denir. Duyularla ya da araçlarla algılananların dünyasına <b>şehadet âlemi</b> denir." },
+      { soru: "Telefonundaki Wi-Fi sinyalini göremezsin ama cihazlar onu ölçer. Sinyal hangi âleme aittir?", secenekler: ["Şehadet âlemi", "Gayb âlemi"], dogru: 0,
+        aciklama: "Gözle görülmese de araçla ölçülür: şehadet âlemi.", ipucu: "Bir aletle ölçülebiliyor mu?" },
+      { s: "Bazı varlıklar ise hiçbir duyu ya da araçla algılanamaz. Onları ancak <b>vahiy</b> sayesinde biliriz." },
+      { s: "Bu görülmeyen âleme <b>gayb âlemi</b> denir. Melekler ve ahiret hayatı gayba aittir." },
+      { s: `Gaybın tam bilgisi yalnızca Allah'tadır: “Gaybın anahtarları O'nun katındadır.” (${kunye(AYETLER.enam59)})` },
+      { baslik: "Birlikte düşünelim: “Görmüyorsam gaybdır” doğru mu?", cozum: ["Havadaki oksijeni göremeyiz.", "Ama aletlerle ölçer, etkisini görürüz: nefes alırız.", "O hâlde oksijen şehadet âlemindedir.", "Sonuç: Görünmeyen her şey gayb <b>değildir</b>."] },
+      { soru: "Hangisi gayb âlemine aittir?", secenekler: ["Ses dalgaları", "Cennet ve cehennem", "Mars gezegeni"], dogru: 1,
+        aciklama: "Ses dalgaları ölçülür, Mars teleskopla görülür. Cennet ve cehennemin bilgisi vahiyle gelir.", ipucu: "Hangisini hiçbir araçla gözleyemeyiz?" },
+      { s: "Şimdi sen dene: varlıkları iki âleme yerleştir, sonra en çok neyi merak ettiğini seç." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Varlık haritası: şehadet ve gayb" });
+      ctx.sahne.saat("gece"); ctx.sahne.bak("gok");
+      igneler(ctx, [["gok", "Yıldızlar<small>Şehadet âlemi: gözle ya da araçla gözlenir</small>", { renk: "#4fc3f7" }]]);
       let sinif = false;
       const kutu = kutuOku();
       const bak = () => sinif && kutu.merak.length && ctx.gorevTamam();
@@ -279,6 +364,7 @@ const adimlar = [
         kutuYaz(kutu); bak();
       } }, m)));
       ctx.kontroller.append(satir);
+      return sahneApi(ctx, { saat: "gece", bak: "gok" });
     },
   },
 
@@ -287,13 +373,28 @@ const adimlar = [
     baslik: "Bilgi kutusu: soru sor",
     cikti: "DKAB.10.1.2-b",
     anlatim: `
-      <p>Merak, iyi bir soruyla bilgiye dönüşür. Allah-âlem ilişkisini anlamak için sorularını <b>bilgi kutusuna</b> at.</p>
-      <p>Hazır soru köklerinden seçebilir ya da <b>kendi sorunu</b> yazabilirsin. Her soruyu bir konuya bağla: <b>yaratılış</b>, <b>düzen ve yönetim</b>, <b>insanın yeri</b> ya da <b>gayb</b>.</p>
-      <p>Kutundaki sorulara bir sonraki adımda İslam'ın temel kaynaklarından cevap arayacaksın.</p>`,
+      <p>Merak, iyi bir soruyla bilgiye dönüşür. Allah-âlem ilişkisi üzerine sorular dört konuda toplanır: <b>yaratılış</b>, <b>düzen ve yönetim</b>, <b>insanın yeri</b> ve <b>gayb</b>.</p>
+      <p>Bilgi kutusuna attığın sorulara sonraki adımda kaynaklardan cevap arayacaksın.</p>`,
     gorev: "Bilgi kutusuna <b>en az iki farklı konudan</b> en az <b>üç soru</b> at.",
     ogretmen: "Program, öğrencilerin Allah-âlem ilişkisini anlayabilmek için sorular sormasını ve bu süreçte bilgi kutusu tekniğinin kullanılmasını öneriyor (E3.8). Sınıfta öğrencilerin sorularını kâğıda yazıp gerçek bir kutuda toplayabilir, sonraki derste kaynaklardan birlikte cevaplayabilirsiniz. Öğrencilerin her türlü merakını saygıyla karşılayın.",
+    anlat: [
+      { s: "Küçük çocuklar durmadan sorar: “Gökyüzü neden mavi? Ben nereden geldim?” Bilgi, <b>merakla</b> başlar.", yap: (api) => { api.saat("gece"); api.bak("kitap"); } },
+      { s: "Ama her soru aynı değildir. İyi bir soru <b>açıktır</b>, tek bir konuya odaklanır ve araştırılabilir." },
+      { soru: "Hangisi daha iyi bir sorudur?", secenekler: ["Her şey ne?", "Âlemdeki düzeni ne sürdürüyor?", "Bilmem, sence?"], dogru: 1,
+        aciklama: "Açık, tek bir konuya odaklı ve kaynaklarda araştırılabilir.", ipucu: "Hangisi tek bir konuya odaklanıyor?" },
+      { s: "Allah-âlem ilişkisi üzerine sorular dört konuda toplanır. İlki <b>yaratılış</b>: Âlem nasıl var oldu?" },
+      { s: "İkincisi <b>düzen ve yönetim</b>: Âlemdeki düzeni ne sürdürüyor? Üçüncüsü <b>insanın yeri</b>: Benim görevim ne?" },
+      { s: "Dördüncüsü <b>gayb</b>: Görmediğimiz varlıkları nasıl bilebiliriz?" },
+      { baslik: "Birlikte yapalım: soruyu konusuna bağla", cozum: ["Soru: “İnsan neden sorumlu bir varlıktır?”", "Soru, insanın görevinden ve değerinden söz ediyor.", "Konusu: <b>insanın yeri</b>."] },
+      { soru: "“Melekler ne iş yapar?” sorusu hangi konuya girer?", secenekler: ["Yaratılış", "Gayb", "Düzen ve yönetim"], dogru: 1,
+        aciklama: "Melekler gayb âlemine aittir; bilgileri vahiyle gelir.", ipucu: "Melekleri görebilir miyiz?" },
+      { s: "Sorularını <b>bilgi kutusuna</b> atacaksın. Sonraki adımda cevaplarını Kur'an'dan arayacağız." },
+      { s: "Şimdi sen dene: bir konu seç, hazır bir soru ekle ya da kendin yaz. En az <b>iki konudan üç soru</b> at." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Bilgi kutusu" });
+      ctx.sahne.saat("gece"); ctx.sahne.bak("kitap");
       const kutu = kutuOku();
       const HAZIR = {
         yaratilis: ["Âlem neden var?", "Âlem kendiliğinden var olabilir mi?", "Allah âlemi neden yarattı?"],
@@ -343,6 +444,7 @@ const adimlar = [
       }
       if (kutu.merak.length) ctx.not(`<p>4. adımda merak ettiklerin: <i>${kutu.merak.join(" · ")}</i></p>`);
       konuSec(konu); ciz();
+      return sahneApi(ctx, { saat: "gece", bak: "kitap" });
     },
   },
 
@@ -351,13 +453,28 @@ const adimlar = [
     baslik: "Kaynaklardan bilgi topla",
     cikti: "DKAB.10.1.2-c",
     anlatim: `
-      <p>İslam'ın temel kaynakları Kur'an ve sünnettir. Kur'an, insanı âlemdeki işaretler üzerinde <b>tefekküre</b> (derin düşünmeye) çağırır: “Göklerin ve yerin yaratılışında akıl sahipleri için işaretler vardır.” (${kunye(AYETLER.aliimran190)})</p>
-      <p>Her <b>kaynak kartında</b> bir ayetin kısa anlamı ve künyesi var. Kartı, cevap verdiği <b>konuya</b> yerleştir. Sonunda bilgi kutundaki soruların hangi kaynaklarla cevaplanabileceğini göreceksin.</p>
+      <p>İslam'ın temel kaynakları <b>Kur'an</b> ve <b>sünnet</b>tir. Kur'an insanı âlemdeki işaretler üzerinde <b>tefekküre</b> çağırır (${kunye(AYETLER.aliimran190)}).</p>
       <p>Künye okuma: <b>Mülk 67/3</b> = Mülk suresi (67. sure), 3. ayet.</p>`,
     gorev: "On iki kaynak kartını doğru konuya yerleştir.",
     ogretmen: "Program, öğrencilerin konuyla ilgili İslam'ın temel kaynaklarından bilgi toplamalarına imkân tanınmasını ve Kelam ilminin Allah-âlem ilişkisine dair yaklaşımının dikkate alınmasını öneriyor. Ayetlerin tam meallerini Diyanet İşleri Başkanlığının matbu ya da dijital meallerinden öğrencilerle birlikte okuyabilirsiniz; kartlarda ayetlerin anlamı kısaltılarak verilmiştir.",
+    anlat: [
+      { s: "Bir soruya cevap ararken ansiklopediye ya da bir uzmana başvururuz. Din konusunda önce <b>temel kaynaklara</b> bakarız.", yap: (api) => { api.saat("gun"); api.bak("yigin"); } },
+      { s: "İslam'ın temel kaynakları ikidir: <b>Kur'an</b> ve Peygamberimizin örnek hayatı olan <b>sünnet</b>." },
+      { s: `Kur'an insanı gökleri ve yeri düşünmeye çağırır. Bu derin düşünmeye <b>tefekkür</b> denir (${kunye(AYETLER.aliimran190)}).` },
+      { s: "Bir ayetin yeri <b>künye</b> ile gösterilir. <b>Mülk 67/3</b>: Mülk suresi, 67. sure, 3. ayet." },
+      { soru: "“Yâsîn 36/82” künyesinde 82 neyi gösterir?", secenekler: ["Surenin sırasını", "Ayet numarasını", "Sayfa numarasını"], dogru: 1,
+        aciklama: "İlk sayı surenin sırası (36), ikinci sayı ayet numarasıdır (82).", ipucu: "Mülk 67/3'te 3 neyi gösteriyordu?" },
+      { baslik: "Birlikte yapalım: Bu ayet hangi konuya cevap verir?", cozum: [`Ayet: “${AYETLER.isra85.anlam}” (${kunye(AYETLER.isra85)})`, "Anahtar sözcük: <b>ruh</b>. Ruhu göremez, ölçemeyiz.", "Bilgisi bize ancak vahiyle gelir.", "Konusu: <b>gayb</b>."] },
+      { soru: `“${AYETLER.ahzab72.anlam}” Bu ayet hangi konuya cevap verir?`, secenekler: ["Yaratılış", "İnsanın yeri", "Gayb"], dogru: 1,
+        aciklama: "Emaneti, yani sorumluluğu yüklenen insandır: insanın âlemdeki yeri.", ipucu: "Ayette kim, neyi yükleniyor?" },
+      { s: "Kartları yerleştirince bilgi kutundaki soruların hangi ayetlerle cevaplanabileceğini göreceksin." },
+      { s: "Şimdi sen dene: on iki kaynak kartını, ayetin cevap verdiği <b>konuya</b> yerleştir." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Kaynak kartları" });
+      ctx.sahne.saat("gun"); ctx.sahne.bak("yigin");
+      igneler(ctx, [["yigin", "Kitaplar", { renk: "#ffb547" }], ["usturlap", "Usturlap<small>Gök cisimlerini gözlemeye yarayan alet</small>", { renk: "#ffd166", yon: "sag" }]]);
       const ESLESME = {
         yaratilis: ["yasin82", "furkan2", "ihlas"],
         duzen: ["mulk3", "rahman29", "enbiya22"],
@@ -385,6 +502,7 @@ const adimlar = [
         },
       });
       kap.append(sonuc);
+      return sahneApi(ctx, { saat: "gun", bak: "yigin" });
     },
   },
 
@@ -393,13 +511,29 @@ const adimlar = [
     baslik: "Değerlendir ve çıkarım yap",
     cikti: "DKAB.10.1.2-ç, d",
     anlatim: `
-      <p><b>Kelam</b> ilmi, Allah'ın varlığını ve âlemle ilişkisini akli delillerle de açıklar. Bunlardan biri <b>âlemin sonradan olması (hudûs)</b> delilidir: değişen her şey sonradan var olmuştur; sonradan olanın da onu var eden bir yaratıcısı vardır.</p>
-      <p>Önce delilin adımlarını doğru sıraya koy. Sonra topladığın ayetlerden <b>hangi çıkarımların yapılabileceğini</b> değerlendir.</p>
-      <p>İpucu: “O'nun benzeri hiçbir şey yoktur” (${kunye(AYETLER.sura11)}) ve “Siz Allah'a muhtaçsınız; Allah ise hiçbir şeye muhtaç değildir” (${kunye(AYETLER.fatir15)}).</p>`,
+      <p><b>Kelam</b> ilmi, Allah'ın varlığını ve âlemle ilişkisini akli delillerle de açıklar. <b>Hudûs</b> delili: değişen her şey sonradan var olmuştur; sonradan olanın bir yaratıcısı vardır.</p>
+      <p>Doğru bir <b>çıkarım</b>, elimizdeki bilgilerle çelişmez (bk. ${kunye(AYETLER.sura11)}, ${kunye(AYETLER.fatir15)}).</p>`,
     gorev: "Hudûs delilini sırala ve sekiz çıkarımı <b>çıkarılabilir / çıkarılamaz</b> diye değerlendir.",
     ogretmen: "Program, öğrencilerin edindikleri bilgileri öğretmen rehberliğinde değerlendirerek çıkarımda bulunmasını, bu süreçte düşün-eşleş-paylaş tekniğinin kullanılmasını ve öğrencilerin insanın âlemdeki yerini ve Allah karşısındaki konumunu fark etmesini öneriyor (E3.6, D10.1). Performans görevi önerisi: Allah-âlem ilişkisiyle ilgili bir deneme yazma (bilgi toplama, inceleme, yorumlama, dil ve anlatım ölçütleri).",
+    anlat: [
+      { s: "Kumda bir <b>ayak izi</b> gördün. Kimseyi görmedin ama “buradan biri geçmiş” dersin.", yap: (api) => { api.saat("aksam"); api.bak("genel"); } },
+      { s: "Uzaktaki duman da böyle: ateşi görmeden dumandan ateşe ulaşırız. Buna <b>akıl yürütme</b> denir.", yap: (api) => api.bak("duman") },
+      { s: "<b>Kelam</b> ilmi, Allah'ın varlığını ve âlemle ilişkisini akli delillerle de açıklar." },
+      { s: "Bu delillerden biri <b>hudûs</b> delilidir. Hudûs, “sonradan var olmak” demektir." },
+      { baslik: "Birlikte düşünelim: terastaki akasya", yap: (api) => api.bak("genel"), cozum: ["Bu akasya bir tohumdan büyüdü; <b>değişti</b>.", "Değişen bir şeyin <b>bir başlangıcı</b> vardır.", "Başlangıcı olan bir şeyi <b>bir sebep</b> var etmiştir.", "Hudûs delili aynı düşünceyi bütün âleme uygular."] },
+      { soru: "Delile göre değişen her şey için ne söylenebilir?", secenekler: ["Başlangıcı yoktur", "Sonradan var olmuştur", "Kendiliğinden var olmuştur"], dogru: 1,
+        aciklama: "Değişen bir şeyin başlangıcı vardır; o sonradan var olmuştur (hâdistir).", ipucu: "Hudûs kelimesinin anlamını hatırla." },
+      { s: "Delilin sonucu: Âlemin, kendisi sonradan olmayan, <b>ezelî</b> (başlangıcı olmayan) bir yaratıcısı vardır." },
+      { s: "Bilgilerden yeni bir sonuç çıkarmaya <b>çıkarım</b> denir. Doğru çıkarım, elimizdeki bilgilerle <b>çelişmez</b>." },
+      { soru: `“${AYETLER.fatir15.anlam}” Hangi çıkarım bu ayetle çelişir?`, secenekler: ["İnsan Allah'a muhtaçtır.", "Allah'ın hiçbir şeye ihtiyacı yoktur.", "Allah, yarattıklarına muhtaçtır."], dogru: 2,
+        aciklama: "Ayet, Allah'ın hiçbir şeye muhtaç olmadığını bildirir.", ipucu: "Ayetin ikinci yarısını oku." },
+      { s: "Şimdi sen dene: 1. sekmede delilin adımlarını sırala; 2. sekmede sekiz çıkarımı değerlendir." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Bilgiden çıkarıma" });
+      ctx.sahne.saat("aksam"); ctx.sahne.bak("duman");
+      igneler(ctx, [["dumanUst", "Duman<small>Görülen izden ateşin varlığına: akıl yürütme</small>", { renk: "#4fc3f7" }]]);
       let delil = false, cikarim = false;
       const bak = () => delil && cikarim && ctx.gorevTamam();
       const sek = sekmeler(kap, [
@@ -434,6 +568,7 @@ const adimlar = [
         }) },
       ]);
       ctx.yaziAlani({ etiket: "İsteğe bağlı: Allah-âlem ilişkisi ve insanın âlemdeki yeri hakkında kısa bir deneme paragrafı yaz.", anahtar: "dkab-deneme", enAz: 100 });
+      return sahneApi(ctx, { saat: "aksam", bak: "duman" });
     },
   },
 
@@ -442,13 +577,29 @@ const adimlar = [
     baslik: "İsrâ 36 ve Mülk 23: çözümle",
     cikti: "DKAB.10.1.3-a, b",
     anlatim: `
-      <p>Ünitenin iki ayeti bilgi, duyular ve sorumlulukla ilgilidir. İkisi de <b>Mekke döneminde</b> inen surelerdendir. Ayetlerde belirli bir kişi ya da yer adı geçmez; Mülk 23'teki “De ki” hitabı Hz. Peygamber'e yöneliktir.</p>
-      <p><b>1. sekme:</b> Ayetlerin anlamındaki <b>anahtar kavramları</b> bul: kavrama dokun, bilgi kartını oku.</p>
-      <p><b>2. sekme:</b> Ayetlerde geçen konuları <b>sınıflandır</b>: hangisi İsrâ 36'da, hangisi Mülk 23'te, hangisi ikisinde de var?</p>`,
+      <p>İsrâ 36 bilgiye dayanmayan şeyin ardına düşmemeyi ve kulak, göz, gönülden sorumlu olunduğunu; Mülk 23 bu araçların şükür gerektiren <b>nimetler</b> olduğunu bildirir.</p>
+      <p>İki ayet de <b>Mekke döneminde</b> inen surelerdendir; ayetlerde belirli bir kişi ya da yer adı geçmez.</p>`,
     gorev: "On bir anahtar kavramın hepsini bul ve yedi konuyu doğru sınıflandır.",
     ogretmen: "Program, İsra 36 ve Mülk 23. ayetlerin Diyanet İşleri Başkanlığının matbu ve dijital meallerinden bulunarak incelenmesini, nüzul sebeplerine, ayetlerde geçen şahıs, yer, konu ve kavramlara yer verilmesini; bu süreçte bilgi kartlarının kullanılmasını öneriyor (OB2, SDB2.1). Ekrandaki metinler meal değil, ayetlerin kısaltılmış anlamıdır; sınıfta Diyanet meali ile karşılaştırın.",
+    anlat: [
+      { s: "Bir arkadaşın “Bu soru sınavda kesin çıkacak” dedi. Nereden bildiğini sordun: “Öyle duydum.”", yap: (api) => { api.saat("gun"); api.bak("kitap"); } },
+      { s: `Kur'an bu duruma bir ilke koyar: “Hakkında bilgin olmayan bir şeyin ardına düşme.” (${kunye(AYETLER.isra36)})` },
+      { s: "Ayet şöyle devam eder: <b>kulak, göz ve gönül</b>, her biri yaptığından sorumludur." },
+      { s: "<b>Gönül</b> (fuâd), Kur'an'da düşünme, anlama ve hissetme merkezidir; aklı ve kalbi birlikte anlatır." },
+      { soru: "İsrâ 36'ya göre söylentiyle konuşmak neden doğru değildir?", secenekler: ["Söylenti bilgi değildir ve duyularımızdan sorumluyuz", "Söylentiler her zaman yalandır", "Konuşmak her zaman yanlıştır"], dogru: 0,
+        aciklama: "Söylenti doğru da çıkabilir ama bilgiye dayanmaz. İnsan kulağını, gözünü, gönlünü nasıl kullandığından sorumludur.", ipucu: "Ayetin ikinci yarısını hatırla." },
+      { s: `İkinci ayet: “Sizi var eden, size işitme, görme ve gönüller veren O'dur. Ne kadar da az şükrediyorsunuz!” (${kunye(AYETLER.mulk23)})` },
+      { s: "Burada aynı üç araç <b>nimet</b> olarak anılır. <b>Şükür</b>, nimeti verene teşekkür etmek ve onu amacına uygun kullanmaktır." },
+      { s: "İki sure de <b>Mekke döneminde</b> inmiştir. Ayetlerde belirli bir kişi ya da yer adı geçmez." },
+      { baslik: "Birlikte karşılaştıralım", cozum: ["İsrâ 36: kulak, göz, gönül → <b>sorumluluk</b>.", "Mülk 23: işitme, görme, gönül → <b>nimet ve şükür</b>.", "Ortak nokta: bilgi araçlarını <b>doğru kullanmak</b>."] },
+      { soru: "Mülk 23'teki “De ki” hitabı kime yöneliktir?", secenekler: ["Hz. Peygamber'e", "Meleklere", "Ayette adı geçen bir kişiye"], dogru: 0,
+        aciklama: "“De ki” emri Hz. Peygamber'e yöneliktir; ayetin mesajı ise bütün insanlaradır.", ipucu: "Vahyi insanlara kim bildirir?" },
+      { s: "Şimdi sen dene: 1. sekmede ayetlerdeki anahtar kavramlara dokun; 2. sekmede konuları sınıflandır." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Bilgi kartlarıyla çözümleme" });
+      ctx.sahne.saat("gun"); ctx.sahne.bak("kitap");
       let bulundu = false, sinif = false;
       const bak = () => bulundu && sinif && ctx.gorevTamam();
       const sek = sekmeler(kap, [
@@ -491,6 +642,7 @@ const adimlar = [
           bitti: () => { sinif = true; sek.bitti(1); bak(); },
         }) },
       ]);
+      return sahneApi(ctx, { saat: "gun", bak: "kitap" });
     },
   },
 
@@ -499,13 +651,27 @@ const adimlar = [
     baslik: "Ayetlerin mesajı hayatta",
     cikti: "DKAB.10.1.3-c",
     anlatim: `
-      <p>Ayetlerin mesajını açıklamanın en iyi yolu, onları gündelik durumlara uygulamaktır.</p>
-      <p>Dört durumda <b>ayetlerin mesajına en uygun</b> davranışı seç. Her seçimden sonra açıklamayı oku.</p>
-      <p>Peygamberimiz de araştırmadan konuşmaya karşı uyarmıştır: “${HADISLER.duydugunuAnlatma.anlam}” (${HADISLER.duydugunuAnlatma.kaynak})</p>`,
+      <p>Ayetlerin mesajını anlamanın en iyi yolu onları gündelik durumlara uygulamaktır: araştırmadan konuşmamak, bilgi araçlarını korumak ve doğru kullanmak.</p>
+      <p>“${HADISLER.duydugunuAnlatma.anlam}” (${HADISLER.duydugunuAnlatma.kaynak})</p>`,
     gorev: "Dört durumun hepsinde ayetlere uygun davranışı seç ve iki ayetin mesajını kendi cümlelerinle özetle.",
     ogretmen: "Program, öğrencilerin ayetlerde ele alınan konuları açıklamasını ve ölçme-değerlendirmede çalışma yaprağı kullanılmasını öneriyor (SDB2.1). Durumlar, doğru bilgiyi elde etmeye yönlendirerek öğrencinin duygu, düşünce ve davranışlarından sorumlu olduğunu fark etmesini amaçlar (D16.1). Özet yazıları çalışma yaprağı yerine kullanılabilir.",
+    anlat: [
+      { s: "Bir ilkeyi anladığını göstermenin en iyi yolu, onu <b>hayatta uygulamaktır</b>.", yap: (api) => { api.saat("safak"); api.bak("ufuk"); } },
+      { s: "Telefonuna bir mesaj geldi: “Bu çikolatada zehir bulundu, herkese yolla!” Kaynak yok." },
+      { soru: "İsrâ 36'ya göre ilk ne yapmalısın?", secenekler: ["Hemen yollarım, belki doğrudur", "Önce güvenilir bir kaynaktan araştırırım", "Mesajı yazana kızarım"], dogru: 1,
+        aciklama: "Bilgin olmayan şeyin ardına düşme: önce araştır, doğrulanmadıysa paylaşma.", ipucu: "Ayet, bilgimiz olmayan şey için ne diyordu?" },
+      { s: `Peygamberimiz de uyarmıştır: “${HADISLER.duydugunuAnlatma.anlam}” (${HADISLER.duydugunuAnlatma.kaynak})` },
+      { s: "Mülk 23 de bir davranış önerir: göz, kulak ve gönül <b>nimettir</b>; onları korumak da şükürdür." },
+      { baslik: "Birlikte yapalım: Mülk 23 bir öğrenciye ne söyler?", cozum: ["Durum: Bütün gece kulaklıkla yüksek sesle müzik dinliyorum.", "Kulak bir nimettir (Mülk 23).", "Nimeti hor kullanmak şükürle bağdaşmaz.", "Davranış: Sesi kısar, kulağımı korurum."] },
+      { soru: "Hangisi gönül (düşünme gücü) nimetini doğru kullanmaktır?", secenekler: ["Hiç düşünmeden karar vermek", "Soru sorup düşünerek öğrenmek", "Herkes ne diyorsa ona inanmak"], dogru: 1,
+        aciklama: "Gönül düşünme ve kavrama gücüdür; onu kullanmak nimeti amacına uygun kullanmaktır.", ipucu: "Gönül neyin merkeziydi?" },
+      { s: "Bir ayetin mesajını <b>kendi cümlelerinle</b> anlatabiliyorsan, onu gerçekten anlamışsındır." },
+      { s: "Şimdi sen dene: dört durumda ayetlere en uygun davranışı seç, sonra iki ayetin mesajını kendi cümlelerinle özetle." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Ne yapardın?" });
+      ctx.sahne.saat("safak"); ctx.sahne.bak("ufuk");
       const DURUM = [
         { id: "d1", metin: "📱 Bir mesaj grubunda “Yarın okullar tatil!” yazıyor. Kaynağı belli değil, herkes paylaşıyor.", siklar: [
           ["Hemen paylaşırım; herkes paylaşıyorsa doğrudur.", false, "Çok paylaşılması haberi mütevatir yapmaz: hepsi aynı kaynağı tekrarlıyor olabilir. İsrâ 36: Bilmediğin şeyin ardına düşme."],
@@ -543,6 +709,7 @@ const adimlar = [
       kap.append(sayac);
       sayac.textContent = `Ayetlere uygun seçim: 0/${DURUM.length}`;
       ctx.yaziAlani({ etiket: "İsrâ 36 ve Mülk 23. ayetlerin mesajını kendi cümlelerinle özetle.", anahtar: "dkab-ayet-ozet", enAz: 80, yeterli: () => { yazi = true; bak(); } });
+      return sahneApi(ctx, { saat: "safak", bak: "ufuk" });
     },
   },
 
@@ -555,7 +722,20 @@ const adimlar = [
       <p>En az <b>7 doğru</b> yaparsan dersi tamamlamış olursun.</p>`,
     gorev: "Değerlendirmede en az <b>7/9</b> doğru yap.",
     ogretmen: "Sorular programdaki öğrenme kanıtlarıyla (açık uçlu sorular, kavram haritası, çalışma yaprağı) uyumludur. Ek olarak öğrencilerden bilgi kaynaklarını gösteren bir kavram haritası çizmeleri istenebilir.",
+    anlat: [
+      { s: "Derse bir soruyla başladık: <b>Bunu nereden biliyorsun?</b> Şimdi kısaca toparlayalım.", yap: (api) => { api.saat("aksam"); api.bak("genel"); } },
+      { s: "Nesnel bilgi kaynakları: <b>salim duyular</b>, <b>selim akıl</b> ve <b>sadık haber</b>, yani mütevatir haber ve vahiy." },
+      { s: "Kaynaklar birbirini <b>destekler ve denetler</b>. Doğru bilgi doğru inanca, doğru inanç doğru davranışa yol açar." },
+      { s: "Âlem ikidir: algılanabilen <b>şehadet âlemi</b> ve bilgisine vahiyle ulaşılan <b>gayb âlemi</b>." },
+      { soru: "Hangisi <b>öznel</b> bir bilgi kaynağıdır?", secenekler: ["Mütevatir haber", "Sezgi", "Selim akıl"], dogru: 1,
+        aciklama: "Sezgi, ilham ve rüya kişiye özgüdür; başkasına delil olmaz.", ipucu: "Hangisi yalnızca kişinin kendisi için geçerlidir?" },
+      { s: "Allah âlemi yaratmış ve her an yönetir. Âlem O'na muhtaçtır; O hiçbir şeye muhtaç değildir." },
+      { s: "İsrâ 36 bilgisiz yargıya karşı uyarır. Mülk 23, bilgi araçlarımızın şükür gerektiren nimetler olduğunu hatırlatır." },
+      { s: "Şimdi sen dene: dokuz soruluk değerlendirmeyi çöz. En az <b>yedi doğru</b> yaparsan dersi tamamlarsın." },
+    ],
+    anlatBitti: (api) => api.sifirla(),
     kur(ctx) {
+      ctx.sahne.saat("aksam"); ctx.sahne.bak("genel");
       ctx.sinav([
         { tur: "coktan", metin: "İslam düşüncesinde <b>nesnel</b> bilgi kaynakları hangileridir?",
           siklar: ["Rüya, ilham ve sezgi", "Sadık haber, selim akıl ve salim duyular", "Yalnızca duyular", "Söylenti ve tahmin"],
@@ -585,8 +765,9 @@ const adimlar = [
           siklar: ["Kıyametin vakti", "Kulak, göz ve gönül", "Meleklerin görevleri", "Namaz vakitleri"],
           dogru: 1, aciklama: "İki ayette de işitme, görme ve gönül birlikte geçer: biri sorumluluğu, öteki nimet ve şükrü vurgular." },
       ], { baslik: "İslam'da varlık ve bilgi", gecmeOrani: 0.75 });
+      return sahneApi(ctx, { saat: "aksam", bak: "genel" });
     },
   },
 ];
 
-dersBaslat({ adimlar });
+dersBaslat({ adimlar, sahneKur: tefekkurDunyasi });

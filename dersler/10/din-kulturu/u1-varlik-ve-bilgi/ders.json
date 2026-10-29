@@ -8,5 +8,10 @@
   "tur": "Bilgi kaynakları deneyleri + haber modeli + kavram haritası + bilgi kutusu + ayet çözümleme",
   "mufredat": "mufredat/10-sinif.json",
   "uniteId": 144,
-  "ciktiKodlari": ["DKAB.10.1.1", "DKAB.10.1.2", "DKAB.10.1.3"]
+  "ciktiKodlari": [
+    "DKAB.10.1.1",
+    "DKAB.10.1.2",
+    "DKAB.10.1.3"
+  ],
+  "yerlesim": "tam"
 }

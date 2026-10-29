@@ -5,10 +5,10 @@ import { sahneKap, sekmeler, siniflandirma, siralama, iliskiAgi, zamanCizelgesi,
 import { harita } from "../../felsefe/_ortak/harita.js";
 import { OLAYLAR, SERITLER, SAYILAR, olay, yer, olayYili, miladiOndalik, tarihYaz, uzaklik, sayiYaz } from "./veri.js";
 import hicazVeri from "./harita-veri.json";
+import { hicazDunyasi, igneler } from "./hicaz.js";
 
 const NOT_HARITA = "Sınırlar günümüze aittir · Antik yerlerin konumu yaklaşıktır";
 const noktalar = (ids) => ids.map((id) => ({ ...yer(id), alt: yer(id).yaklasik ? "(yaklaşık)" : undefined }));
-const lonlat = (id) => [yer(id).lon, yer(id).lat];
 
 /* ---------- 1. adım: Mekke–Taif temsilî yükselti profili ---------- */
 function profilSvg() {
@@ -85,8 +85,14 @@ const DURAKLAR = [
   { id: "y7", yer: "nahle", gidis: 1, donus: 0.7, metin: "Nahle'de konaklama", ayrinti: "Nahle'de birkaç gün kaldı. Siyer kaynaklarına göre burada gece namazında okuduğu Kur'an'ı bir grup cin dinledi (Ahkâf 46/29-32)." },
   { id: "y8", yer: "mekke", gidis: 1, donus: 1, metin: "Himaye ile Mekke'ye dönüş", ayrinti: "Himayesi olmadan Mekke'ye giremeyeceği için Hira'dan haber gönderdi. İki kişi himaye vermeyi reddetti; Mut'im b. Adî'nin himayesiyle şehre girdi." },
 ];
-const GIDIS = [lonlat("mekke"), [40.12, 21.36], lonlat("taif")];
-const DONUS = [lonlat("taif"), lonlat("karn"), lonlat("nahle"), lonlat("mekke")];
+
+const BAKIS = { y1: "bolge", y2: "taif", y3: "taif", y4: "bag", y5: "bag", y6: "karn", y7: "nahle", y8: "bolge" };
+/** Bir durağı sahnede göster: güzergâhı o durağa kadar çiz, kamerayı oraya çevir */
+function durakGoster(S, i) {
+  const d = DURAKLAR[i];
+  S.rota.ayarla(d.gidis, d.donus);
+  S.bak(BAKIS[d.id]);
+}
 
 /* ---------- 6. adım: araştırma kartları ---------- */
 const ARASTIRMA = [
@@ -111,13 +117,34 @@ const adimlar = [
     baslik: "Taif: dağların ardındaki şehir",
     cikti: "PH.10.1.1-b",
     anlatim: `
-      <p><b>Taif</b>, Hicaz bölgesinde, Mekke'nin yaklaşık 65 km güneydoğusunda, <b>Serat dağları</b> üzerinde kurulmuş bir şehirdir. Mekke'den yaklaşık 1.600 m daha yüksektir; bu yüzden serin ve verimlidir.</p>
-      <p>Şehirde <b>Sakif</b> kabilesi yaşıyordu. Mekkeli müşrikler, Kur'an'ın “iki şehrin birinden” büyük bir adama inmesi gerektiğini söylemişti (Zuhruf 43/31). Bu iki şehir, Mekke ve Taif'tir.</p>
-      <p>Haritayı ve yükselti profilini incele; sonra Taif hakkındaki bilgileri sınıflandır.</p>`,
+      <p><b>Taif</b>, Mekke'nin yaklaşık 65 km güneydoğusunda, <b>Serat dağları</b> üzerinde serin ve verimli bir şehirdir. Mekke'den yaklaşık 1.600 m yüksektir.</p>
+      <p>Şehirde <b>Sakif</b> kabilesi yaşardı; Kureyş ile akrabalık ve ticaret bağları vardı. Mekkeli müşriklerin sözünü ettiği “iki şehir” Mekke ve Taif'tir (Zuhruf 43/31).</p>`,
+    anlat: [
+      { s: "Yazın Mekke'de hava çok sıcaktır. Ama iki günlük yol ötede serin bir şehir vardır: <b>Taif</b>.", yap: (api, ctx) => ctx.sahne.bak("bolge") },
+      { s: "Taif, Mekke'nin yaklaşık <b>65 km</b> güneydoğusundadır. Arada sarp <b>Serat dağları</b> yükselir.", yap: (api, ctx) => ctx.sahne.bak("profil") },
+      { s: "Mekke yaklaşık <b>277 m</b>, Taif yaklaşık <b>1.880 m</b> yükseklikte. Arada yaklaşık 1.600 m fark var." },
+      { soru: "Taif neden Mekke'den serindir?", secenekler: ["Denize daha yakın olduğu için", "Çok daha yüksekte olduğu için", "Daha güneyde olduğu için"], dogru: 1,
+        aciklama: "Yükseldikçe hava soğur. Taif'in serinliği yükseltisinden gelir.", ipucu: "Yükselti profiline bak: hangi şehir daha yukarıda?" },
+      { s: "Serin hava ve su, bağ bahçe demektir. Taif'te <b>üzüm</b>, <b>nar</b> ve başka meyveler yetişirdi.", yap: (api, ctx) => ctx.sahne.bak("taif") },
+      { s: "Şehirde <b>Sakif</b> kabilesi yaşardı. Mekke'deki <b>Kureyş</b> ile akrabalık ve ticaret bağları vardı." },
+      { s: "Sakif'in en önemli putu <b>Lât</b>'tı. Yakındaki <b>Ukaz panayırında</b> şairler yarışır, tüccarlar alışveriş yapardı." },
+      { baslik: "Birlikte yapalım: bir bilgiyi sınıflandır", cozum: [
+        "Bilgi: “Bağlarda üzüm yetiştirilirdi.”",
+        "Bu bilgi neyle ilgili? İnsanların <b>geçimiyle</b>, yani kazancıyla.",
+        "Geçim ve ticaret <b>ekonomik</b> bir özelliktir.",
+        "Yükselti ve iklim <b>coğrafi</b>; kabile ilişkileri <b>sosyal</b>; din ve şiir <b>kültürel</b> özelliktir.",
+      ] },
+      { soru: "“Ukaz'da şairler şiirlerini okurdu.” Bu bilgi hangi özellik?", secenekler: ["Coğrafi", "Ekonomik", "Kültürel"], dogru: 2,
+        aciklama: "Şiir ve dil kültürün parçasıdır. Aynı panayırdaki alışveriş ise ekonomiktir.", ipucu: "Şiir para mı kazandırır, yoksa bir topluluğun sanatı mıdır?" },
+      { s: "<b>Şimdi sen dene:</b> Karttaki on bir bilgiyi coğrafi, sosyal, kültürel ve ekonomik kutulara yerleştir.", yap: (api, ctx) => ctx.sahne.bak("profil") },
+    ],
+    anlatBitti: (api, ctx) => ctx.sahne.bak("profil"),
     gorev: "On bir bilgiyi <b>coğrafi, sosyal, kültürel ve ekonomik</b> özelliklerine göre sınıflandır.",
     ogretmen: "Program, Taif'in İslam öncesindeki durumunun coğrafi, sosyal, kültürel ve ekonomik açılardan; ayrıca Sakif kabilesi ile Mekkeliler arasındaki sosyal ve ticari ilişkiler bakımından ele alınmasını, konunun coğrafya ile ilişkilendirilmesini ve halkın gelir kaynakları ile refah seviyesine (OB3) değinilmesini öneriyor. Temel kabul: öğrenciler Taif'in Hicaz'daki önemli şehirlerden biri olduğunu bilir.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Hicaz'da Taif" });
+      ctx.sahne.bak("profil"); ctx.sahne.rota.ayarla(0, 0, { ani: true });
+      igneler(ctx, [["mekke", "Mekke<small>~277 m</small>"], ["taif", "Taif<small>~1.880 m</small>", { renk: "#5ad38b" }], ["yamac", "Serat dağları<small>Yükseklikler 5 kat abartılı</small>", { renk: "#a9b6c9" }]]);
       harita({
         kap, veri: hicazVeri, kutu: [38.0, 20.3, 41.4, 24.8], yukseklik: 320, vurgu: ["Saudi Arabia"], temizlik: ctx.temizlik, olcekKm: 100, not: NOT_HARITA,
         noktalar: noktalar(["mekke", "taif", "medine", "cidde", "ukaz"]).map((n) => (n.id === "mekke" ? { ...n, yon: "ust" } : n)),
@@ -154,13 +181,35 @@ const adimlar = [
     baslik: "Taif'e giden yol: Mekke'de zor yıllar",
     cikti: "PH.10.1.1-a",
     anlatim: `
-      <p>Davetin açıkça yapılmaya başlamasıyla Mekkeli müşriklerin Müslümanlara <b>baskısı</b> arttı: alay, işkence, boykot. Bir grup Müslüman Habeşistan'a göç etmek zorunda kaldı.</p>
-      <p>Nübüvvetin 10. yılında Hz. Peygamber'i koruyan amcası <b>Ebû Tâlib</b> ve eşi <b>Hz. Hatice</b> vefat etti. Bu yıla <b>Hüzün yılı</b> denir. Hz. Peygamber artık kabilesinin himayesinden yoksundu.</p>
-      <p>Önce olayları sırala, sonra grafiği yorumla: Taif yolculuğunda Müslümanlar ne kadar kalabalıktı?</p>`,
+      <p>Açık davetle birlikte Mekkeli müşriklerin <b>baskısı</b> arttı: alay, işkence, boykot. Bir grup Müslüman Habeşistan'a göç etti.</p>
+      <p>Nübüvvetin 10. yılında <b>Ebû Tâlib</b> ve <b>Hz. Hatice</b> vefat etti (<b>Hüzün yılı</b>). Hz. Peygamber Mekke'de himayesiz kaldı.</p>`,
+    anlat: [
+      { s: "Bir düşün: Seni hep koruyan iki yakınını aynı yıl kaybediyorsun. Hz. Peygamber'in yaşadığı buydu.", yap: (api, ctx) => ctx.sahne.bak("mekke") },
+      { s: "Geriye gidelim. Yaklaşık 610'da <b>ilk vahiy</b> geldi. Birkaç yıl sonra davet <b>açıkça</b> yapılmaya başlandı." },
+      { s: "Mekkeli müşrikler buna karşı çıktı. Müslümanlara <b>baskı</b> yaptılar: alay, hakaret, işkence." },
+      { s: "Baskıdan kaçan bir grup Müslüman <b>Habeşistan'a</b> göç etti. Ardından yaklaşık üç yıl süren <b>boykot</b> başladı." },
+      { soru: "Boykot ne demektir?", secenekler: ["Bir toplulukla alışverişi ve evliliği kesmek", "Bir şehre savaş açmak", "Bir yerden başka yere göç etmek"], dogru: 0,
+        aciklama: "Hâşimoğulları ile alışveriş ve evlenme yasaklandı; yalnız bırakıldılar.", ipucu: "Göç Habeşistan'a yapılmıştı; boykot başka bir şey." },
+      { s: "Nübüvvetin 10. yılında amcası <b>Ebû Tâlib</b> ve eşi <b>Hz. Hatice</b> vefat etti. Bu yıla <b>Hüzün yılı</b> denir." },
+      { s: "Ebû Tâlib onu kabilesi adına koruyordu. Artık Mekke'de <b>himayesiz</b>, yani koruyucusuz kalmıştı." },
+      { s: "Grafikte yeni bir şey var: <b>logaritmik ölçek</b>. Her dikey çizgi bir öncekinin <b>100 katıdır</b>.", yap: (api, ctx) => ctx.sahne.bak("bolge") },
+      { baslik: "Birlikte yapalım: grafiği okuyalım", cozum: [
+        "Taif yolculuğu (619): 2 kişi, Hz. Peygamber ve Zeyd.",
+        "Bedir (624): yaklaşık 313 kişi.",
+        "Mekke'nin fethi (630): yaklaşık 10.000 kişi.",
+        "Sonuç: Taif'teki ret davetin sonu olmadı; sayı hızla arttı.",
+      ] },
+      { soru: "Taif yolculuğunda Hz. Peygamber'in yanında kim vardı?", secenekler: ["Yalnızca Zeyd b. Hârise", "Yüzlerce Müslüman", "Bütün Hâşimoğulları"], dogru: 0,
+        aciklama: "Yanında yalnızca Zeyd vardı. Müslümanlar azdı ve korumasızdı.", ipucu: "Grafikteki Taif çubuğunun sayısına bak." },
+      { s: "<b>Şimdi sen dene:</b> Önce altı olayı sıraya koy. Sonra ikinci sekmede grafiği yorumla.", yap: (api, ctx) => ctx.sahne.bak("mekke") },
+    ],
+    anlatBitti: (api, ctx) => ctx.sahne.bak("mekke"),
     gorev: "Taif yolculuğuna giden olayları <b>sırala</b> ve sayı grafiğini <b>yorumla</b>.",
     ogretmen: "Program, Hz. Peygamber'i Taif yolculuğuna sevk eden sürecin; Mekke'de Müslümanlara yapılan baskıların, müşriklerin daveti engelleme çabalarının ve Hüzün Yılı'nın ayrıntılarıyla işlenmesini (soru turu tekniği), öğrencilerin süreçle ilgili çıkarımlarını grafik bilgi üzerinden değerlendirmelerini ve Müslümanların o dönemdeki nicel durumunun günümüzle karşılaştırılmasını öneriyor. Grafikteki sayılar olaylarda bir arada bulunan kişi sayısıdır; tarihî sayılar yaklaşıktır.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Mekke'de zor yıllar" });
+      ctx.sahne.bak("mekke"); ctx.sahne.rota.ayarla(0, 0, { ani: true });
+      igneler(ctx, [["mekke", "Mekke<small>Temsilî canlandırma</small>"], ["kabe", "Kâbe", { renk: "#a9b6c9", yon: "alt" }]]);
       let sira = false, grafik = false;
       const bak = () => sira && grafik && ctx.gorevTamam();
       const sek = sekmeler(kap, [
@@ -192,37 +241,54 @@ const adimlar = [
     baslik: "Yolculuğu adım adım kur",
     cikti: "PH.10.1.1-c",
     anlatim: `
-      <p>Hz. Peygamber, nübüvvetin 10. yılında (yaklaşık 619) <b>Zeyd b. Hârise</b> ile birlikte Taif'e gitti. Amacı, Sakif'i İslam'a davet etmek ve davetine destek bulmaktı.</p>
-      <p>Yolculuğun sekiz durağını kartlardan <b>sıraya koy</b>. Sonra kaydırıcıyla yolculuğu haritada adım adım izle.</p>
-      <p>Not: Yolculuğun süresi ve bazı ayrıntılar rivayetlerde farklıdır; güzergâh <b>temsilîdir</b>.</p>`,
+      <p>Hz. Peygamber, nübüvvetin 10. yılında (yaklaşık 619) <b>Zeyd b. Hârise</b> ile Taif'e gitti. Amacı Sakif'i İslam'a davet etmek ve destek bulmaktı.</p>
+      <p>Yolculuğun süresi ve bazı ayrıntılar rivayetlerde farklıdır; güzergâh <b>temsilîdir</b>.</p>`,
+    anlat: [
+      { s: "Mekke'de koruyucusu kalmayan Hz. Peygamber yeni bir destek aradı. Gözü dağların ardındaki Taif'teydi.", yap: (api, ctx) => { ctx.sahne.rota.ayarla(0, 0, { ani: true }); ctx.sahne.bak("bolge"); } },
+      { s: "Yaklaşık 619'da <b>Zeyd b. Hârise</b>'yi yanına alıp yaya olarak yola çıktı. Turuncu çizgi gidiş yoludur.", yap: (api, ctx) => durakGoster(ctx.sahne, 0) },
+      { s: "Taif'te Sakif'in üç lider kardeşini İslam'a davet etti. Üçü de alaycı sözlerle <b>reddetti</b>.", yap: (api, ctx) => durakGoster(ctx.sahne, 1) },
+      { s: "Yaklaşık on gün insanlarla konuştu. Ayrılırken kışkırtılan kalabalık onu <b>taşladı</b>; Zeyd başından yaralandı.", yap: (api, ctx) => durakGoster(ctx.sahne, 2) },
+      { soru: "Hz. Peygamber Taif'e neden gitmişti?", secenekler: ["Ticaret yapmak için", "Sakif'i davet edip destek bulmak için", "Taif'i savaşla almak için"], dogru: 1,
+        aciklama: "Yanında yalnızca Zeyd vardı; amacı savaş ya da ticaret değil, davetti.", ipucu: "Yanında kaç kişi vardı? İki kişiyle savaşa gidilir mi?" },
+      { s: "Bir <b>bağa</b> sığınıp dua etti. Güçsüzlüğünü Allah'a arz etti, ama kimseye beddua etmedi.", yap: (api, ctx) => durakGoster(ctx.sahne, 3) },
+      { s: "Bağın sahipleri köleleri <b>Addâs</b> ile üzüm gönderdi. Sohbetten sonra Addâs onun bir peygamber olduğunu anladı.", yap: (api, ctx) => durakGoster(ctx.sahne, 4) },
+      { s: "Dönüşte <b>Karnü's-seâlib</b>'de dağlar meleği geldi. Hz. Peygamber Taiflilerin cezalandırılmasını istemedi.", yap: (api, ctx) => durakGoster(ctx.sahne, 5) },
+      { baslik: "Birlikte izleyelim: dönüş yolu", yap: (api, ctx) => durakGoster(ctx.sahne, 6), cozum: [
+        "Mor çizgi dönüş yoludur. Yol kuzeyden <b>Nahle</b>'ye uzanır.",
+        "Nahle'de birkaç gün konakladı.",
+        "Himayesi olmadan Mekke'ye giremezdi; Hira'dan haber gönderdi.",
+        "<b>Mut'im b. Adî</b>'nin himayesiyle şehre girdi.",
+      ] },
+      { soru: "Mekke'ye dönerken neden birinin himayesini aradı?", secenekler: ["Ebû Tâlib'in vefatıyla koruyucusuz kaldığı için", "Yolu bilmediği için", "Taifliler ona eşlik etmek istediği için"], dogru: 0,
+        aciklama: "Kabile düzeninde koruyucusu olmayan biri tehlikedeydi. Mut'im b. Adî ona himaye verdi.", ipucu: "Hüzün yılında kimi kaybetmişti?", yap: (api, ctx) => durakGoster(ctx.sahne, 7) },
+      { s: "<b>Şimdi sen dene:</b> Sekiz durağı sıraya koy. Sonra kaydırıcıyla yolculuğu haritada sonuna kadar izle." },
+    ],
+    anlatBitti: (api, ctx) => { ctx.sahne.rota.ayarla(0, 0, { ani: true }); ctx.sahne.bak("bolge"); },
     gorev: "Sekiz durağı doğru sıraya koy ve yolculuğu haritada <b>sonuna kadar</b> izle.",
     ogretmen: "Program, Hz. Peygamber'in Taif'te kaldığı süre içinde yaşadıklarının, Mekke'ye dönüş yolunda çektiği sıkıntıların ve şehre girebilmek için gösterdiği çabanın ayrıntılı incelenmesini; metanetinin (D12.3), affedici tutumunun ve Taif dönüşü yaptığı duanın vurgulanmasını öneriyor. Kaynaklar: İbn Hişâm, es-Sîre (yolculuk ve dua); Buhârî, Bed'ü'l-halk, 7 ve Müslim, Cihâd, 111 (dağlar meleği); Ahkâf 46/29-32 (Nahle).",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Taif yolculuğu" });
+      ctx.sahne.bak("bolge"); ctx.sahne.rota.ayarla(0, 0, { ani: true });
+      igneler(ctx, [["mekke", "Mekke"], ["taif", "Taif", { renk: "#5ad38b" }], ["nahle", "Nahle<small>(yaklaşık)</small>", { renk: "#b89cff" }], ["karn", "Karnü's-seâlib<small>(yaklaşık)</small>", { renk: "#b89cff" }]]);
       let sira = false, sona = false;
       const bak = () => sira && sona && ctx.gorevTamam();
       const oynatici = el("div", { class: "ph-oynatici", hidden: true });
       siralama({
         kap, basariMesaji: "Yolculuğu kurdun. Şimdi aşağıda haritada izle.",
         ogeler: DURAKLAR.map((d) => ({ id: d.id, metin: d.metin })),
-        bitti: () => { sira = true; oynatici.hidden = false; h.yenile(); goster(); oynatici.scrollIntoView?.({ behavior: "smooth", block: "nearest" }); bak(); },
+        bitti: () => { sira = true; oynatici.hidden = false; goster(); oynatici.scrollIntoView?.({ behavior: "smooth", block: "nearest" }); bak(); },
       });
       kap.append(oynatici);
-      const h = harita({
-        kap: oynatici, veri: hicazVeri, kutu: [39.65, 21.12, 40.72, 21.78], yukseklik: 280, vurgu: ["Saudi Arabia"], temizlik: ctx.temizlik, olcekKm: 20,
-        not: "Güzergâh temsilîdir · Nahle ve Karnü's-seâlib'in yeri yaklaşıktır", noktalar: noktalar(["mekke", "taif", "nahle", "karn"]),
-      });
       const R = el("input", { type: "range", min: 0, max: DURAKLAR.length - 1, step: 1, value: 0, "aria-label": "Yolculuğun durağı" });
       const out = el("output");
       const kart = el("div", { class: "ok-kutu ph-durak" });
-      oynatici.append(el("div", { class: "d-kaydirici" }, el("label", {}, "Yolculuğun durağı"), out, R), kart);
+      oynatici.append(el("div", { class: "d-kaydirici" }, el("label", {}, "Yolculuğun durağı"), out, R), kart,
+        el("div", { class: "ph-soluk" }, "Turuncu: gidiş · mor: dönüş. Güzergâh temsilîdir; Nahle ve Karnü's-seâlib'in yeri yaklaşıktır."));
       function goster() {
         const i = +R.value, d = DURAKLAR[i];
         out.textContent = `${i + 1}/${DURAKLAR.length}`;
-        h.cizgileriTemizle();
-        h.cizgiEkle({ noktalar: GIDIS, renk: "#ffb547", ilerleme: d.gidis });
-        if (d.donus) h.cizgiEkle({ noktalar: DONUS, renk: "#b89cff", kesikli: true, ilerleme: d.donus });
-        h.sec(d.yer);
+        durakGoster(ctx.sahne, i);
+        oynatici.dataset.cizgi = d.donus ? 2 : 1;
         kart.innerHTML = `<b>${i + 1}. ${d.metin}</b> <span class="ph-soluk">· ${yer(d.yer).ad}</span><br>${d.ayrinti}`;
         if (i === DURAKLAR.length - 1 && !sona) { sona = true; kart.innerHTML += `<br><b class="ph-yesil">✓ Yolculuk tamamlandı. Hz. Peygamber Mekke'ye döndükten sonra davetine devam etti.</b>`; bak(); }
       }
@@ -235,13 +301,36 @@ const adimlar = [
     baslik: "Taifliler neden reddetti?",
     cikti: "PH.10.1.1-b",
     anlatim: `
-      <p>Bir olayı anlamak için onu <b>kendi döneminin şartları içinde</b> düşünmek gerekir. Buna tarihsel bağlamsallaştırma denir.</p>
-      <p>Tarihî kaynaklardaki kanıtlara göre Taifliler daveti yalnızca tek bir nedenle reddetmedi. <b>Dinî, siyasi, toplumsal ve ekonomik</b> nedenler iç içeydi.</p>
-      <p>Genelleme: <b>Taiflilerin Mekkeli müşriklerle kurduğu siyasi ve ticari ilişkiler, İslam'a karşı çıkışlarında belirleyici oldu.</b></p>`,
+      <p>Bir olayı <b>kendi döneminin şartları içinde</b> düşünmek gerekir. Taifliler daveti <b>dinî, siyasi, toplumsal ve ekonomik</b> nedenlerle reddetti.</p>
+      <p>Genelleme: <b>Taiflilerin Mekkeli müşriklerle kurduğu siyasi ve ticari ilişkiler, İslam'a karşı çıkışlarında belirleyici oldu.</b> Geçmişi bugünün gözüyle yargılamaya <b>anakronizm</b> denir.</p>`,
+    anlat: [
+      { s: "Düşün: Ailen yıllardır bir dükkânla ortak iş yapıyor. O dükkânla küsmek, kazancını kaybetmek demek.", yap: (api, ctx) => ctx.sahne.bak("taif") },
+      { s: "Sakif'in durumu buna benziyordu. Kureyş ile hem akraba hem ticaret ortağıydılar." },
+      { s: "Taifliler daveti tek bir nedenle reddetmedi. Kaynaklar birkaç nedenin <b>iç içe</b> olduğunu gösterir." },
+      { s: "<b>Dinî neden:</b> Lât'ı şehrin koruyucusu sayıyor, atalarının dinini bırakmak istemiyorlardı." },
+      { s: "<b>Siyasi neden:</b> Hz. Peygamber'i desteklemek, müttefikleri Kureyş'i karşılarına almak demekti." },
+      { soru: "“Kabilenin ileri gelenleri köleleriyle eşit olmak istemedi.” Bu hangi neden?", secenekler: ["Dinî", "Toplumsal", "Ekonomik"], dogru: 1,
+        aciklama: "Kabile içindeki yer ve itibar toplumsal yapıyla ilgilidir. İslam'ın eşitlik çağrısı bu düzeni sarsıyordu.", ipucu: "Söz konusu olan para mı, inanç mı, yoksa toplumdaki yer mi?" },
+      { s: "<b>Ekonomik neden:</b> Mekke ile ticaret, faizli borçlar ve Lât'ı ziyarete gelenlerin getirdiği gelir." },
+      { s: "Bir kanıt iki kutuya birden girebilir. Lât tapınağı hem inancın hem gelirin merkeziydi." },
+      { s: "Bir tuzağa dikkat: Geçmişi <b>bugünün gözüyle</b> açıklamak. Buna <b>anakronizm</b> denir." },
+      { baslik: "Birlikte yapalım: anakronizmi yakala", cozum: [
+        "İfade: “Taifliler haberi televizyondan izleyip reddetti.”",
+        "Soru: 7. yüzyılda televizyon var mıydı? Yoktu.",
+        "Bu ifade bugünün aracıyla geçmişi açıklıyor: <b>anakronik</b>.",
+        "Doğrusu: Haberler kervanlarla, panayırlarda ve ağızdan ağıza yayılırdı.",
+      ] },
+      { soru: "Hangisi dönemin şartlarına uygun bir açıklamadır?", secenekler: ["Taif belediyesi yeni dini yasakladı.", "Taifliler, Kureyş'le bağları bozulursa kervanların zarar göreceğini düşündü.", "Taifliler daveti gazetelerden okuyup reddetti."], dogru: 1,
+        aciklama: "Kervan ticareti o dönemin temel geçim yollarındandı. Belediye ve gazete bugünün kavramlarıdır.", ipucu: "Hangi seçenekte 7. yüzyılda olmayan bir şey var?" },
+      { s: "<b>Şimdi sen dene:</b> Önce dokuz kanıtı nedenlerine göre ayır. Sonra ikinci sekmede anakronik ifadeleri bul." },
+    ],
+    anlatBitti: (api, ctx) => ctx.sahne.bak("taif"),
     gorev: "Kanıtları nedenlere göre sınıflandır; sonra açıklamaların hangisinin <b>dönemin şartlarına uygun</b>, hangisinin <b>bugünün gözüyle</b> yapıldığını ayırt et.",
     ogretmen: "Program, Taiflilerin İslam davetine tepkilerinin tarihî kaynaklarda geçen kanıtlara göre analiz edilmesini, dönemin şartlarının fark edilmesini ve tepkilerin dinî, siyasi, toplumsal ve ekonomik sebepleri hakkında çıkarım yapılmasını (Sokrat semineri tekniği) öneriyor. İkinci sekme anakronizm (bugünün kavramlarıyla geçmişi yargılama) hatasını fark ettirmeyi amaçlar. Makale veya rapor yazma görevi verilebilir.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Kanıtlardan nedenlere" });
+      ctx.sahne.bak("taif"); ctx.sahne.rota.ayarla(1, 1);
+      igneler(ctx, [["taif", "Taif<small>Sakif kabilesinin surlu şehri</small>", { renk: "#5ad38b" }]]);
       let neden = false, baglam = false;
       const bak = () => neden && baglam && ctx.gorevTamam();
       const D = "dini", S = "siyasi", T = "toplumsal", E = "ekonomik";
@@ -284,13 +373,35 @@ const adimlar = [
     baslik: "Metanet ve af: empatiyle yorumla",
     cikti: "PH.10.1.1-a",
     anlatim: `
-      <p><b>Tarihsel empati</b>, geçmişteki bir insanın yaşadıklarını onun yerine koyarak ve kendi dönemi içinde anlamaya çalışmaktır.</p>
-      <p>Taif dönüşünde Hz. Peygamber yaralı, yorgun ve himayesizdi. Dağlar meleği ona, isterse iki dağın onların üzerine kapanacağını söyledi. O ise “Onların soyundan yalnız Allah'a ibadet eden nesiller çıkmasını umarım.” diyerek bunu kabul etmedi (Buhârî, Bed'ü'l-halk, 7; Müslim, Cihâd, 111).</p>
-      <p>Bu adımda Hz. Peygamber'in yolculuğunu ve tepkisini <b>yorumla</b>.</p>`,
+      <p><b>Tarihsel empati</b>, geçmişteki bir insanın yaşadıklarını onun yerine koyarak, kendi dönemi içinde anlamaya çalışmaktır.</p>
+      <p>Dağlar meleğinin teklifine Hz. Peygamber, onların soyundan yalnız Allah'a ibadet eden nesiller çıkmasını umduğunu söyleyerek karşılık verdi (Buhârî, Bed'ü'l-halk, 7; Müslim, Cihâd, 111). Bu, <b>metanet</b> ve <b>affın</b> örneğidir.</p>`,
+    anlat: [
+      { s: "Bir arkadaşın herkesin önünde seninle alay etti. İlk anda içinden ne geçer? Kızgınlık, kırgınlık…", yap: (api, ctx) => ctx.sahne.bak("bag") },
+      { s: "Başkasının yerine geçip onun ne hissettiğini anlamaya <b>empati</b> denir." },
+      { s: "Geçmişteki birini kendi dönemi ve şartları içinde anlamaya çalışmaya <b>tarihsel empati</b> denir." },
+      { soru: "Tarihsel empati kurarken neye dikkat ederiz?", secenekler: ["Kişiyi kendi dönemi ve şartları içinde anlamaya", "Geçmişi bugünün kurallarıyla yargılamaya", "Yalnızca kendi duygularımızı anlatmaya"], dogru: 0,
+        aciklama: "Önce onun dünyasını anlarız: kabile düzeni, himaye, o günün şartları.", ipucu: "Önceki adımdaki anakronizm tuzağını hatırla." },
+      { s: "Taif dönüşünde Hz. Peygamber yaralı, yorgun ve himayesizdi. Bu bağda dinlenip dua etti." },
+      { s: "Dönüş yolunda dağlar meleği geldi. İsterse iki dağı onların üzerine kapatabileceğini söyledi.", yap: (api, ctx) => ctx.sahne.bak("karn") },
+      { s: "Hz. Peygamber kabul etmedi. Onların soyundan Allah'a ibadet edecek nesiller çıkmasını umdu (Buhârî, Bed'ü'l-halk, 7)." },
+      { s: "Zorluk karşısında yılmadan doğru bildiği yolda durmaya <b>metanet</b> denir. Kötülüğe karşılık vermeyip bağışlamaya <b>af</b> denir." },
+      { baslik: "Birlikte yorumlayalım", cozum: [
+        "Durum: Taşlanmış, yaralı ve koruyucusuz.",
+        "İnsanca bir his: kırgınlık, belki öfke.",
+        "Tepkisi: beddua yerine dua, intikam yerine umut.",
+        "Yorum: Amacı cezalandırmak değil, insanları doğruya ulaştırmaktı.",
+      ] },
+      { soru: "On bir yıl sonra ne oldu?", secenekler: ["Sakif Müslüman oldu", "Taif terk edildi", "Sakif Mekke'ye göç etti"], dogru: 0,
+        aciklama: "Hicretin 9. yılında Sakif heyeti Medine'de Müslüman oldu. Umut boşa çıkmadı.", ipucu: "Dersin başlığını hatırla: “Taif'in on bir yılı”." },
+      { s: "<b>Şimdi sen dene:</b> Yolculuğun ve tepkinin nedenlerini seç. Sonra öğrenme günlüğüne kendi örneğini yaz.", yap: (api, ctx) => ctx.sahne.bak("bag") },
+    ],
+    anlatBitti: (api, ctx) => ctx.sahne.bak("bag"),
     gorev: "Yolculuğun nedenlerini ve Hz. Peygamber'in tepkisinin nedenlerini doğru seç; sonra <b>öğrenme günlüğünü</b> yaz.",
     ogretmen: "Program, öğrencilerin empati kurarak (E2.1) Hz. Peygamber'in niçin böyle bir tepkide bulunduğunu tespit etmelerini ve zorluklar karşısında insanın nasıl bir tutum sergilemesi gerektiği (SDB1.1) konusunda duygu ve düşüncelerini değerlendirerek fikirlerini söylemelerini (SDB1.3); Taif yolculuğu sürecine dair çıkarımlarını öğrenme günlüğüne yazmalarını öneriyor. “Sen olsan ne hissederdin?” sorusunun doğru cevabı yoktur.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Onun yerinde olsaydın…" });
+      ctx.sahne.bak("bag"); ctx.sahne.rota.ayarla(0, 0);
+      igneler(ctx, [["bag", "Bağ<small>Sığınılan yer (temsilî)</small>", { renk: "#5ad38b" }]]);
       let nedenler = false, tepki = false, yazi = false;
       const bak = () => nedenler && tepki && yazi && ctx.gorevTamam();
       cokluSecim({
@@ -338,13 +449,35 @@ const adimlar = [
     baslik: "Taif'ten Huneyn'e: araştır",
     cikti: "PH.10.1.2-a",
     anlatim: `
-      <p>Taif yolculuğundan sonra Müslümanlarla Taifliler arasındaki ilişkiler yaklaşık on bir yıl sürecek bir süreç başlattı. Sakif, bu süreçte de Mekkeli müşriklerle iş birliği yaptı.</p>
-      <p>Zaman çizelgesinde Mekke ve Medine dönemlerinin ana olayları var; <b>Taif ve Sakif</b> şeridinde ise yalnızca yolculuk görünüyor. Kaynak notlarını okuyup soruları cevapla; her doğru cevap bir olayı çizelgeye ekler.</p>
-      <p>Çizelgedeki olaylara dokunarak ayrıntılarını da okuyabilirsin.</p>`,
+      <p>Taif yolculuğundan sonra Müslümanlarla Taifliler arasında yaklaşık on bir yıl sürecek bir süreç başladı. Sakif bu süreçte de Mekkeli müşriklerle iş birliği yaptı.</p>
+      <p>Kaynak notlarını okuyup soruları cevapla; her doğru cevap <b>Taif ve Sakif</b> şeridine bir olay ekler. Olaylara dokunarak ayrıntılarını oku.</p>`,
+    anlat: [
+      { s: "Taif'teki ret bir son değildi. Taiflilerle Müslümanlar arasında yaklaşık <b>on bir yıl</b> sürecek bir hikâye başladı.", yap: (api, ctx) => ctx.sahne.bak("bolge") },
+      { s: "622'de <b>hicret</b> oldu; Müslümanlar Medine'de güçlendi. Sakif ise Mekkeli müşriklerle iş birliğini sürdürdü." },
+      { s: "630'da <b>Mekke fethedildi</b>. Komşu Hevâzin ve Sakif kabileleri “Sıra bize gelecek” diye endişelendi." },
+      { s: "İki kabile ordu topladı. Ordular Mekke ile Taif arasındaki <b>Huneyn vadisinde</b> karşılaştı.", yap: (api, ctx) => ctx.sahne.bak("huneyn") },
+      { soru: "Hevâzin ve Sakif neden ordu topladı?", secenekler: ["Mekke'nin fethinden sonra sıranın kendilerine geleceğinden korktukları için", "Medine'yi ele geçirmek için", "Bizans onlardan istediği için"], dogru: 0,
+        aciklama: "Fetih, bölgedeki güç dengesini değiştirdi. İki kabile önce davranmak istedi.", ipucu: "Hangi olaydan hemen sonra ordu topladılar?" },
+      { s: "Müslümanlar zor bir başlangıçtan sonra kazandı. Sakifliler Taif'in sağlam <b>surlarının</b> ardına kapandı.", yap: (api, ctx) => ctx.sahne.bak("kusatma") },
+      { s: "Bir şehri çevirip dışarıyla bağını kesmeye <b>kuşatma</b> (muhasara) denir. Süresi rivayetlerde 10–40 gün arasında değişir." },
+      { s: "Tarihçiler bunları <b>kaynaklardan</b> öğrenir. İbn Hişâm ve Vâkıdî, siyerin en eski kaynaklarındandır." },
+      { baslik: "Birlikte yapalım: bir kaynak notu okuyalım", cozum: [
+        "Not: “Mekke büyük ölçüde savaşsız fethedildi; Hz. Peygamber Mekkelileri affetti.”",
+        "Soru: Fetih nasıl gerçekleşti?",
+        "Cevabı notta arıyoruz: “büyük ölçüde savaşsız”.",
+        "Tahmin değil, kanıt: Cevabımızı hep metne dayandırırız.",
+      ] },
+      { soru: "Bir kaynak notundaki soruyu cevaplarken en iyi yol hangisi?", secenekler: ["Aklıma ilk geleni seçmek", "Cevabı notun içinde aramak", "En uzun seçeneği seçmek"], dogru: 1,
+        aciklama: "Tarihte cevap kanıta dayanır. Notu dikkatle okuyan cevabı bulur.", ipucu: "Tarihçi bilgiyi nereden öğrenir?" },
+      { s: "<b>Şimdi sen dene:</b> Altı kaynak notunu oku ve soruları cevapla. Her doğru cevap şeride bir olay ekler.", yap: (api, ctx) => ctx.sahne.bak("huneyn") },
+    ],
+    anlatBitti: (api, ctx) => ctx.sahne.bak("huneyn"),
     gorev: "Altı kaynak notunu araştırıp soruları cevapla ve <b>Taif ve Sakif</b> şeridini tamamla.",
     ogretmen: "Program, Taiflilerle Müslümanlar arasında Taif yolculuğu ile başlayan ilişkilerin kronolojik olarak ele alınmasını; Taiflilerin Mekkeli müşriklerle iş birliğinin, Huneyn Gazvesi'nin, Taif'in muhasarasının, Heyetler Yılı'nın ve Taiflilerin İslam'ı kabulünün aralarında ilişki kurularak işlenmesini öneriyor. Kaynak notları siyer kaynaklarının (İbn Hişâm, es-Sîre; Vâkıdî, el-Meğâzî) kısa ve sade bir özetidir. Kuşatmanın süresi rivayetlerde 10–40 gün arasında değişir.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Taif'in İslamlaşma süreci" });
+      ctx.sahne.bak("huneyn"); ctx.sahne.rota.ayarla(0, 0);
+      igneler(ctx, [["huneyn", "Huneyn vadisi<small>(yaklaşık)</small>", { renk: "#ff6b6b" }], ["cirane", "Ci'râne<small>(yaklaşık)</small>", { renk: "#4fc3f7" }], ["taif", "Taif kuşatması", { renk: "#5ad38b" }], ["mekke", "Mekke"]]);
       const GIZLI = ARASTIRMA.map((a) => a.id);
       const olaylar = OLAYLAR.map((o) => ({ id: o.id, serit: o.serit, ad: o.ad, yaklasik: o.yaklasik, bas: olayYili(o), bit: o.miladiBit ? miladiOndalik(o.miladiBit) : undefined, gizli: GIZLI.includes(o.id) }));
       const bilgi = el("div", { class: "ok-kutu ph-bilgi" }, el("span", { class: "ph-soluk" }, "Çizelgedeki bir olaya dokun."));
@@ -358,23 +491,27 @@ const adimlar = [
         zc.aralik(a, b);
       } }, ad)));
       kap.append(donem, bilgi);
-      let n = 0;
+      let n = 0, sonEklenen = null;
       const arastir = el("div", { class: "ok-kutu ph-arastir" });
       kap.append(arastir);
       function goster() {
+        const eklendi = sonEklenen ? `<div class="d-geri-bildirim dogru">✓ “${olay(sonEklenen).ad}” çizelgeye eklendi.</div>` : "";
         if (n >= ARASTIRMA.length) {
-          arastir.innerHTML = `<b class="ph-yesil">✓ Şerit tamamlandı.</b> Taif yolculuğundan Lât'ın yıkılmasına kadar geçen süre: yaklaşık ${Math.floor(olayYili(olay("lat")) - olayYili(olay("taifYolculugu")))} yıl. “629–632” düğmesiyle son yılları yakından incele.`;
+          arastir.innerHTML = `${eklendi}<b class="ph-yesil">✓ Şerit tamamlandı.</b> Taif yolculuğundan Lât'ın yıkılmasına kadar geçen süre: yaklaşık ${Math.floor(olayYili(olay("lat")) - olayYili(olay("taifYolculugu")))} yıl. “629–632” düğmesiyle son yılları yakından incele.`;
           ctx.gorevTamam(); return;
         }
         const a = ARASTIRMA[n];
+        let cevaplandi = false;
         const g = el("div", { class: "d-geri-bildirim" });
-        arastir.replaceChildren(el("div", { class: "d-satir", style: "justify-content:space-between" }, el("b", {}, `Kaynak notu ${n + 1}/${ARASTIRMA.length}`), el("span", { class: "ph-soluk" }, "siyer kaynaklarından özet")),
+        arastir.innerHTML = eklendi;
+        arastir.append(el("div", { class: "d-satir", style: "justify-content:space-between" }, el("b", {}, `Kaynak notu ${n + 1}/${ARASTIRMA.length}`), el("span", { class: "ph-soluk" }, "siyer kaynaklarından özet")),
           el("p", { class: "ph-kaynak" }, a.kaynak), el("b", {}, a.soru),
           el("div", { class: "ph-siklar" }, karistir(a.siklar.map((m, i) => [m, i === 0])).map(([m, d]) => el("button", { class: "ok-kart", "data-dogru": d ? "1" : null, onclick: (e) => {
+            if (cevaplandi) return;
             if (!d) { e.currentTarget.classList.add("yanlis"); g.className = "d-geri-bildirim yanlis"; g.textContent = "Kaynak notunu yeniden oku; cevap metinde."; return; }
-            e.currentTarget.classList.add("dogru");
+            cevaplandi = true;
             zc.goster(a.id); zc.sec(a.id);
-            n++; setTimeout(goster, 450);
+            sonEklenen = a.id; n++; goster();
           } }, m))), g);
       }
       goster();
@@ -386,12 +523,33 @@ const adimlar = [
     baslik: "Olaylar arasında ilişki kur",
     cikti: "PH.10.1.2-b",
     anlatim: `
-      <p>Tarihî olaylar birbirinin <b>nedeni ve sonucu</b> olabilir. Taif'in İslamlaşması tek bir olayla değil, birbirine bağlı gelişmelerle gerçekleşti.</p>
-      <p>Kavram haritasında her bağ için önce <b>neden</b> olan olaya, sonra onun <b>sonucuna</b> dokun. Sekiz bağın hepsini kur.</p>`,
+      <p>Tarihî olaylar birbirinin <b>nedeni ve sonucu</b> olabilir. Taif'in İslamlaşması birbirine bağlı gelişmelerle gerçekleşti.</p>
+      <p>Kavram haritasında her bağ için önce <b>nedene</b>, sonra <b>sonuca</b> dokun.</p>`,
+    anlat: [
+      { s: "Domino taşlarını düşün: İlk taş düşünce arkadakiler de sırayla düşer.", yap: (api, ctx) => ctx.sahne.bak("bolge") },
+      { s: "Tarihte de bir olay başka bir olaya yol açar. Önceki olay <b>neden</b>, ortaya çıkan olay <b>sonuçtur</b>." },
+      { s: "Taif'in İslamlaşması da tek bir olayla olmadı. Birbirine bağlı gelişmelerle gerçekleşti." },
+      { soru: "“Mekke fethedildi; Hevâzin ve Sakif endişeyle ordu topladı.” Hangisi neden?", secenekler: ["Mekke'nin fethi", "Ordunun toplanması", "İkisi aynı anda oldu, aralarında bağ yok"], dogru: 0,
+        aciklama: "Önce fetih oldu; endişe ve ordu onun sonucuydu.", ipucu: "Hangisi önce oldu ve ötekine yol açtı?" },
+      { baslik: "Birlikte yapalım: bir zincir kuralım", cozum: [
+        "Huneyn'de yenilen Sakifliler Taif'e çekildi.",
+        "Bu yüzden Müslümanlar Taif'i kuşattı: <b>Huneyn → kuşatma</b>.",
+        "Huneyn'in esirleri Ci'râne'de iade edildi; Hevâzin Müslüman oldu.",
+        "Eski müttefikleri gidince Sakif yalnız kaldı: <b>Ci'râne → yalnızlık</b>.",
+      ] },
+      { s: "Bir zincir daha: Sakif'ten <b>Urve b. Mes'ûd</b> Müslüman oldu. Kavmini davet ederken şehit edildi.", yap: (api, ctx) => ctx.sahne.bak("taif") },
+      { s: "Bundan sonra Sakifliler, çevrelerindeki Müslümanlara karşı koyamayacaklarını anladı." },
+      { soru: "Haritada bir bağ kurarken hangi sırayla dokunursun?", secenekler: ["Önce sonuca, sonra nedene", "Önce nedene, sonra sonuca", "Sıra fark etmez"], dogru: 1,
+        aciklama: "Ok, nedenden sonuca gider. Ters kurarsan harita seni uyarır.", ipucu: "Dominoda önce hangi taş düşer?" },
+      { s: "<b>Şimdi sen dene:</b> Kavram haritasında sekiz neden-sonuç bağını kur.", yap: (api, ctx) => ctx.sahne.bak("bolge") },
+    ],
+    anlatBitti: (api, ctx) => ctx.sahne.bak("bolge"),
     gorev: "Taif'in İslamlaşma sürecindeki <b>sekiz neden-sonuç bağını</b> kur.",
     ogretmen: "Program, Taiflilerle Müslümanların ilişkileri ele alınırken kavram haritası tekniğinin kullanılmasını ve öğrencilerin bu süreçteki gelişmeleri sistematik bir şekilde ele alarak (E3.7) Taiflilerin İslam'ı kabul etme serüveni hakkındaki düşüncelerini ifade etmelerini öneriyor. Haritayı tamamladıktan sonra öğrencilerden haritaya kendi bulguları olan yeni bir bağ eklemelerini isteyebilirsiniz.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Taif'in İslamlaşması: kavram haritası" });
+      ctx.sahne.bak("bolge"); ctx.sahne.rota.ayarla(1, 1);
+      igneler(ctx, [["mekke", "Mekke"], ["taif", "Taif", { renk: "#5ad38b" }]]);
       iliskiAgi({
         kap, yukseklik: 470, temizlik: ctx.temizlik,
         dugumler: [
@@ -427,13 +585,35 @@ const adimlar = [
     baslik: "Sakif heyeti Medine'de",
     cikti: "PH.10.1.2-b",
     anlatim: `
-      <p>Hicretin 9. yılında (yaklaşık 630 sonu) Medine'ye gelen Sakif heyetine Hz. Peygamber'in, onları Mescid'in yanında kurulan bir çadırda ağırladığı aktarılır. Heyet İslam'ı kabul etmeden önce bazı <b>taleplerde</b> bulundu.</p>
-      <p>İlginç bir bağlantı: Siyer kaynaklarına göre heyetin başkanı <b>Abd Yâlîl</b>, on bir yıl önce Taif'te daveti reddeden liderlerden biriydi.</p>
-      <p>Taleplerin hangisinin kabul edildiğini, hangisinin reddedildiğini tahmin et.</p>`,
+      <p>Hicretin 9. yılında (yaklaşık 630 sonu) Medine'ye gelen Sakif heyeti, İslam'ı kabul etmeden önce bazı <b>taleplerde</b> bulundu.</p>
+      <p>Hz. Peygamber inanç ve ibadetin özüyle ilgili taleplerde esneklik göstermedi. Heyetin başkanı <b>Abd Yâlîl</b>, kaynaklara göre on bir yıl önce daveti reddeden liderlerdendi.</p>`,
+    anlat: [
+      { s: "Bir kulübe katılmak istiyorsun ama “Temel kurallardan biri bana uygulanmasın.” diyorsun. Kulüp ne der?", yap: (api, ctx) => ctx.sahne.bak("medine") },
+      { s: "Hicretin 9. yılına <b>Heyetler yılı</b> denir. Kabileler Medine'ye temsilci grupları, yani <b>heyetler</b> gönderdi." },
+      { s: "Sakif de yaklaşık 630 sonunda bir heyet gönderdi. Başkanı <b>Abd Yâlîl</b>'di." },
+      { s: "Siyer kaynaklarına göre Abd Yâlîl, on bir yıl önce Taif'te daveti reddeden liderlerden biriydi." },
+      { soru: "“Heyet” ne demektir?", secenekler: ["Bir kabileyi temsil eden küçük grup", "Bir ordu", "Bir ticaret kervanı"], dogru: 0,
+        aciklama: "Heyet, kabile adına konuşmaya giden temsilcilerdir.", ipucu: "Heyetler savaşmaya değil, konuşmaya gelirdi." },
+      { s: "Heyet Müslüman olmadan önce bazı <b>taleplerde</b> bulundu. Bazı kuralların kendilerine uygulanmamasını istediler." },
+      { s: "Hz. Peygamber şuna baktı: Bu talep inancın ve ibadetin <b>özünden</b> vazgeçmek mi?" },
+      { baslik: "Birlikte düşünelim: bir talep", cozum: [
+        "Talep: “Putlarımızı kendi elimizle kırmayalım.”",
+        "Soru: Bu, putlara inanmaya devam etmek mi? Hayır.",
+        "Putlar yine kırılacak; yalnızca kıranlar başkaları olacak.",
+        "Özden vazgeçilmiyor. Bu yüzden bu talepte esneklik gösterildi.",
+      ] },
+      { soru: "Hangi istek inancın özüyle çelişir?", secenekler: ["Lât'a tapmayı sürdürmek", "Putu başkalarının kırması", "Medine'de bir süre misafir kalmak"], dogru: 0,
+        aciklama: "Tevhit, Allah'tan başkasına ibadet etmemektir. Puta tapmayı sürdürmek bununla bağdaşmaz.", ipucu: "Hangisi “Allah'tan başkasına ibadet” anlamına gelir?" },
+      { s: "Heyetin en genci <b>Osman b. Ebi'l-Âs</b>, Medine'deyken boş vakitlerinde Kur'an öğrenmeye çalışırdı." },
+      { s: "<b>Şimdi sen dene:</b> Dört talebi kabul ve ret diye ayır. Sonra imamın neden seçildiğini bul." },
+    ],
+    anlatBitti: (api, ctx) => ctx.sahne.bak("medine"),
     gorev: "Dört talebi <b>kabul / ret</b> olarak sınıflandır ve heyetin imamının neden seçildiğini bul.",
     ogretmen: "Kaynaklar: İbn Hişâm, es-Sîre (heyetin talepleri); Ebû Dâvûd, Harâc, 26 (namazdan muafiyet talebinin reddi: “Rükûsu olmayan dinde hayır yoktur.”); Müslim, Salât, 186 (Osman b. Ebi'l-Âs'a imamlık ve namazı hafif kıldırma tavsiyesi). Tartışma sorusu: Hz. Peygamber hangi konularda esneklik gösterdi, hangilerinde göstermedi? Bu ayrım neyi anlatır?",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Heyetin talepleri" });
+      ctx.sahne.bak("medine"); ctx.sahne.rota.ayarla(0, 0);
+      igneler(ctx, [["medine", `Medine ↑<small>Taif'in ~${Math.round(uzaklik(yer("taif"), yer("medine")) / 10) * 10} km kuzeyinde (kuş uçuşu)</small>`, { renk: "#4fc3f7" }], ["taif", "Taif", { renk: "#5ad38b" }]]);
       let sinif = false, imam = false;
       const bak = () => sinif && imam && ctx.gorevTamam();
       siniflandirma({
@@ -469,13 +649,32 @@ const adimlar = [
     baslik: "Sentez: Taif'in İslamlaşma serüveni",
     cikti: "PH.10.1.2-c",
     anlatim: `
-      <p>Şimdi öğrendiklerini birleştirerek <b>özgün bir bütün</b> oluştur.</p>
-      <p><b>1.</b> Taif'in İslamlaşma sürecini gösteren <b>olay çizelgesini</b> kronolojik sıraya koy.</p>
-      <p><b>2.</b> Bir gazetenin tarih sayfası için kısa bir <b>köşe yazısı</b> yaz: Bir şehir, on bir yılda daveti reddetmekten kabul etmeye nasıl geldi? En az üç olaya ve aralarındaki ilişkiye değin.</p>`,
+      <p>Öğrendiklerini birleştirerek <b>özgün bir bütün</b> oluştur: olay çizelgesini kronolojik sıraya koy ve en az üç olayı ilişkilendiren bir <b>köşe yazısı</b> yaz.</p>`,
+    anlat: [
+      { s: "Bir gazetecisin. Editörün diyor ki: “Bir şehrin on bir yılını tek sayfada anlat.”", yap: (api, ctx) => ctx.sahne.bak("kusatma") },
+      { s: "Dağınık bilgileri birleştirip yeni bir bütün kurmaya <b>sentez</b> denir." },
+      { s: "Önce olayları zaman sırasına koyarız. Buna <b>kronolojik sıra</b> denir.", yap: (api, ctx) => ctx.sahne.bak("bolge") },
+      { soru: "Hangisi en önce oldu?", secenekler: ["Huneyn", "Sakif heyetinin Medine'ye gelişi", "Lât'ın yıkılması"], dogru: 0,
+        aciklama: "Huneyn 630 başında oldu; heyet 630 sonunda geldi, Lât ondan sonra yıkıldı.", ipucu: "Heyet, Huneyn ve kuşatmadan sonra yalnız kalan Sakif'in kararıydı." },
+      { s: "Sonra olaylar arasındaki <b>bağları</b> kurarız: Bu olay neden oldu, neye yol açtı?" },
+      { s: "Son olarak kendi <b>yorumumuzu</b> ekleriz. İyi bir köşe yazısının dikkat çeken bir başlığı da olur." },
+      { baslik: "Birlikte yazalım: ilk paragraf", cozum: [
+        "Başlık: “Taşlandığı şehir için dua”",
+        "619'da Taif, Hz. Peygamber'in davetini reddetti.",
+        "Çünkü Sakif'in Kureyş ile ittifakı ve ticari bağları vardı.",
+        "Yorum: Ama bu ret, hikâyenin sonu değil başlangıcıydı.",
+      ] },
+      { soru: "İyi bir köşe yazısında hangisi olmalı?", secenekler: ["Yalnızca olayların listesi", "Olaylar, aralarındaki ilişki ve kendi yorumun", "Yalnızca kişisel duygular"], dogru: 1,
+        aciklama: "Bilgi, bağlantı ve yorum bir araya gelince yazı özgün olur.", ipucu: "Sentezin tanımını hatırla: parçaları birleştirmek." },
+      { s: "<b>Şimdi sen dene:</b> Olay çizelgesini sırala. Sonra en az üç olayı birbirine bağlayan köşe yazını yaz.", yap: (api, ctx) => ctx.sahne.bak("kusatma") },
+    ],
+    anlatBitti: (api, ctx) => ctx.sahne.bak("kusatma"),
     gorev: "Olay çizelgesini sırala ve en az <b>üç olayı</b> ilişkilendiren bir köşe yazısı yaz (en az 200 karakter).",
     ogretmen: "Program, öğrencilerden Taiflilerin İslam'ı kabul etme serüveni konusundaki düşüncelerini bir köşe yazısıyla ifade etmelerini ve performans görevi olarak süreci kronolojik şekilde sıralayan bir olay çizelgesi hazırlamalarını öneriyor. Değerlendirme: veri toplama, ilişki kurma ve özgünlük ölçütleri bulunan analitik dereceli puanlama anahtarı. Ekrandaki denetim listesi öğrencinin öz değerlendirmesine yardım eder.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Olay çizelgesi ve köşe yazısı" });
+      ctx.sahne.bak("kusatma"); ctx.sahne.rota.ayarla(1, 1);
+      igneler(ctx, [["taif", "Taif<small>Hicretin 9. yılında Müslüman oldu</small>", { renk: "#5ad38b" }]]);
       let sira = false, yazi = false;
       const bak = () => sira && yazi && ctx.gorevTamam();
       siralama({
@@ -509,11 +708,22 @@ const adimlar = [
     baslik: "Değerlendirme",
     cikti: "PH.10.1",
     anlatim: `
-      <p>On soruluk kısa bir değerlendirme. Her sorudan sonra açıklamayı oku.</p>
-      <p>En az <b>7 doğru</b> yaparsan dersi tamamlamış olursun.</p>`,
+      <p>On soruluk kısa bir değerlendirme. Her sorudan sonra açıklamayı oku. En az <b>7 doğru</b> yaparsan dersi tamamlamış olursun.</p>`,
+    anlat: [
+      { s: "Kısa bir tekrar yapalım. Taif, Serat dağları üzerinde serin ve verimli bir şehirdi.", yap: (api, ctx) => ctx.sahne.bak("profil") },
+      { s: "Yaklaşık 619'da Hz. Peygamber, Zeyd ile Taif'e gitti. Sakif daveti reddetti, onu taşlattı.", yap: (api, ctx) => ctx.sahne.bak("taif") },
+      { s: "Dönüşte beddua yerine dua etti. Bu, <b>metanet</b> ve <b>affın</b> güzel bir örneğidir." },
+      { soru: "Taif yolculuğundan hemen önce hangi yıl yaşandı?", secenekler: ["Hüzün yılı", "Heyetler yılı", "Fetih yılı"], dogru: 0,
+        aciklama: "Ebû Tâlib ve Hz. Hatice'nin vefat ettiği yıl Hüzün yılıdır. Diğerleri yolculuktan sonradır.", ipucu: "Hz. Peygamber'i himayesiz bırakan olayı düşün." },
+      { s: "Huneyn ve kuşatmadan sonra Sakif yalnız kaldı. Hicretin 9. yılında heyeti Medine'de Müslüman oldu.", yap: (api, ctx) => ctx.sahne.bak("bolge") },
+      { s: "Lât yıkıldı. Ret ile kabul arasında yaklaşık <b>on bir yıl</b> vardı." },
+      { s: "<b>Şimdi sen dene:</b> On soruyu cevapla. En az 7 doğru yaparsan dersi tamamlarsın." },
+    ],
+    anlatBitti: (api, ctx) => ctx.sahne.bak("bolge"),
     gorev: "Değerlendirmede en az <b>7/10</b> doğru yap.",
     ogretmen: "Sorular programdaki kısa cevaplı soru önerisiyle uyumludur. Köşe yazısı ve öğrenme günlüğü bütüncül dereceli puanlama anahtarıyla; olay çizelgesi analitik dereceli puanlama anahtarıyla değerlendirilebilir.",
     kur(ctx) {
+      ctx.sahne.bak("bolge"); ctx.sahne.rota.ayarla(1, 1);
       ctx.sinav([
         { tur: "coktan", metin: "Taif'in iklimi Mekke'ye göre daha serindir. Bunun temel nedeni nedir?",
           siklar: ["Denize daha yakın olması", "Yüksek, dağlık bir bölgede (yaklaşık 1.800 m) kurulmuş olması", "Çölün ortasında olması", "Ekvatora daha yakın olması"],
@@ -550,4 +760,4 @@ const adimlar = [
   },
 ];
 
-dersBaslat({ adimlar });
+dersBaslat({ adimlar, sahneKur: hicazDunyasi });

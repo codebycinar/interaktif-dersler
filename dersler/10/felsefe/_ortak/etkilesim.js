@@ -6,7 +6,15 @@ import { el } from "../../../../engine/ders.js";
 export const karistir = (dizi) => dizi.map((v) => [Math.random(), v]).sort((p, q) => p[0] - q[0]).map((p) => p[1]);
 
 const CSS = `
-.ok-sahne{position:absolute;inset:0;overflow-y:auto;padding:16px 18px 28px;display:flex;flex-direction:column;gap:12px}
+.ok-sahne{position:absolute;left:0;right:0;bottom:0;max-height:var(--ok-yuk,56%);overflow-y:auto;overscroll-behavior:contain;padding:12px 16px 18px;display:flex;flex-direction:column;gap:12px;
+  background:rgba(12,19,31,.80);border:1px solid rgba(255,255,255,.10);border-radius:16px;box-shadow:0 10px 34px rgba(0,0,0,.3);backdrop-filter:blur(12px) saturate(1.15);-webkit-backdrop-filter:blur(12px) saturate(1.15)}
+.ok-sahne.genis{--ok-yuk:100%;top:0}
+.ok-sahne.kucuk{overflow:hidden}
+.ok-sahne.kucuk>:not(.ok-ust){display:none}
+.ok-ust{display:flex;align-items:center;gap:10px;margin:-2px 0 -2px}
+.ok-ust .ok-baslik{flex:1;min-width:0}
+.ok-kucult{flex:none;cursor:pointer;border:1px solid var(--cizgi);background:rgba(255,255,255,.04);color:var(--metin-2);border-radius:8px;font-size:12.5px;font-weight:600;padding:4px 10px}
+.ok-kucult:hover{color:var(--metin);border-color:var(--metin-2)}
 .ok-baslik{font-size:18px;font-weight:700;line-height:1.3}
 .ok-aciklama{color:var(--metin-2);font-size:14.5px;margin-top:-6px}
 .ok-kutu{background:rgba(15,23,36,.82);border:1px solid var(--cizgi);border-radius:var(--radius);padding:12px 14px}
@@ -61,7 +69,7 @@ const CSS = `
 .ok-ag .bag-etiket{font-size:11.5px;fill:#ffd28a;font-weight:600;paint-order:stroke;stroke:#0f1724;stroke-width:4px}
 .ok-ilerleme{font-size:13px;color:var(--metin-2);font-family:var(--mono)}
 @media (max-width:760px){
-  .ok-sahne{padding:12px 10px 20px;gap:10px}
+  .ok-sahne{padding:10px 10px 16px;gap:10px;--ok-yuk:64%;border-radius:12px}
   .ok-baslik{font-size:16px}
   .ok-kovalar{grid-template-columns:repeat(var(--nm,2),minmax(0,1fr));gap:8px}
   .ok-kart{font-size:13.5px;padding:7px 10px}
@@ -74,15 +82,29 @@ export function stilEkle(id, css) {
 }
 const stil = () => stilEkle("ok-stil", CSS);
 
-/** Sahne alanına kaydırılabilir bir içerik kabı yerleştirir; içine bileşenler eklenir */
-export function sahneKap(ctx, { baslik, aciklama, sinif = "" } = {}) {
+/**
+ * 3B dünyanın altında yüzen, kaydırılabilir içerik kartı; içine bileşenler eklenir.
+ * genis: true → kart tüm sahne alanını kaplar (çok yer isteyen içerik için)
+ * Kartın yüksekliği "ok-kart" olayıyla duyurulur; dünya kamerası görünür kısma göre kayar.
+ */
+export function sahneKap(ctx, { baslik, aciklama, sinif = "", genis = false } = {}) {
   stil();
   const govde = el("div", { class: "ok-govde", style: "display:flex;flex-direction:column;gap:12px" });
-  const kap = el("div", { class: `ok-sahne ${sinif}` },
-    baslik ? el("div", { class: "ok-baslik", html: baslik }) : null,
+  const kucult = el("button", { class: "ok-kucult", title: "Kartı küçült, 3B sahneyi gör", "aria-expanded": "true" }, "▾ Küçült");
+  const kap = el("div", { class: `ok-sahne ${genis ? "genis" : ""} ${sinif}` },
+    el("div", { class: "ok-ust" }, el("div", { class: "ok-baslik", html: baslik || "" }), kucult),
     aciklama ? el("div", { class: "ok-aciklama", html: aciklama }) : null,
     govde);
   ctx.katman.append(kap);
+  const duyur = () => window.dispatchEvent(new CustomEvent("ok-kart", { detail: kap.isConnected ? kap.offsetHeight : 0 }));
+  kucult.onclick = () => {
+    const k = kap.classList.toggle("kucuk");
+    kucult.textContent = k ? "▴ Büyüt" : "▾ Küçült";
+    kucult.setAttribute("aria-expanded", String(!k));
+  };
+  const ro = new ResizeObserver(duyur);
+  ro.observe(kap);
+  ctx.temizlik?.(() => { ro.disconnect(); window.dispatchEvent(new CustomEvent("ok-kart", { detail: 0 })); });
   return govde;
 }
 

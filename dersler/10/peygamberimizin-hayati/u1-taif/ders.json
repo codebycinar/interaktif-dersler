@@ -8,5 +8,9 @@
   "tur": "Harita + yolculuk kurgusu + kanıt sınıflandırma + empati görevi + zaman çizelgesi + kavram haritası + köşe yazısı",
   "mufredat": "mufredat/10-sinif.json",
   "uniteId": 222,
-  "ciktiKodlari": ["PH.10.1.1", "PH.10.1.2"]
+  "ciktiKodlari": [
+    "PH.10.1.1",
+    "PH.10.1.2"
+  ],
+  "yerlesim": "tam"
 }

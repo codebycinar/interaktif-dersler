@@ -44,7 +44,7 @@ export default async ({ page, adimaGit, bekle, kontrol, ekranGoruntusu }) => {
   const kaydir = (v) => page.evaluate((x) => { const r = document.querySelector('input[aria-label="Yolculuğun durağı"]'); r.value = x; r.dispatchEvent(new Event("input")); }, v);
   await kaydir(5);
   await bekle(100);
-  kontrol(await page.evaluate(() => document.querySelectorAll(".ph-oynatici path.yol").length === 2), "3. adım: 6. durakta gidiş ve dönüş yolu çiziliyor");
+  kontrol(await page.evaluate(() => document.querySelector(".ph-oynatici")?.dataset.cizgi === "2"), "3. adım: 6. durakta gidiş ve dönüş yolu çiziliyor");
   await ekranGoruntusu("p3-durak6");
   kontrol(!(await gorevTamamMi(page)), "3. adım: son durağa gelmeden görev bitmiyor");
   await kaydir(7);

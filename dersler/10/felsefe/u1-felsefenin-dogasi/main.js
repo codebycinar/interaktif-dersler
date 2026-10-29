@@ -5,6 +5,8 @@ import { sahneKap, sekmeler, siniflandirma, zamanCizelgesi, geriBildirim, karist
 import { harita } from "../_ortak/harita.js";
 import { GELENEKLER, DUSUNURLER, KENTLER } from "./veri.js";
 import egeVeri from "./harita-veri.json";
+import { miletDunyasi, igneler } from "./milet.js";
+import { TAHTA } from "./gemi.js";
 
 const yilYaz = (y) => (y < 0 ? `MÖ ${-Math.round(y)}` : y === 0 ? "0" : `${Math.round(y)}`);
 
@@ -73,44 +75,37 @@ function kavramAgi(kap, bitti) {
   kap.append(ag, secim);
 }
 
-/* ---------- 3. adım: Theseus'un gemisi ---------- */
-const TAHTA = 12;
-function gemiSvg(degisen, ikinci) {
-  const tahtalar = (ox, yeniMi) => Array.from({ length: TAHTA }, (_, i) => {
-    const x = 20 + i * (340 / TAHTA);
-    return `<rect x="${ox + x}" y="112" width="${340 / TAHTA - 1.2}" height="92" fill="${yeniMi(i) ? "#e4c58f" : "#8a5a2e"}" stroke="#3b2612" stroke-width="1"/>`;
-  }).join("");
-  const govde = (ox, id) => `<clipPath id="${id}"><path d="M${ox + 20},116 L${ox + 360},116 Q${ox + 350},188 ${ox + 292},200 L${ox + 88},200 Q${ox + 30},188 ${ox + 20},116 Z"/></clipPath>`;
-  const direk = (ox) => `<line x1="${ox + 190}" y1="116" x2="${ox + 190}" y2="18" stroke="#c9a46a" stroke-width="5"/>
-    <path d="M${ox + 196},28 L${ox + 300},96 L${ox + 196},102 Z" fill="#e8eef7" opacity=".9"/><path d="M${ox + 190},18 l22,7 l-22,7 z" fill="#ffb547"/>`;
-  const gemi = (ox, id, yeniMi, ad) => `${direk(ox)}<g clip-path="url(#${id})">${tahtalar(ox, yeniMi)}</g>
-    <path d="M${ox + 20},116 L${ox + 360},116 Q${ox + 350},188 ${ox + 292},200 L${ox + 88},200 Q${ox + 30},188 ${ox + 20},116 Z" fill="none" stroke="#2a1a0a" stroke-width="3"/>
-    <text x="${ox + 190}" y="234" text-anchor="middle" class="fe-gemi-ad">${ad}</text>`;
-  const yigin = Array.from({ length: degisen }, (_, i) =>
-    `<rect x="${470 + (i % 4) * 78}" y="${190 - Math.floor(i / 4) * 16}" width="72" height="12" rx="2" fill="#8a5a2e" stroke="#3b2612"/>`).join("");
-  return `<svg viewBox="0 0 820 250" class="fe-gemi" role="img" aria-label="Theseus'un gemisi">
-    <defs>${govde(0, "fe-g1")}${govde(430, "fe-g2")}</defs>
-    <path d="M0,206 Q40,198 80,206 T160,206 T240,206 T320,206 T400,206 ${ikinci ? "T480,206 T560,206 T640,206 T720,206 T800,206 L820,206 L820,214" : "L400,214"} L0,214Z" fill="#1d4a6e" opacity=".8"/>
-    ${gemi(0, "fe-g1", (i) => i < degisen, "Limandaki gemi")}
-    ${ikinci ? gemi(430, "fe-g2", () => false, "Eski tahtalardan kurulan gemi")
-      : `${yigin}<text x="620" y="234" text-anchor="middle" class="fe-gemi-ad">Sökülen eski tahtalar: ${degisen}</text>`}
-  </svg>`;
-}
-
 /* ======================================================================== */
 const adimlar = [
   /* 1 ------------------------------------------------------------------ */
   {
     baslik: "“Felsefe” ne demek?",
     cikti: "FEL.10.1.1-a",
-    anlatim: `
-      <p>Gündelik dilde “felsefe” sözcüğünü çok duyarız: hayat felsefesi, şirket felsefesi, “felsefe yapma!”… Bu kullanımların bir kısmı sözcüğün <b>terim anlamına</b> yakındır, bir kısmı ise felsefe hakkında <b>ön yargı</b> taşır.</p>
-      <p>Sözcük Yunanca <b>philo</b> (sevgi) ve <b>sophia</b> (bilgelik) sözcüklerinden gelir: <b>bilgelik sevgisi</b>. Filozof (philosophos), bilgeliğe sahip olan değil, onu <b>seven ve arayan</b> kişidir.</p>
-      <p>Önce cümleleri sınıflandır, sonra ikinci sekmede felsefenin hangi kavramlarla nasıl ilişkili olduğunu kur.</p>`,
+    anlatim: `<p>“Felsefe” Yunanca <b>philo</b> (sevgi) ve <b>sophia</b> (bilgelik) sözcüklerinden gelir: <b>bilgelik sevgisi</b>. Gündelik dilde ise çoğu zaman “ilke, tarz” anlamında kullanılır ya da ön yargıyla küçümsenir.</p>`,
+    anlat: [
+      { s: "Ayşe derste sordu: “Zaman nedir?” Arkadaşı güldü: “Felsefe yapma!”", yap: (_, ctx) => ctx.sahne.bak("genel") },
+      { s: "“Felsefe” sözcüğünü her gün duyarız: <b>hayat felsefem</b>, <b>oyun felsefesi</b>…" },
+      { s: "Bu sözlerde felsefe “ilke, tarz” demektir. Buna <b>gündelik anlam</b> diyoruz." },
+      { s: "“Felsefe yapma!” gibi sözler ise felsefeyi küçümser. Bunlar <b>ön yargıdır</b>." },
+      { soru: "“Felsefe boş iş” cümlesi hangisine örnektir?", secenekler: ["Gündelik anlam", "Ön yargı", "Terim anlamı"], dogru: 1,
+        aciklama: "Cümle felsefeyi tanımlamıyor, değersiz sayıyor: ön yargı.", ipucu: "Cümle felsefeyi anlatıyor mu, küçümsüyor mu?" },
+      { s: "Peki sözcüğün asıl anlamı ne? İki eski Yunanca sözcükten gelir.", yap: (_, ctx) => ctx.sahne.bak("ufuk") },
+      { formul: [["philo", "sevgi"], ["+"], ["sophia", "bilgelik"], ["="], ["philosophia", "bilgelik sevgisi"]],
+        s: "Felsefe, <b>bilgeliği sevmek</b> demektir.", oku: "Filo, sevgi. Sofya, bilgelik. Felsefe, bilgelik sevgisi demektir." },
+      { s: "<b>Filozof</b>, bilgeliğe sahip olan değil, onu <b>seven ve arayan</b> kişidir." },
+      { soru: "Filozof kimdir?", secenekler: ["Her şeyi bilen kişi", "Bilgeliği seven ve arayan kişi", "Çok kitap okuyan kişi"], dogru: 1,
+        aciklama: "Filozof bildiğini iddia etmez; merak eder ve arar.", ipucu: "Sözcükteki “sevgi” kısmını hatırla." },
+      { baslik: "Birlikte yapalım: Bu cümle hangi kutuya?", cozum: ["“Mutluluğun gerçekte ne olduğunu merak ediyorum.”", "Bir ilke mi söylüyor? Hayır.", "Felsefeyi küçümsüyor mu? Hayır.", "Bir kavramın özünü arıyor: <b>terim anlamına yakın</b>."] },
+      { s: "Felsefe; <b>sevgi, arayış, hakikat, bilgi, erdem, bilinç ve düşünme</b> kavramlarıyla iç içedir." },
+      { s: "Şimdi sen dene: Cümleleri üç kutuya yerleştir. Sonra kavram ağında yedi bağı kur." },
+    ],
+    anlatBitti: (_, ctx) => ctx.sahne.bak("genel"),
     gorev: "Cümleleri doğru kutulara yerleştir, ardından <b>kavram ağındaki yedi bağı</b> kur.",
     ogretmen: "Program, öğrencilerden günlük hayatta felsefenin nasıl tanımlandığını iş birliğiyle ifade etmelerini ve ön yargılarını fark etmelerini öneriyor (E1.1, KB2.18, D6.2). Sınıflandırmadan önce öğrencilere kendi duydukları kullanımları sorup tahtaya yazdırabilirsiniz. Kavram ağı, programdaki “sevgi, arayış, hakikat, bilgi, erdem, bilinç ve düşünme” bilgi görselinin etkileşimli hâlidir (OB1).",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Gündelik dilden terim anlamına" });
+      ctx.sahne.bak("genel");
+      igneler(ctx, [["liman", "Milet limanı<small>MÖ 6. yüzyıl · temsilî canlandırma</small>"]]);
       let a = false, b = false;
       const bak = () => a && b && ctx.gorevTamam();
       const sek = sekmeler(kap, [
@@ -143,14 +138,28 @@ const adimlar = [
   {
     baslik: "Filozoflar felsefeyi nasıl tanımladı?",
     cikti: "FEL.10.1.1-a",
-    anlatim: `
-      <p>Farklı çağlarda, farklı kültürlerde yaşamış filozoflar felsefeyi <b>farklı</b> tanımladı. Kimi varlığın özüne, kimi bilginin sınırına, kimi eyleme vurgu yaptı.</p>
-      <p>Her tanımın <b>neyi öne çıkardığını</b> bul ve uygun kutuya yerleştir. Sonra şu soruyu düşün: <b>Felsefenin herkesin kabul edeceği ortak bir tanımı yapılabilir mi?</b></p>
-      <p>Peşin hükümden kaçın: şüphe burada bir <b>araçtır</b>.</p>`,
+    anlatim: `<p>Filozoflar felsefeyi farklı tanımladı: kimi <b>varlığa</b>, kimi <b>bilginin sınırına</b>, kimi <b>eyleme</b>, kimi <b>dilin açıklığına</b>, kimi <b>bitmeyen arayışa</b> vurgu yaptı. Ortak bir tanım yapılabilir mi?</p>`,
+    anlat: [
+      { s: "Beş kişiye “Arkadaşlık nedir?” diye sor. Büyük ihtimalle beş farklı cevap alırsın.", yap: (_, ctx) => ctx.sahne.bak("stoa") },
+      { s: "Filozoflar da “Felsefe nedir?” sorusuna farklı cevaplar verdi." },
+      { s: "Antik Yunan'da insanlar böyle sütunlu galerilerde, <b>stoalarda</b> sohbet edip tartışırdı." },
+      { s: "<b>Aristoteles</b>: Felsefe varlığın ilk nedenlerini araştırır. Vurgusu: <b>varlık</b>." },
+      { s: "<b>Kant</b>: Felsefe aklın neyi bilip neyi bilemeyeceğini sorar. Vurgusu: <b>bilgi ve sınır</b>." },
+      { s: "<b>Marx</b>: Asıl mesele dünyayı değiştirmektir. Vurgusu: <b>eylem</b>." },
+      { soru: "Sokrates: “Sorgulanmamış hayat yaşanmaya değmez.” Bu tanım neyi öne çıkarır?", secenekler: ["Dilin açıklığını", "İyi yaşamayı", "Aklın sınırını"], dogru: 1,
+        aciklama: "Sokrates felsefeyi iyi yaşamanın yolu olarak görür.", ipucu: "Cümledeki “hayat” sözcüğüne dikkat et." },
+      { baslik: "Birlikte yapalım: Tanımın vurgusunu bul", cozum: ["Tanım: “Felsefe yolda olmaktır.” (Jaspers)", "Anahtar sözcük: <b>yolda</b>.", "Hakikate sahip olmaktan değil, onu aramaktan söz ediyor.", "Vurgusu: <b>bitmeyen bir arayış</b>."] },
+      { s: "Tanımlar farklı, ama çoğunda ortak bir iz var: <b>akılla, sorgulayarak aramak</b>." },
+      { soru: "Bu kadar farklı tanım ne gösterir?", secenekler: ["Filozoflar birbirini hiç okumamış", "“Felsefe nedir?” sorusu da felsefi bir sorudur", "Felsefenin bir konusu yoktur"], dogru: 1,
+        aciklama: "Her filozof kendi çağının sorularından bakar; bu soru da tartışmaya açıktır.", ipucu: "Tek ve kesin cevabı olmayan sorular hangi türdendir?" },
+      { s: "Şimdi sen dene: On tanımı vurgularına göre yerleştir. Sonra ortak tanım hakkında iddianı seç ve gerekçeni yaz." },
+    ],
     gorev: "Tanımları sınıflandır, ortak tanım sorusunda <b>iddianı seç</b> ve gerekçeni yaz.",
     ogretmen: "Program “Filozofların tanımları neden farklı? Ortak bir tanım yapılabilir mi?” gibi yönlendirici sorularla şüphe duyulmasını öneriyor (E3.9, SDB2.2, D4.2). Tanımlar özgün ifadelerle verilmiştir (Wittgenstein: Tractatus 4.112; Marx: Feuerbach Üzerine Tezler 11; Sokrates: Platon, Savunma 38a). İddia seçenekleri arasında “yanlış” yoktur; gerekçenin niteliğini tartışın.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Hangi tanım neyi öne çıkarıyor?" });
+      ctx.sahne.bak("stoa");
+      igneler(ctx, [["stoa", "Stoa<small>Sütunlu galeri: sohbet ve tartışma yeri</small>"]]);
       let sinif = false, iddia = null, yazi = false;
       const bak = () => sinif && iddia && yazi && ctx.gorevTamam();
       const KAT = [
@@ -211,24 +220,52 @@ const adimlar = [
   {
     baslik: "Düşünce deneyi: Theseus'un gemisi",
     cikti: "FEL.10.1.1-b",
-    anlatim: `
-      <p>Antik bir anlatıya göre kahraman Theseus'un gemisi limanda korunur. Çürüyen tahtalar <b>tek tek</b> yenileriyle değiştirilir. Sonunda hiçbir eski tahta kalmaz.</p>
-      <p>Kaydırıcıyla tahtaları değiştir. Belirli anlarda sana soracağız: <b>Bu hâlâ Theseus'un gemisi mi?</b> Sonra beklenmedik bir gelişme olacak.</p>
-      <p>Bir <b>düşünce deneyi</b>, laboratuvar yerine akılda yapılan deneydir. Deneyin sonunda hangi felsefi düşünce özelliklerini kullandığını keşfedeceksin.</p>`,
+    anlatim: `<p>Theseus'un gemisinin çürüyen tahtaları tek tek yenilenir; sonunda hiç eski tahta kalmaz. Bu bir <b>düşünce deneyidir</b>: laboratuvar yerine akılda yapılır. Kararını bir <b>ölçüte</b> dayandırıp <b>tutarlı</b> kalmak gerekir.</p>`,
+    anlat: [
+      { s: "Limandaki gemiye bak. Antik bir anlatıya göre bu, kahraman <b>Theseus'un gemisi</b>.", yap: (api, ctx) => { api.gemi(0); ctx.sahne.bak("gemi"); } },
+      { s: "Yıllar geçer, tahtalar çürür. Ustalar çürüyeni <b>tek tek</b> yenisiyle değiştirir.", yap: (api) => api.gemi(1) },
+      { s: "Şimdi altı tahta yeni. Açık renkli tahtalara dikkat et.", yap: (api) => api.gemi(6) },
+      { s: "Bu bir <b>düşünce deneyi</b>: laboratuvar yerine <b>akılda</b> yapılan deney." },
+      { soru: "Bu deneyi yapmak için gerçek bir gemi gerekir mi?", secenekler: ["Evet, gerçek gemi şart", "Hayır, akılda yapılabilir"], dogru: 1,
+        aciklama: "Düşünce deneyinde durumu hayal eder, sonuçlarını akılla izleriz.", ipucu: "“Düşünce” deneyi nerede yapılır?" },
+      { s: "Sonunda on iki tahtanın hepsi yenilenir. Hiç eski tahta kalmaz.", yap: (api) => api.gemi(12) },
+      { s: "Karar verirken bir <b>ölçüt</b> seçersin: aynı malzeme mi, kesintisiz kullanım mı, aynı biçim mi?" },
+      { baslik: "Birlikte yapalım: Ali tutarlı mı?", cozum: ["Ali'nin ölçütü: <b>aynı malzeme</b>.", "Ali, 12 tahta değişince “Aynı gemi” diyor.", "Ama eski malzemeden hiçbir şey kalmadı.", "Cevabı ölçütüyle <b>çelişiyor</b>. Ya cevabını ya ölçütünü değiştirmeli."] },
+      { soru: "Düşüncelerin birbiriyle çelişmemesine ne denir?", secenekler: ["Tutarlılık", "Hayret", "Evrensellik"], dogru: 0,
+        aciklama: "Tutarlılık, felsefi düşüncenin temel özelliklerindendir.", ipucu: "Ali'nin eksiği neydi?" },
+      { s: "Deneyde <b>hayret, şüphe, tutarlılık</b> gibi felsefi düşünce özelliklerini kullanacaksın." },
+      { s: "Şimdi sen dene: Kaydırıcıyla tahtaları değiştir, her durakta cevap ver. Sonra beklenmedik gelişmeyi izle." },
+    ],
+    anlatBitti: (api, ctx) => { api.gemi(0); ctx.sahne.bak("gemi"); },
     gorev: "Deneyi tamamla, <b>tutarlı</b> bir kimlik ölçütü belirle ve düşünme hamlelerini özelliklerle eşleştir.",
     ogretmen: "Program, felsefi düşüncenin özelliklerinin (hayret, merak, şüphe, sorgulama, yığılımlı ilerleme; rasyonel, tutarlı, refleksif, eleştirel, sistemli, evrensel) bir bilgi görseliyle verilip birbirleriyle ilişkisi üzerine çıkarım yapılmasını öneriyor (KB2.10, E3.10). Isınma olarak yerdeki rakama iki taraftan bakan iki kişinin “6” ve “9” dediği karikatürü (OB4) tahtaya çizebilirsiniz. Deneyden sonra kısa bir yansıtma yazısı istenebilir.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Bu hâlâ aynı gemi mi?" });
-      const sahne = el("div", { class: "ok-kutu fe-gemi-kutu" });
+      const S = ctx.sahne;
+      S.bak("gemi");
+      const [igGemi, igYigin, igIkinci] = igneler(ctx, [
+        ["gemi", "Limandaki gemi", { renk: "#ffb547" }],
+        ["yigin", "Sökülen eski tahtalar", { renk: "#a9b6c9", yon: "alt" }],
+        ["ikinci", "Eski tahtalardan kurulan gemi", { renk: "#b89cff" }],
+      ]);
+      ctx.temizlik(() => { S.gemi.degistir(0); S.gemi.ikinci(false); });
       const kaydir = el("input", { type: "range", min: 0, max: TAHTA, step: 1, value: 0, "aria-label": "Değiştirilen tahta sayısı" });
       const sayac = el("b", {}, "0");
       const sorular = el("div", { class: "fe-gemi-sorular" });
       const sonuc = el("div", { hidden: true });
-      kap.append(sahne, el("div", { class: "d-kaydirici" }, el("label", {}, "Değiştirilen tahta sayısı"), sayac, kaydir), sorular, sonuc);
+      kap.append(el("div", { class: "d-kaydirici" }, el("label", {}, "Değiştirilen tahta sayısı"), sayac, kaydir), sorular, sonuc);
       const cevap = {};
       let ikinci = false;
       const DURAK = [1, 6, 12];
-      const ciz = () => { sahne.innerHTML = gemiSvg(+kaydir.value, ikinci); sayac.textContent = `${kaydir.value}/${TAHTA}`; };
+      const ciz = () => {
+        const n = +kaydir.value;
+        S.gemi.degistir(n); S.gemi.ikinci(ikinci);
+        sayac.textContent = `${n}/${TAHTA}`;
+        igGemi.metin(`Limandaki gemi<small>${n}/${TAHTA} tahta yeni</small>`);
+        igYigin.metin(`Sökülen eski tahtalar<small>${n} kalas</small>`);
+        igYigin.gizle(ikinci || n === 0);
+        igIkinci.gizle(!ikinci);
+      };
 
       const SECENEK = [{ d: "evet", m: "Evet, aynı gemi" }, { d: "hayir", m: "Hayır, başka bir gemi" }, { d: "emin", m: "Emin değilim" }];
       const soruSatiri = (anahtar, metin, liste, sonra) => {
@@ -258,6 +295,7 @@ const adimlar = [
         if (sorular.querySelector("[data-buk]")) return;
         sorular.append(el("div", { class: "d-satir", "data-buk": "1" }, el("button", { class: "d-btn ana", onclick: (e) => {
           ikinci = true; ciz(); e.currentTarget.remove();
+          S.bak("gemiIki");
           sorular.append(el("div", { class: "fe-not" }, "Bir usta, söktüğün eski tahtaların hepsini toplayıp aynı plana göre ikinci bir gemi kurdu!"));
           soruSatiri("asil", "Şimdi hangisi <b>asıl</b> Theseus'un gemisi?", [
             { d: "yeni", m: "Limandaki (yenilenmiş) gemi" }, { d: "eski", m: "Eski tahtalardan kurulan" }, { d: "ikisi", m: "İkisi de" }, { d: "hicbiri", m: "Hiçbiri" }]);
@@ -314,6 +352,8 @@ const adimlar = [
       }
       ciz();
       ctx.not("<p>Deneyde kullanılmayan ama felsefenin diğer özellikleri: <b>sorgulama</b>, <b>eleştirellik</b>, <b>sistemlilik</b> ve <b>yığılımlı ilerleme</b> (her filozof öncekilerin sorularını devralıp geliştirir).</p>");
+      // Anlatım kareleri gemiyi gösterir; alıştırma kaydırıcısına dokunmaz
+      return { gemi(n) { if (ikinci || +kaydir.value) return; S.gemi.degistir(n); igGemi.metin(`Limandaki gemi<small>${n}/${TAHTA} tahta yeni</small>`); igYigin.metin(`Sökülen eski tahtalar<small>${n} kalas</small>`); igYigin.gizle(n === 0); } };
     },
   },
 
@@ -321,14 +361,29 @@ const adimlar = [
   {
     baslik: "Felsefe neden Milet'te doğdu?",
     cikti: "FEL.10.1.1-b",
-    anlatim: `
-      <p>Antik Yunan felsefesinin başlangıcı genellikle <b>MÖ 6. yüzyılda</b>, Anadolu'nun batı kıyısındaki <b>Milet</b> kentiyle ve <b>Thales</b>'le ilişkilendirilir. Thales “Her şeyin ana maddesi (<b>arkhe</b>) nedir?” diye sordu ve cevabı mitlerde değil, doğada aradı.</p>
-      <p>Peki neden orada ve o zaman? Haritadaki kentleri incele, sonra Milet'in koşullarını <b>kültürel, ekonomik, siyasal ve bilimsel</b> diye sınıflandır.</p>
-      <p>Sonunda şu soruya cevap ver: Felsefenin doğuşu <b>tek bir nedene</b> bağlanabilir mi?</p>`,
+    anlatim: `<p>Antik Yunan felsefesinin başlangıcı <b>MÖ 6. yüzyılda</b> Milet'le ve <b>Thales</b>'le ilişkilendirilir. Thales her şeyin ana maddesini (<b>arkhe</b>) mitlerde değil doğada aradı. Felsefenin doğuşunda <b>kültürel, ekonomik, siyasal ve bilimsel</b> koşullar etkiliydi.</p>`,
+    anlat: [
+      { s: "Yaklaşık 2600 yıl önce, Ege kıyısında işlek bir liman kenti: <b>Milet</b>.", yap: (_, ctx) => ctx.sahne.bak("havadan") },
+      { s: "Gemiler Mısır'dan, Fenike'den, Karadeniz'den mal ve insan getirirdi.", yap: (_, ctx) => ctx.sahne.bak("genel") },
+      { s: "Milet'te yaşayan <b>Thales</b> sordu: “Her şeyin ana maddesi nedir?” Bu ilk maddeye <b>arkhe</b> denir." },
+      { s: "Thales cevabı mitlerde değil, <b>doğada</b> aradı. Ona göre arkhe <b>su</b>ydu." },
+      { soru: "Thales'i kendinden öncekilerden ayıran nedir?", secenekler: ["Tanrılar hakkında yeni bir mit anlatması", "Doğayı akılla, doğadaki bir maddeyle açıklaması", "Çok zengin olması"], dogru: 1,
+        aciklama: "Açıklamayı mitten akla taşıdı. Bu yüzden ilk filozof sayılır.", ipucu: "Cevabı nerede aradı?" },
+      { s: "Peki neden Milet? Koşulları dört başlıkta düşüneceğiz: <b>kültürel, ekonomik, siyasal, bilimsel</b>." },
+      { s: "Ticaret zenginlik getirdi; bazı insanların düşünmeye <b>boş zamanı</b> oldu. Bu <b>ekonomik</b> bir koşul." },
+      { s: "Agorada yurttaşlar ortak işleri açıkça tartışırdı. Bu <b>siyasal</b> bir koşul.", yap: (_, ctx) => ctx.sahne.bak("agora") },
+      { baslik: "Birlikte yapalım: Hangi koşul?", cozum: ["Bilgi: “Babil'de yüzyıllarca gökyüzü gözlemleri kaydedilmişti.”", "Ticaretten mi söz ediyor? Hayır, bir <b>bilgi birikiminden</b>.", "Doğayı akılla açıklamayı besleyen birikim: <b>bilimsel</b> koşul."] },
+      { soru: "Farklı halkların mitleri limanda karşılaşınca ne oldu?", secenekler: ["Hepsine sorgusuz inanıldı", "“Hangisi doğru?” sorusu doğdu", "Mitler unutuldu"], dogru: 1,
+        aciklama: "Farklı anlatıların karşılaşması sorgulamayı başlattı: <b>kültürel</b> bir koşul.", ipucu: "İki farklı anlatı duyan biri ne sorar?" },
+      { s: "Şimdi sen dene: Haritada kentlere bak, koşulları dört kutuya yerleştir ve “tek neden” sorusunu cevapla.", yap: (_, ctx) => ctx.sahne.bak("havadan") },
+    ],
+    anlatBitti: (_, ctx) => ctx.sahne.bak("havadan"),
     gorev: "Koşulları dört kutuya yerleştir ve “tek neden” sorusuna cevap ver.",
     ogretmen: "Program kültürel, ekonomik, siyasal ve bilimsel koşulların felsefenin doğuşuna etkisinin iş birliğiyle analiz edilmesini ve dört köşe tekniğinin kullanılmasını öneriyor (SDB2.2). Sınıfın dört köşesini dört koşula ayırıp öğrencileri en önemli bulduklarının köşesine gönderebilir, gerekçelerini tartıştırabilirsiniz. Disiplinler arası: Tarih ve Coğrafya. Thales'in MÖ 585 güneş tutulmasını önceden bildirdiği bir rivayettir.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Ege kıyısında ilk filozoflar" });
+      ctx.sahne.bak("havadan");
+      igneler(ctx, [["liman", "Liman<small>Doğu ile Batı arasında ticaret</small>"], ["agora", "Agora<small>Yurttaşların buluştuğu meydan</small>", { renk: "#4fc3f7" }], ["tapinak", "Tapınak", { renk: "#b89cff" }], ["kent", "Kent<small>Temsilî canlandırma</small>", { renk: "#a9b6c9" }]]);
       harita({
         kap, veri: egeVeri, kutu: [22.6, 36.4, 29.6, 41.4], yukseklik: 250, vurgu: ["Turkey"], temizlik: ctx.temizlik,
         noktalar: KENTLER, denizler: [{ ad: "EGE DENİZİ", lon: 25.2, lat: 38.9 }, { ad: "Anadolu", lon: 28.8, lat: 39.6 }],
@@ -372,14 +427,28 @@ const adimlar = [
   {
     baslik: "Felsefenin yolculuğu: gelenekler",
     cikti: "FEL.10.1.1-b",
-    anlatim: `
-      <p>Felsefe tek bir kültüre, coğrafyaya ya da düşünme biçimine <b>indirgenemez</b>. Hindistan'da, Çin'de, Antik Yunan'da, İslam dünyasında ve Avrupa'nın farklı ülkelerinde farklı çağlarda <b>özgün felsefi sorular</b> soruldu.</p>
-      <p>Zaman çizelgesinde her şerit bir gelenek, her çubuk bir düşünürün yaşamıdır (<b>~</b> işareti: tarihler yaklaşıktır). Bir çubuğa dokunarak düşünürün sorusunu oku. Dönem düğmeleriyle yakınlaş.</p>
-      <p>Sekiz düşünürün çubukları gizli. Üstteki kartta adı ve sorusu yazan düşünürün <b>geleneğine ait şeride</b> dokun; çubuğu çizelgede belirsin.</p>`,
+    anlatim: `<p>Felsefe tek bir kültüre <b>indirgenemez</b>. Hint, Çin, Antik Yunan, Türk-İslam ve Avrupa'nın farklı geleneklerinde farklı çağlarda özgün felsefi sorular soruldu. Zaman çizelgesinde her şerit bir gelenek, her çubuk bir düşünürdür (<b>~</b>: yaklaşık tarih).</p>`,
+    anlat: [
+      { s: "Felsefe Milet'te kalmadı. Fikirler de gemiler gibi yol aldı.", yap: (_, ctx) => ctx.sahne.bak("ufuk") },
+      { s: "Aynı çağlarda dünyanın başka yerlerinde de insanlar büyük sorular soruyordu." },
+      { s: "Hindistan'daki <b>Upanişadlar</b> sordu: “Benliğim ile evrenin özü arasında nasıl bir bağ var?”" },
+      { s: "Çin'de <b>Laozi</b>, doğanın akışına uyumlu yaşamayı öğütledi." },
+      { soru: "Upanişadlar, Laozi ve Milet'teki düşünürler aşağı yukarı aynı çağda. Bu ne gösterir?", secenekler: ["Felsefe yalnızca Yunanlılara aittir", "Felsefe tek bir kültüre indirgenemez", "Hepsi aynı soruyu sordu"], dogru: 1,
+        aciklama: "Farklı coğrafyalarda, farklı sorularla felsefe yapıldı.", ipucu: "Üçü de farklı ülkelerden." },
+      { s: "İslam dünyasında <b>Kindî</b> ve <b>İbn Sînâ</b>, Yunan felsefesini işleyip yeni sorular sordu." },
+      { s: "Sonra Avrupa'da ve Amerika'da yeni gelenekler doğdu: Fransız, Alman, Anglosakson, Amerikan." },
+      { s: "Bu birikimlere <b>felsefe gelenekleri</b> diyoruz. Çizelgede her gelenek bir şerittir." },
+      { baslik: "Birlikte yapalım: Çizelgeyi oku", cozum: ["Her şerit bir gelenek, her çubuk bir düşünürün yaşamı.", "<b>~</b> işareti tarihin yaklaşık olduğunu gösterir.", "Örnek: İbn Sînâ'nın çubuğu Türk-İslam şeridinde, 980–1037 arası.", "Bir çubuğa dokunursan düşünürün sorusunu okursun."] },
+      { soru: "Farklı şeritlerdeki iki çubuk aynı hizadaysa ne anlarız?", secenekler: ["Aynı kişiler", "Aynı dönemde yaşamışlar", "Aynı geleneğe aitler"], dogru: 1,
+        aciklama: "Yatay eksen zamandır; aynı hiza aynı dönem demektir.", ipucu: "Çizelgenin yatay ekseni neyi gösteriyor?" },
+      { s: "Şimdi sen dene: Kartta yazan düşünürün geleneğine ait şeride dokun. Sekiz düşünürü yerleştir." },
+    ],
     gorev: "Sekiz düşünürü zaman çizelgesinde <b>doğru geleneğin şeridine</b> yerleştir.",
     ogretmen: "Program farklı felsefe geleneklerinin (Hint, Çin, Türk-İslam, Antik Yunan, Fransız, Alman, Anglosakson, Amerikan) adlarına yer verilerek felsefenin tek bir kültüre indirgenemeyeceğinin vurgulanmasını, soru-cevap tekniğinin kullanılmasını öneriyor (OB5). Öğrencilere “Aynı yüzyılda yaşayan Konfüçyüs, Buda ve Herakleitos hangi soruları sordu?” diye sorup çizelgede dikey okuma yaptırabilirsiniz. Yansıtma yazısı ödev olarak verilebilir.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Felsefe gelenekleri zaman çizelgesi" });
+      ctx.sahne.bak("ufuk");
+      igneler(ctx, [["deniz", "Fikirler de gemilerle yol aldı", { renk: "#4fc3f7" }]]);
       const KART = karistir(["buda", "konfucyus", "thales", "farabi", "descartes", "kant", "locke", "dewey"]);
       const IPUCU = { thales: "Thales Milet'te yaşadı; Antik Yunan felsefesinin başlatıcısı sayılır.", farabi: "Fârâbî, İslam felsefesinin kurucu isimlerindendir.", dewey: "Dewey ABD'de yaşadı; pragmatizmin temsilcisidir.", locke: "Locke İngiliz deneyimci (empirist) bir düşünürdür.", kant: "Kant, Königsberg'de yaşamış Alman bir filozoftur.", descartes: "Descartes, modern felsefenin kurucusu sayılan Fransız bir filozoftur.", buda: "Buda Hindistan'da yaşadı.", konfucyus: "Konfüçyüs Çin'de yaşadı." };
       const olaylar = DUSUNURLER.map((d) => ({ id: d.id, serit: d.gelenek, bas: d.bas, bit: d.bit, ad: d.ad, yaklasik: d.yaklasik, gizli: KART.includes(d.id) }));
@@ -436,14 +505,27 @@ const adimlar = [
   {
     baslik: "Felsefi soru mu, değil mi?",
     cikti: "FEL.10.1.1-c",
-    anlatim: `
-      <p>Her soru felsefi değildir. “Su kaç derecede kaynar?” sorusunun cevabı deneyle bulunur; “Bu akşam ne yesek?” gündelik bir sorudur.</p>
-      <p>Önce soruları <b>kendi gerekçenle</b> sınıflandır ve kontrol et. Ardından ekrana gelecek <b>felsefi sorunun özellikleri</b> kartını kullanarak yanlışlarını gözden geçir.</p>
-      <p>İpucu: Aynı konuda hem bilimsel hem felsefi soru sorulabilir. “Evren nasıl oluştu?” ile “Neden hiçbir şey yerine bir şey var?” aynı türden mi?</p>`,
+    anlatim: `<p>Her soru felsefi değildir. <b>Gündelik</b> sorular kısa sürede, kişiye bağlı cevaplanır; <b>bilimsel</b> sorular gözlem ve deneyle; <b>felsefi</b> sorular ise evrenseldir, deneyle kesin cevaplanamaz ve her cevap yeni sorular doğurur.</p>`,
+    anlat: [
+      { s: "Gün içinde onlarca soru sorarız: “Otobüs kaçta?” “Su neden kaynar?” “Adalet nedir?”", yap: (_, ctx) => ctx.sahne.bak("agora") },
+      { s: "Bu üç soru aynı türden değil. Her birinin cevabı başka bir yolla bulunur." },
+      { s: "“Otobüs kaçta?” Saate bakınca cevap biter. Bu bir <b>gündelik soru</b>." },
+      { s: "“Su kaç derecede kaynar?” Termometreyle ölçülür. Deneyle cevaplanan soruya <b>bilimsel soru</b> denir." },
+      { soru: "“Bitkiler ışıkta mı daha hızlı büyür?” Bu hangi tür soru?", secenekler: ["Gündelik", "Bilimsel", "Felsefi"], dogru: 1,
+        aciklama: "Deney kurup ölçerek cevaplanır: bilimsel.", ipucu: "Bir deneyle sınanabilir mi?" },
+      { s: "“Adalet nedir?” Hiçbir ölçüm aleti bunu cevaplayamaz. Akıl yürüterek tartışırız." },
+      { s: "Böyle sorulara <b>felsefi soru</b> denir. Evrenseldir, tek kesin cevabı yoktur, her cevap yeni soru doğurur." },
+      { baslik: "Birlikte yapalım: “Neden” her soruyu felsefi yapar mı?", cozum: ["Soru: “Gökkuşağı neden oluşur?”", "İçinde “neden” var, ama…", "Işığın su damlasında kırılmasıyla, gözlemle açıklanır.", "Sonuç: <b>bilimsel</b> bir soru. Sözcüğe değil, cevabın nasıl bulunduğuna bak."] },
+      { soru: "“Dostluk bir çıkar ilişkisi midir?” Bu hangi tür soru?", secenekler: ["Gündelik", "Bilimsel", "Felsefi"], dogru: 2,
+        aciklama: "Deneyle kesinleşmez, herkesi ilgilendirir, tartışmaya açıktır: felsefi.", ipucu: "Bir ölçüm aletiyle cevaplayabilir misin?" },
+      { s: "Şimdi sen dene: On iki soruyu kendi gerekçenle sınıflandır ve kontrol et. Sonra özellikler kartıyla gözden geçir." },
+    ],
     gorev: "On iki soruyu <b>felsefi, bilimsel, gündelik</b> diye doğru sınıflandır.",
     ogretmen: "Program farklı türden soruların karışık verilip gerekçeleriyle sınıflandırılmasını, ardından felsefi sorunun özelliklerini gösteren bilgi görseli sunularak sınıflandırmanın yeniden gözden geçirilmesini öneriyor (KB2.5, E3.1, SDB1.2). Özellikler kartı ilk kontrolden sonra açılır; böylece öğrenciler önce kendi ölçütlerini kullanır.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Soruları sınıflandır" });
+      ctx.sahne.bak("agora");
+      igneler(ctx, [["agora", "Agora<small>Her soru burada tartışılabilirdi</small>", { renk: "#4fc3f7" }]]);
       const ozellik = el("div", { class: "ok-kutu fe-ozellik", hidden: true, html: `<b>Felsefi sorunun özellikleri</b>
         <ul><li><b>Evrenseldir:</b> tek bir kişiye, yere ya da zamana bağlı değildir.</li>
         <li><b>Deney ve gözlemle kesin olarak cevaplanamaz;</b> akıl yürütmeyle tartışılır.</li>
@@ -481,14 +563,27 @@ const adimlar = [
   {
     baslik: "Kendi felsefi sorunu kur",
     cikti: "FEL.10.1.1-c",
-    anlatim: `
-      <p>Felsefi sorular çoğu zaman sıradan bir olaydan doğar. Bir durum seç, o durumdaki temel <b>kavramı</b> bul, bir <b>soru kalıbıyla</b> sorunu kur. İstersen sorunu kendi cümlelerinle düzenle.</p>
-      <p>Sonra <b>refleksif sorgulama kartlarıyla</b> sorunu sına. Kişisel ya da deneyle cevaplanabilir bir soru çıktıysa onu <b>genelleştirerek</b> yeniden kur.</p>
-      <p>Örnek: “Arkadaşımı öğretmene söylemeli miyim?” kişisel bir sorudur. “Dürüstlük her zaman dostluktan önce mi gelir?” felsefidir.</p>`,
+    anlatim: `<p>Felsefi sorular çoğu zaman sıradan bir olaydan doğar. Olaydaki temel <b>kavramı</b> bul, bir <b>soru kalıbıyla</b> sorunu kur ve <b>refleksif sorgulama kartlarıyla</b> sına. Kişisel bir soru çıktıysa onu <b>genelleştir</b>.</p>`,
+    anlat: [
+      { s: "Elif, arkadaşının sınavda kopya çektiğini gördü. Öğretmene söylemeli mi?", yap: (_, ctx) => ctx.sahne.bak("sokak") },
+      { s: "Bu, Elif'in <b>kişisel</b> bir sorusu. Cevabı Elif'in durumuna bağlı." },
+      { s: "Ama içinde büyük <b>kavramlar</b> saklı: <b>dürüstlük</b> ve <b>dostluk</b>." },
+      { s: "Kişi adlarını çıkarıp kavrama yönelirsek soru <b>genelleşir</b>, herkesi ilgilendirir." },
+      { baslik: "Birlikte yapalım: Olaydan felsefi soruya", cozum: ["Olay: Elif kopyayı gördü.", "Kavramlar: dürüstlük ve dostluk.", "Kalıp: “… her zaman … önce mi gelir?”", "Felsefi soru: “Dürüstlük her zaman dostluktan önce mi gelir?”"] },
+      { soru: "Hangisi felsefi bir sorudur?", secenekler: ["Elif yarın öğretmenle konuşacak mı?", "Dürüstlük her zaman doğru mudur?", "Sınav kaçta bitti?"], dogru: 1,
+        aciklama: "Kişiye ve güne bağlı değil, herkese ilişkin ve tartışmaya açık.", ipucu: "Hangi soruda kişi adı ya da zaman yok?" },
+      { s: "Kurduğun soruyu kendi kendine sınarsın. Düşünceyi düşünmeye <b>refleksif</b> sorgulama denir." },
+      { s: "Dört kart sorar: Deneyle kesin cevaplanır mı? Herkese mi ilişkin? Tek cevabı var mı? Yeni soru doğurur mu?" },
+      { soru: "“Bu telefon kaç gram?” sorusu hangi kartta takılır?", secenekler: ["“Deneyle kesin cevaplanır mı?” kartında", "Hiçbir kartta takılmaz"], dogru: 0,
+        aciklama: "Tartıyla kesin cevaplanır; felsefi değil.", ipucu: "Bir tartı bu soruyu bitirir mi?" },
+      { s: "Bir cevap yeni bir soru doğurur. Felsefede buna <b>yığılımlı ilerleme</b> denir." },
+      { s: "Şimdi sen dene: Bir durum, bir kavram ve bir kalıp seç. Sorunu kartlarla sına, olası bir cevap yaz." },
+    ],
     gorev: "Dört sorgulama kartının hepsinden geçen bir felsefi soru kur ve olası bir cevabı yaz.",
     ogretmen: "Program günlük yaşamdan ya da felsefe tarihinden seçilen düşündürücü olay, ikilem veya alıntılar üzerinden özgün felsefi sorular üretilmesini, refleksif sorgulama kartlarının hazırlanmasını ve soruların Sokratik tartışmayla yığılımlı biçimde geliştirilmesini öneriyor (E3.3, E3.8, KB2.13). Öğrencilerin kurduğu soruları tahtada toplayıp bir soruyu Sokratik tartışmayla birlikte derinleştirebilirsiniz.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Felsefi soru atölyesi" });
+      ctx.sahne.bak("sokak");
       const DURUM = [
         { id: "kopya", ad: "Sınavda kopya", metin: "Yakın arkadaşının sınavda kopya çektiğini gördün. Öğretmene söylemek ispiyon mu, dürüstlük mü?", kavram: ["dürüstlük", "dostluk", "adalet", "sorumluluk"] },
         { id: "algoritma", ad: "Tahmin eden uygulama", metin: "Telefonundaki uygulama ne izleyeceğini senden önce biliyor gibi.", kavram: ["özgürlük", "seçim", "bilgi", "mahremiyet"] },
@@ -572,14 +667,27 @@ const adimlar = [
   {
     baslik: "Felsefe, bilim, din ve sanat",
     cikti: "FEL.10.1.1-ç",
-    anlatim: `
-      <p>Felsefe insanın dünyayı anlama yollarından biridir. <b>Bilim, din ve sanat</b> da insanın evrene, kendine ve değerlere yönelik sorularıyla ilgilenir. Benzer yönleri var, ama <b>amaç, yöntem ve konu</b> bakımından ayrılırlar.</p>
-      <p>Karşılaştırma tablosunu satır satır kur: her satırda dört kartı doğru sütuna yerleştir.</p>
-      <p>Tablo bitince ikinci sekmede alanlar arasındaki ilişki hakkındaki görüşlerin <b>güçlü ve zayıf</b> yönlerini sına.</p>`,
-    gorev: "Karşılaştırma tablosunu tamamla ve dört görüşü güçlü/zayıf diye değerlendir.",
+    anlatim: `<p>Felsefe, bilim, din ve sanat insanın dünyayı anlama yollarıdır. Benzer yönleri vardır, ama <b>amaç, yöntem ve konu</b> bakımından ayrılırlar. Bir görüş, gerekçe ve bilgiyle desteklendiğinde <b>güçlüdür</b>.</p>`,
+    anlat: [
+      { s: "Bir gün batımını düşün. Dört kişi aynı gökyüzüne bakıyor.", yap: (_, ctx) => ctx.sahne.bak("tapinak") },
+      { s: "Bilim insanı sorar: “Gökyüzü neden kızıla döner?” Bu <b>bilimin</b> sorusu." },
+      { s: "Ressam, rengi ve duyguyu tuvale aktarır. Bu <b>sanatın</b> yolu." },
+      { s: "İnanan biri bu düzenin ardındaki yaratıcıyı düşünür. Bu <b>dinin</b> bakışı." },
+      { s: "Filozof sorar: “Güzel nedir? Bu düzenin bir anlamı var mı?” Bu <b>felsefenin</b> sorusu." },
+      { soru: "Dört alanı karşılaştırırken hangi ölçütleri kullanırız?", secenekler: ["Yalnızca konuyu", "Amaç, yöntem ve konuyu", "Yalnızca kimin yaptığını"], dogru: 1,
+        aciklama: "Amaç: ne için? Yöntem: nasıl? Konu: ne hakkında?", ipucu: "Üç ölçüt var." },
+      { baslik: "Birlikte yapalım: Yöntemleri karşılaştır", cozum: ["Bilim: gözlem ve deneyle sınar.", "Sanat: sezgi ve hayal gücüyle eser üretir.", "Din: vahye dayanır; temel ilkeleri inanarak kabul eder.", "Felsefe: akıl yürütür, kavramları çözümler, eleştirir."] },
+      { soru: "Bir görüşün <b>güçlü</b> olması ne demektir?", secenekler: ["Çok kişinin onu savunması", "Gerekçe ve bilgiyle desteklenmesi", "Kesin bir dille söylenmesi"], dogru: 1,
+        aciklama: "Güç, gerekçeden gelir; kalabalıktan ya da ses tonundan değil.", ipucu: "Felsefe neye dayanır?" },
+      { s: "Din sütunu dinlerin genel özelliklerini anlatır. Amaç karşılaştırmaktır, alanları yarıştırmak değil." },
+      { s: "Şimdi sen dene: Tabloyu satır satır kur. Sonra beş görüşün güçlü mü zayıf mı olduğuna karar ver." },
+    ],
+    gorev: "Karşılaştırma tablosunu tamamla ve beş görüşü güçlü/zayıf diye değerlendir.",
     ogretmen: "Program felsefenin bilim, din ve sanatla benzer ve farklı yönlerinin iş birliğiyle tartışılmasını, paylaşılan görüşlerin güçlü ve zayıf yönlerinin tespit edilmesini ve ilişkinin amaç, yöntem ve konu ölçütleriyle karşılaştırma tablosu tekniğiyle değerlendirilmesini öneriyor (SDB2.2, KB2.7, E3.2, E3.1). Din sütunundaki ifadeler dinlerin genel özelliklerini betimler; konu tarafsız bir dille ele alınmalıdır.",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Karşılaştırma tablosu" });
+      ctx.sahne.bak("tapinak");
+      igneler(ctx, [["tapinak", "Tapınak<small>Din, sanat ve geometri bir arada</small>", { renk: "#b89cff" }]]);
       const ALAN = [{ id: "felsefe", ad: "Felsefe", renk: "#ffb547" }, { id: "bilim", ad: "Bilim", renk: "#4fc3f7" }, { id: "din", ad: "Din", renk: "#5ad38b" }, { id: "sanat", ad: "Sanat", renk: "#b89cff" }];
       const SATIR = [
         { id: "amac", ad: "Amaç", kart: {
@@ -647,14 +755,27 @@ const adimlar = [
   {
     baslik: "Felsefe ne işe yarar?",
     cikti: "FEL.10.1.1-d",
-    anlatim: `
-      <p>“Felsefe ne işe yarar?” sorusu da felsefi bir sorudur! Önce felsefenin işlevleri hakkındaki görüşleri <b>tutarlılık</b> ölçütüyle sına: bu derste öğrendiklerinle çelişen görüşü reddet.</p>
-      <p>Sonra kabul ettiğin işlevleri <b>bireysel</b> ve <b>toplumsal</b> diye sınıflandır.</p>
-      <p>Bireysel işlevler kişinin kendi düşünce ve yaşamıyla, toplumsal işlevler toplumun kurumları, değerleri ve tartışma kültürüyle ilgilidir.</p>`,
+    anlatim: `<p>“Felsefe ne işe yarar?” da felsefi bir sorudur. Görüşleri <b>tutarlılık</b> ölçütüyle sına. Felsefenin <b>bireysel</b> işlevleri kişinin düşünce ve yaşamıyla, <b>toplumsal</b> işlevleri toplumun kurumları, değerleri ve tartışma kültürüyle ilgilidir.</p>`,
+    anlat: [
+      { s: "Deniz bir gün sordu: “Felsefe ne işe yarar? Bana ne kazandırır?”", yap: (_, ctx) => ctx.sahne.bak("tepe") },
+      { s: "Bu soru da felsefi bir soru! Cevabını gerekçeyle arayalım." },
+      { s: "Bir görüşü kabul etmeden önce sorarız: Öğrendiklerimle <b>tutarlı</b> mı?" },
+      { baslik: "Birlikte yapalım: Tutarlılık sınaması", cozum: ["Görüş: “Felsefe yalnızca eski Yunan'da yapılır.”", "5. adımda gördük: Hint, Çin, Türk-İslam ve Avrupa geleneklerinde de felsefe yapıldı.", "Görüş bu bilgiyle çelişiyor.", "Sonuç: Bu görüşü <b>reddederiz</b>."] },
+      { s: "Felsefenin kişiye katkısına <b>bireysel işlev</b> denir. Örnek: kendi hayat amacını gerekçelendirmek." },
+      { s: "Topluma katkısına <b>toplumsal işlev</b> denir. Örnek: insan hakları fikrinin tartışılıp güçlenmesi." },
+      { soru: "“Bir mahallede insanlar sorunlarını kavga etmeden, gerekçeyle tartışıyor.” Bu hangi işleve örnek?", secenekler: ["Bireysel işlev", "Toplumsal işlev"], dogru: 1,
+        aciklama: "Tartışma kültürü toplumun ortak yaşamıyla ilgilidir.", ipucu: "Tek bir kişi mi, bir topluluk mu?" },
+      { s: "Bir işlev hem kişiyi hem toplumu etkileyebilir. Karar verirken <b>asıl kimi</b> ilgilendirdiğine bak." },
+      { soru: "Hangisi felsefenin doğasıyla <b>çelişir</b>?", secenekler: ["Felsefe sorgulamayı öğretir.", "Felsefe her soruya tek bir kesin cevap verir.", "Felsefe farklı görüşleri tartışır."], dogru: 1,
+        aciklama: "Felsefi soruların tek ve kesin cevabı yoktur.", ipucu: "6. adımdaki felsefi sorunun özelliklerini hatırla." },
+      { s: "Şimdi sen dene: Görüşleri kabul ya da ret diye ayır. Sonra kabul ettiklerini bireysel ve toplumsal diye sınıflandır." },
+    ],
     gorev: "Görüşleri kabul/ret diye ayır, sonra kabul ettiklerini bireysel ve toplumsal diye sınıflandır.",
     ogretmen: "Program öğrencilerin felsefenin işlevlerine ilişkin görüşlerini yansıtan bir liste oluşturmasını, tutarlılığı tartışarak kabul ya da reddetmesini ve ardından işlevleri bireysel ve toplumsal olarak sınıflamasını öneriyor (E3.7, KB2.18, KB3.3). Ünite performans görevi: “Felsefe nedir? Filozof kime denir? Felsefe ne işe yarar? Felsefe nasıl yapılır?” sorularıyla farklı yaş ve meslekten kişilerle röportaj yapılıp okul sayfasında yayımlanması (D3.2, D14.1, D16.3, OB2).",
     kur(ctx) {
       const kap = sahneKap(ctx, { baslik: "Felsefenin işlevleri" });
+      ctx.sahne.bak("tepe");
+      igneler(ctx, [["kent", "Bireyden topluma", { renk: "#5ad38b" }]]);
       const ikinci = el("div", { style: "display:flex;flex-direction:column;gap:10px", hidden: true });
       kap.append(el("div", { class: "ok-baslik", style: "font-size:15.5px" }, "1. Bu görüşleri kabul eder misin?"));
       const kabul = [
@@ -697,12 +818,22 @@ const adimlar = [
   {
     baslik: "Değerlendirme",
     cikti: "FEL.10.1.1",
-    anlatim: `
-      <p>Dokuz soruluk kısa bir değerlendirme. Her sorudan sonra açıklamayı oku.</p>
-      <p>En az <b>7 doğru</b> yaparsan dersi tamamlamış olursun. Yanlış yaptığın konular için ilgili adıma dönebilirsin.</p>`,
+    anlatim: `<p>Dokuz soruluk kısa bir değerlendirme. En az <b>7 doğru</b> yaparsan dersi tamamlamış olursun. Yanlış yaptığın konular için ilgili adıma dönebilirsin.</p>`,
+    anlat: [
+      { s: "Bu derste uzun bir yol yürüdük. Kısaca hatırlayalım.", yap: (_, ctx) => ctx.sahne.bak("genel") },
+      { s: "Felsefe <b>bilgelik sevgisidir</b>. Filozof, bilgeliği seven ve arayan kişidir." },
+      { s: "Theseus'un gemisinde <b>hayret, şüphe ve tutarlılık</b> gibi özellikleri kullandık.", yap: (_, ctx) => ctx.sahne.bak("gemi") },
+      { s: "Felsefe Milet'te koşulların <b>bir araya gelmesiyle</b> doğdu, sonra pek çok gelenekte gelişti.", yap: (_, ctx) => ctx.sahne.bak("havadan") },
+      { soru: "“Zaman nedir?” sorusu hangi türden?", secenekler: ["Gündelik", "Bilimsel", "Felsefi"], dogru: 2,
+        aciklama: "Saate bakmak bu soruyu cevaplamaz; zamanın ne olduğu evrensel ve tartışmalı bir sorudur.", ipucu: "“Saat kaç?” ile aynı soru mu?" },
+      { s: "Felsefe bilim, din ve sanattan <b>amaç, yöntem ve konu</b> bakımından ayrılır." },
+      { s: "Felsefenin hem <b>bireysel</b> hem <b>toplumsal</b> işlevleri vardır." },
+      { s: "Şimdi sen dene: Dokuz soruyu cevapla. En az 7 doğru yaparsan dersi tamamlarsın.", yap: (_, ctx) => ctx.sahne.bak("genel") },
+    ],
     gorev: "Değerlendirmede en az <b>7/9</b> doğru yap.",
     ogretmen: "Sorular programdaki öğrenme kanıtlarıyla (çalışma kâğıdı, açık uçlu sorular) uyumludur. Açık uçlu bir soru olarak “Felsefenin ortak bir tanımı yapılabilir mi? Gerekçelendir.” sorusunu ekleyebilirsiniz.",
     kur(ctx) {
+      ctx.sahne.bak("genel");
       ctx.sinav([
         { tur: "coktan", metin: "“Felsefe” sözcüğünün kökeni ve anlamı hangisidir?",
           siklar: ["philo + logos: sözü sevmek", "philo + sophia: bilgelik sevgisi", "sophia + kosmos: evrenin bilgisi", "theos + logos: tanrı bilgisi"],
@@ -736,4 +867,4 @@ const adimlar = [
   },
 ];
 
-dersBaslat({ adimlar });
+dersBaslat({ adimlar, sahneKur: miletDunyasi });

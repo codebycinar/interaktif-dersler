@@ -2,6 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { xz, yukseklikMetre } from "../dersler/10/peygamberimizin-hayati/u1-taif/hicaz.js";
 import { OLAYLAR, SERITLER, YERLER, SAYILAR, olay, yer, hicridenMiladi, miladiOndalik, nubuvvettenMiladi, olayYili, uzaklik, tarihYaz } from "../dersler/10/peygamberimizin-hayati/u1-taif/veri.js";
 
 const harita = JSON.parse(readFileSync(new URL("../dersler/10/peygamberimizin-hayati/u1-taif/harita-veri.json", import.meta.url), "utf8"));
@@ -83,4 +84,15 @@ test("grafik sayıları zamanla artıyor ve yılları olaylarla uyumlu", () => {
 test("tarih yazımı", () => {
   assert.equal(tarihYaz(olay("fetih")), "Ocak 630 · H. Ramazan 8");
   assert.equal(tarihYaz(olay("taifYolculugu")), "yaklaşık 619 · nübüvvetin 10. yılı");
+});
+
+test("3B arazi: izdüşüm ölçeği (1 birim = 0,5 km) ve Mekke/Taif rakımları içerikle tutarlı", () => {
+  const m = yer("mekke"), t = yer("taif");
+  const [mx, mz] = xz(m.lon, m.lat), [tx, tz] = xz(t.lon, t.lat);
+  const km = Math.hypot(tx - mx, tz - mz) * 0.5;
+  assert.ok(Math.abs(km - uzaklik(m, t)) / uzaklik(m, t) < 0.03, `dünyadaki uzaklık ${km.toFixed(1)} km`);
+  const hm = yukseklikMetre(mx, mz), ht = yukseklikMetre(tx, tz);
+  assert.ok(Math.abs(hm - m.rakim) < 80, `Mekke ${hm.toFixed(0)} m`);
+  assert.ok(Math.abs(ht - t.rakim) < 80, `Taif ${ht.toFixed(0)} m`);
+  assert.ok(ht - hm > 1500 && ht - hm < 1700, `fark ${(ht - hm).toFixed(0)} m`);
 });
