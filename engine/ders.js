@@ -112,6 +112,21 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
   const menuBtn = el("button", { class: "d-btn kucuk d-menu-btn", title: "Tüm dersler (M)", "aria-haspopup": "dialog", onclick: () => menuAc() }, "☰ Dersler");
   const evBtn = GEZ.ana ? el("a", { class: "d-btn kucuk d-ev", href: GEZ.ana, title: "Ana sayfa", "aria-label": "Ana sayfa" }, "⌂") : null;
 
+  // İçerik yapay zekâ ile üretildi: her ekranda uyarı ve hata bildirme bağlantısı (GitHub Issues, ders ve adım önceden yazılı)
+  const hataAdresi = () => {
+    const a = adimlar[simdiki];
+    const baslik = `[${META.slug}] ${simdiki + 1}. adım: `;
+    const govde = [`Ders: ${META.baslik}`, `Adım: ${simdiki + 1}. ${a?.baslik || ""}`, `Sayfa: ${location.href}`, "",
+      "Hatalı bilgi / sorun:", "", "Doğrusu (biliyorsanız, kaynağıyla):", ""].join("\n");
+    return `https://github.com/codebycinar/interaktif-dersler/issues/new?labels=hata-bildirimi&title=${encodeURIComponent(baslik)}&body=${encodeURIComponent(govde)}`;
+  };
+  const yzUyari = el("a", {
+    class: "d-yz", target: "_blank", rel: "noopener",
+    title: "Bu dersin metinleri, görselleri ve soruları yapay zekâ ile üretildi; hata içerebilir. Bir hata görürseniz bildirin.",
+    href: "https://github.com/codebycinar/interaktif-dersler/issues/new",
+    onclick: (e) => { e.currentTarget.href = hataAdresi(); },
+  }, el("span", { "aria-hidden": "true" }, "⚠"), el("span", { class: "d-yz-uzun" }, " Yapay zekâ ile üretildi · Hata bildir"));
+
   const ust = el("header", { class: "d-ust" },
     evBtn, menuBtn,
     el("div", { style: "min-width:0" },
@@ -119,6 +134,7 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
       el("h1", {}, META.baslik)),
     el("div", { class: "d-bosluk" }),
     el("div", { class: "d-ciktilar" }, ciktiCipleri),
+    yzUyari,
     ogretmenBtn);
 
   const adimListesi = el("ol");
@@ -282,6 +298,7 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
       _gosterim(v) {
         if (gosterim === v) return;
         gosterim = v;
+        document.body.classList.toggle("d-gosterimde", v);
         // Dersler alıştırma panellerini anlatım boyunca gizlemek için dinleyebilir
         document.dispatchEvent(new CustomEvent("d-gosterim", { detail: { gosteriyor: v, adim: i } }));
       },
@@ -447,6 +464,7 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
     ileriBtn.title = son && sonrakiDers ? sonrakiDers.baslik : "";
     depo.sonAdim = i; depoYaz(depo);
 
+    document.body.classList.remove("d-gosterimde");
     sonCtx = baglamOlustur(i, kontroller);
     let api = null;
     try { api = a.kur(sonCtx); } catch (e) { console.error(e); kontroller.append(el("div", { class: "d-geri-bildirim yanlis" }, "Bu adım yüklenirken hata oluştu: " + e.message)); }
@@ -507,7 +525,10 @@ export function dersBaslat({ adimlar, sahneKur, yerlesim = META.yerlesim }) {
         el("ul", {}, META.ciktilar.map((c) => el("li", {}, el("code", {}, c.kod), " ", c.ifade)))) : null,
       el("div", { class: "d-satir" },
         el("button", { class: "d-btn ana", onclick: () => kapat(0) }, depo.sonAdim ? "Baştan başla" : "Başla"),
-        depo.sonAdim ? el("button", { class: "d-btn", onclick: () => kapat(depo.sonAdim) }, `Kaldığın yerden devam et (${depo.sonAdim + 1}. adım)`) : null)));
+        depo.sonAdim ? el("button", { class: "d-btn", onclick: () => kapat(depo.sonAdim) }, `Kaldığın yerden devam et (${depo.sonAdim + 1}. adım)`) : null),
+      el("p", { class: "d-yz-not" }, "⚠ Bu ders tamamen yapay zekâ ile üretildi ve henüz bir öğretmen tarafından denetlenmedi. Bilgilerde hata olabilir; bir hata görürseniz üst çubuktaki ",
+        el("a", { href: "https://github.com/codebycinar/interaktif-dersler/issues/new", target: "_blank", rel: "noopener", onclick: (e) => { e.currentTarget.href = hataAdresi(); } }, "Hata bildir"),
+        " bağlantısıyla bize iletin.")));
     sahne.append(ortu);
   }
   // Başlıktaki ders adına tıklayınca giriş ekranı tekrar açılır

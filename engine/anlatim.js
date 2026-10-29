@@ -123,6 +123,8 @@ export function anlatimAkisi({ kareler, api, ctx, ses, basladi, bitince, ozetHtm
       try { k.etkilesim(api, ctx, () => { if (bekliyor) cevaplandi(); }, ek); } catch (e) { console.error(e); bekliyor = false; }
     }
     akis.append(kap);
+    // Grafik panelleri anlatımda gizlidir; grafiğe değinen kare { grafik: true } ile açar
+    if (k.grafik) document.querySelectorAll(".d-grafikler").forEach((g) => g.classList.add("acik"));
     try { k.yap?.(api, ctx); } catch (e) { console.error(e); }
     oku(k);
     dugmeGuncelle();
@@ -152,6 +154,7 @@ export function anlatimAkisi({ kareler, api, ctx, ses, basladi, bitince, ozetHtm
     kok.classList.remove("bitti");
     devamBtn.hidden = false;
     if (ozetKutu) ozetKutu.hidden = true;
+    document.querySelectorAll(".d-grafikler.acik").forEach((g) => g.classList.remove("acik"));
     basladi?.();
     ileri();
   }

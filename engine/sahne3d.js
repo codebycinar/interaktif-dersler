@@ -149,16 +149,33 @@ export function sahne3dKur(kap, {
   kap.append(igneKatmani);
   const igneler = new Set();
   const gecici = new THREE.Vector3();
+  // Sahne üstündeki 2B paneller (grafik, gösterge, yüzen kart): iğnesi bunların altına düşen etiket gizlenir.
+  // Sahnenin çoğunu kaplayan katman öğeleri (2B derslerde çizimin kendisi) panel sayılmaz.
+  let paneller = [], olcumSayaci = 0;
+  function panelleriOlc() {
+    const kr = kap.getBoundingClientRect();
+    paneller = [];
+    for (const e of kap.querySelectorAll(":scope > .d-katman > *")) {
+      const r = e.getBoundingClientRect();
+      if (!r.width || !r.height || r.width * r.height > 0.6 * kr.width * kr.height) continue;
+      const st = getComputedStyle(e);
+      if (st.visibility === "hidden" || st.display === "none" || +st.opacity < 0.1) continue;
+      paneller.push([r.left - kr.left - 6, r.top - kr.top - 6, r.right - kr.left + 6, r.bottom - kr.top + 6]);
+    }
+  }
   function igneleriGuncelle() {
     if (!igneler.size) return;
+    if (olcumSayaci++ % 10 === 0) panelleriOlc();
     const w = kap.clientWidth, h = kap.clientHeight;
     for (const n of igneler) {
       if (n.gizli) { n.el.style.display = "none"; continue; }
       if (n.hedef.isObject3D) n.hedef.getWorldPosition(gecici); else gecici.copy(n.hedef);
       gecici.project(camera);
-      const gorunur = gecici.z < 1 && Math.abs(gecici.x) < 1.15 && Math.abs(gecici.y) < 1.15;
+      const x = ((gecici.x + 1) / 2) * w, y = ((1 - gecici.y) / 2) * h;
+      const gorunur = gecici.z < 1 && Math.abs(gecici.x) < 1.15 && Math.abs(gecici.y) < 1.15 &&
+        !paneller.some(([x0, y0, x1, y1]) => x > x0 && x < x1 && y > y0 && y < y1);
       n.el.style.display = gorunur ? "" : "none";
-      if (gorunur) n.el.style.transform = `translate(${((gecici.x + 1) / 2) * w}px, ${((1 - gecici.y) / 2) * h}px)`;
+      if (gorunur) n.el.style.transform = `translate(${x}px, ${y}px)`;
     }
   }
 

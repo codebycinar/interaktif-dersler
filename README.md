@@ -16,6 +16,8 @@ npm run build        # dist/ altına tüm dersleri üretir
 npm run dev          # değişiklikte otomatik yeniden derler
 npm test             # fizik/kimya modellerinin sayısal testleri
 npm run duman        # derlenmiş dersleri görünmez Chrome'da adım adım gezer
+node tools/gozden.mjs <slug>   # her adımın öğrencinin gördüğü hâlini tek temas sayfasında toplar
+node tools/kapak.mjs [slug]    # ana sayfadaki ders kartları için kapak.webp üretir
 ```
 
 Derlenen dersi çift tıklayarak açabilirsiniz: `dist/10/fizik/u1-hareket.html`. Tüm dersler: `dist/index.html`.
@@ -89,7 +91,7 @@ Yol haritası: [PLAN.md](PLAN.md)
 
 ## Katkı
 
-Yeni ders yazmadan önce [docs/ders-yazim-rehberi.md](docs/ders-yazim-rehberi.md) dosyasını okuyun. Her ders MEB öğretim programındaki öğrenme çıktılarına bağlı olmalı, `npm test` ve `npm run duman` geçmelidir. Hatalı bir bilgi ya da öneri için issue açabilirsiniz; öğretmen geri bildirimleri özellikle değerlidir.
+Yeni ders yazmadan önce [docs/ders-yazim-rehberi.md](docs/ders-yazim-rehberi.md) dosyasını okuyun. Her ders MEB öğretim programındaki öğrenme çıktılarına bağlı olmalı, `npm test` ve `npm run duman` geçmeli; `tools/gozden.mjs` temas sayfası da gözle kontrol edilmelidir. Dersler yapay zekâ ile üretilmiştir ve henüz öğretmen denetiminden geçmemiştir. Hatalı bir bilgi görürseniz dersin üst çubuğundaki **Hata bildir** bağlantısıyla (ya da `hata-bildirimi` etiketli bir issue açarak) bildirin; öğretmen geri bildirimleri özellikle değerlidir.
 
 ## Lisans
 
