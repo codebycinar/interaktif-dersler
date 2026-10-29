@@ -49,9 +49,16 @@ async function ac(boyut) {
   });
   return page;
 }
+/** Headless Chrome arka plandaki sekmeyi çizmez; ekran görüntüsü öncesi sayfa öne alınır yoksa çekim takılır */
+async function cek(page, secenek) {
+  await page.bringToFront();
+  await bekle(300);
+  await page.screenshot(secenek);
+}
 const girisiKapat = (page) => page.evaluate(() => [...document.querySelectorAll(".d-giris button")].find((b) => /^(Başla|Baştan başla)$/.test(b.textContent))?.click());
 /** Adıma gider ve anlatımı baştan başlatır; kare sayısını döndürür */
 async function adimaGit(page, i) {
+  await page.bringToFront();
   await page.evaluate((n) => document.querySelectorAll(".d-adimlar li button")[n].click(), i);
   await bekle(600);
   await page.evaluate(() => document.querySelector('.d-anlat button[title="Anlatımı baştan izle"]')?.click());
@@ -95,22 +102,22 @@ for (const d of dersler) {
     const ad = (s) => join(cikti, `${String(i + 1).padStart(2, "0")}-${s}.png`);
     const toplam = await adimaGit(masa, i);
     await bekle(1500);
-    await masa.screenshot({ path: ad("ilk") });
+    await cek(masa, { path: ad("ilk") });
     const kareler = ["ilk"];
     if (toplam > 2) {
       await ilerle(masa, Math.floor(toplam / 2));
       await bekle(1800);
-      await masa.screenshot({ path: ad("orta") });
+      await cek(masa, { path: ad("orta") });
       kareler.push("orta");
     }
     const takildi = await sonaKadar(masa);
     if (takildi) console.log(`\n  ! ${i + 1}. adım: anlatım "${takildi}" karesinde öğrenci hareketi bekliyor; alıştırma karesi o hâliyle çekildi`);
     await bekle(1500);
-    await masa.screenshot({ path: ad("uygulama") });
+    await cek(masa, { path: ad("uygulama") });
     kareler.push("uygulama");
     await adimaGit(tel, i);
     await bekle(1500);
-    await tel.screenshot({ path: ad("telefon") });
+    await cek(tel, { path: ad("telefon") });
     kareler.push("telefon");
     satirlar.push({ no: i + 1, ad: adimlar[i], kareler: kareler.map((k) => `${String(i + 1).padStart(2, "0")}-${k}.png`), toplam });
     process.stdout.write(`  ${d.slug} ${i + 1}/${adimlar.length}\r`);
