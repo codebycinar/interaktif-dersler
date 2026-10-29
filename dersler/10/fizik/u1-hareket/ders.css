@@ -1,0 +1,24 @@
+/* 7. adım: konum–zaman grafiği seçenek kartları */
+.fz-secim { position: absolute; top: 12px; left: 12px; right: 12px; }
+.fz-secim-baslik {
+  display: inline-block; margin-bottom: 8px; padding: 6px 12px; border-radius: 10px;
+  background: rgba(15, 23, 36, .88); border: 1px solid var(--cizgi); font-weight: 600; font-size: 15px;
+}
+.fz-secim-satir { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.fz-secim-kart {
+  position: relative; cursor: pointer; padding: 0; text-align: left;
+  background: rgba(15, 23, 36, .9); border: 2px solid var(--cizgi); border-radius: var(--radius);
+  height: clamp(110px, 20vh, 180px);
+}
+.fz-secim-kart:hover { border-color: var(--metin-2); }
+.fz-secim-kart > span {
+  position: absolute; top: 6px; right: 10px; font-weight: 800; font-size: 18px; color: var(--vurgu); z-index: 1;
+}
+.fz-secim-kart.dogru { border-color: var(--yesil); background: rgba(20, 60, 38, .9); }
+.fz-secim-kart.yanlis { border-color: var(--kirmizi); opacity: .6; }
+.fz-secim-grafik { position: absolute; inset: 0; }
+.fz-secim-grafik canvas { width: 100%; height: 100%; display: block; }
+@media (max-width: 760px) {
+  .fz-secim-baslik { font-size: 13px; }
+  .fz-secim-kart { height: 90px; }
+}

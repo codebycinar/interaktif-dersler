@@ -1,0 +1,16 @@
+{
+  "slug": "fiz10-u1-hareket",
+  "sinif": 10,
+  "ders": "Fizik",
+  "unite": "1. Ünite: Kuvvet ve Hareket",
+  "baslik": "Yolda Hareket: Sabit Hız ve Sabit İvme",
+  "soru": "Kırmızı ışıkta bekleyen iki sürücü: biri gaza yüklenip sert fren yapıyor, diğeri sakin sürüyor. Bir sonraki ışığa hangisi önce geçer, hangisi daha çok enerji harcar?",
+  "tur": "3B simülasyon + canlı grafik",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 100,
+  "ciktiKodlari": [
+    "FİZ.10.1.1",
+    "FİZ.10.1.2",
+    "FİZ.10.1.3"
+  ]
+}

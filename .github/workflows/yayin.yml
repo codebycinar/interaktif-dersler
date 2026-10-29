@@ -1,0 +1,71 @@
+# main dalına her gönderimde: model testleri → derleme → tarayıcı (duman) testi → GitHub Pages'e yayın
+# Yayın adresi: https://education.modernisler.com
+name: Yayın
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  derle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Bağımlılıklar
+        run: npm ci
+
+      - name: Model testleri
+        run: npm test
+
+      - name: Dersleri derle
+        run: npm run build
+
+      - name: Tarayıcı (duman) testi
+        run: node tools/duman.mjs
+        env:
+          DUMAN_CIKTI: ${{ runner.temp }}/duman
+
+      - name: Duman ekran görüntüleri
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: duman-ekran-goruntuleri
+          path: ${{ runner.temp }}/duman
+          retention-days: 7
+
+      - name: Özel alan adı
+        run: echo "education.modernisler.com" > dist/CNAME
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: dist
+
+  yayinla:
+    if: github.event_name != 'pull_request'
+    needs: derle
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.yayin.outputs.page_url }}
+    steps:
+      - id: yayin
+        uses: actions/deploy-pages@v4
