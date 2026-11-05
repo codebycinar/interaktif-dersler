@@ -67,6 +67,8 @@ tools/           müfredat çekici, paketleyici
 | Sınıf | Ders | Ünite | Ders | Öğrenme çıktıları |
 |---|---|---|---|---|
 | 10 | Fizik | 1. Kuvvet ve Hareket | Yolda Hareket: Sabit Hız ve Sabit İvme | FİZ.10.1.1 · FİZ.10.1.2 · FİZ.10.1.3 |
+| 10 | Fizik | 1. Kuvvet ve Hareket | Grafik Atölyesi: Semboller, Eğim, Alan ve Çizim | FİZ.10.1.1 · FİZ.10.1.2 · FİZ.10.1.3 |
+| 10 | Fizik | 1. Kuvvet ve Hareket | Yazılıya Hazırlık: Senaryo Soruları Adım Adım | FİZ.10.1.1 · FİZ.10.1.2 · FİZ.10.1.3 |
 | 10 | Biyoloji | 1. Tema: Enerji | Güneşten Besine: ATP ve Fotosentez | BİY.10.1.1 · BİY.10.1.2 · BİY.10.1.3 |
 | 10 | Biyoloji | 1. Tema: Enerji | Güneşsiz Besin ve Sindirim: Kemosentez, Sindirim, Emilim | BİY.10.1.4 · BİY.10.1.5 · BİY.10.1.6 |
 | 10 | Biyoloji | 1. Tema: Enerji | Hücresel Solunum, Fermantasyon ve Metabolizma | BİY.10.1.7 · BİY.10.1.8 · BİY.10.1.9 · BİY.10.1.10 |

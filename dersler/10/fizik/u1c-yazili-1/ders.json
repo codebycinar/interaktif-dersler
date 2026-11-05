@@ -1,0 +1,17 @@
+{
+  "slug": "fiz10-u1c-yazili-1",
+  "sinif": 10,
+  "ders": "Fizik",
+  "unite": "1. Ünite: Kuvvet ve Hareket",
+  "baslik": "Yazılıya Hazırlık: Senaryo Soruları Adım Adım",
+  "soru": "MEB'in yazılı senaryosundaki ağaçlı yol, dronlar, tramvay, düşüş kulesi ve devrilen ağaç soruları gerçekten nasıl çözülür? Her birini sahnede canlandırıp birlikte çözüyoruz, sonra sayıları değiştirip sen çözüyorsun.",
+  "tur": "3B senaryo canlandırma + çözümlü örnek + uygulama",
+  "mufredat": "mufredat/10-sinif.json",
+  "uniteId": 100,
+  "ciktiKodlari": [
+    "FİZ.10.1.1",
+    "FİZ.10.1.2",
+    "FİZ.10.1.3"
+  ],
+  "yerlesim": "tam"
+}

@@ -24,6 +24,8 @@ Her ders aynı kabuğu kullanır (`engine/`): merak sorusu, öğrenme çıktıs�
 | Ünite | Format | Ders fikri | Durum |
 |---|---|---|---|
 | 1. Kuvvet ve Hareket | 3B | Yolda Hareket: sabit hız, ivme, grafik dönüşümleri, yeşil dalga | ✅ |
+| 1. Kuvvet ve Hareket | 3B/GRF | Grafik atölyesi: sembol sözlüğü, eğim, alan, işaret kuralı, yapı taşlarıyla üç grafik, çizim bulmacası | ✅ |
+| 1. Kuvvet ve Hareket | SNR/3B | Yazılıya hazırlık: MEB OGM yazılı senaryosunun 7 sorusu sahnede canlandırılıp çözülür, sayıları değiştirilmiş benzerleri çözdürülür | ✅ |
 | 4. Dalgalar | 3B | Yay ve su dalga leğeni (yansıma, kırılma); **rezonans ve deprem**: farklı kat yüksekliğindeki binaların sarsıntı tablasında salınımı | 🔜 |
 | 3. Elektrik | 3B/GRF | Devre tezgâhı: sürükle-bırak devre, akımın parçacık animasyonu, Ohm yasası ölçümü, seri/paralel bağlama, topraklama senaryosu | ⬜ |
 | 2. Enerji | 3B | Kaykay rampası: kinetik ve potansiyel enerji çubukları, F–x grafiğinin altındaki alan = iş, güç; Türkiye enerji kaynakları haritası | ⬜ |
